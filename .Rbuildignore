@@ -1,0 +1,8 @@
+^mredgetransport\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^\.github$
+^codecov\.yml$
+^\.buildlibrary$
+^\.pre-commit-config\.yaml$
+^.*\.zenodo.json$

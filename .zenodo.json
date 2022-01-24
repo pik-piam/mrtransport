@@ -1,0 +1,10 @@
+{
+  "title": "mredgetransport: What the Package Does (One Line, Title Case)",
+  "version": "0.0.1",
+  "description": "<p>What the package does (one paragraph).<\/p>",
+  "creators": [
+    {
+      "name": "Last, First"
+    }
+  ]
+}
