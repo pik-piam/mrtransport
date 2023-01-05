@@ -4,9 +4,11 @@
 \alias{correctGCAM}
 \title{Correct GCAM road transportation data to iso country.}
 \usage{
-correctGCAM(mcobj, subtype)
+correctGCAM(magpieobj, subtype)
 }
 \arguments{
+\item{magpieobj}{a magpie data object}
+
 \item{subtype}{One of the possible subtypes, see default argument.}
 }
 \value{

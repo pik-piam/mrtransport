@@ -1,5 +1,6 @@
 #' Correct GCAM road transportation data to iso country.
 #'
+#' @param magpieobj a magpie data object
 #' @param subtype One of the possible subtypes, see default argument.
 #' @return magclass object
 #'
@@ -11,16 +12,19 @@
 #' @seealso \code{\link{readSource}}
 #' @importFrom rmndt magpie2dt
 #' @importFrom zoo na.approx
-correctGCAM <- function(mcobj, subtype) {
+#' @importFrom data.table CJ ':='
+#' @importFrom magclass as.magpie
+correctGCAM <- function(magpieobj, subtype) {
 
-  subtype <- mcobj <- dt <- year <- region <- subsector <- value <- year <- sector <- technology <- miss <- Units <-
-    fr_train <- x <- NULL
+  subtype <- magpieobj <- dt <- year <- region <- subsector <- value <- year <-
+    technology <- miss <- Units <- frTrain <- x <- NULL
 
   switch(
     subtype,
     "histEsDemand" = {
-      dt <- magpie2dt(mcobj)
-      ## HSR data decreases significantly in 2005 and falls to zero in 2010 -> that is not right and needs to be corrected
+      dt <- magpie2dt(magpieobj)
+      # HSR data decreases significantly in 2005 and falls to zero in 2010
+      #-> that is not right and needs to be corrected
       #linear interpolation from first value in 1990 to value in 2015
       dt[year %in% c(2005, 2010) & region == "EU-12" & subsector == "HSR", value := NA]
       dt[region == "EU-12" & subsector == "HSR", value := na.approx(value, x = year),
@@ -30,11 +34,11 @@ correctGCAM <- function(mcobj, subtype) {
       miss <- CJ(region = dt$region, year = dt$year, sector = "trn_freight", Units = "million ton-km",
                  subsector = "Freight Rail", technology = "Electric",
                  unique = TRUE)
-      fr_train <- dt[miss, on = c("region", "year", "sector", "subsector", "technology", "Units")]
-      fr_train[is.na(value), value := 0]
-      dt <- rbind(dt[!(subsector == "Freight Rail" & technology == "Electric")], fr_train)
-      mcobj <- as.magpie(as.data.frame(dt), temporal = 2, spatial = 1)
+      frTrain <- dt[miss, on = c("region", "year", "sector", "subsector", "technology", "Units")]
+      frTrain[is.na(value), value := 0]
+      dt <- rbind(dt[!(subsector == "Freight Rail" & technology == "Electric")], frTrain)
+      magpieobj <- as.magpie(as.data.frame(dt), temporal = 2, spatial = 1)
     })
 
-  return(mcobj)
+  return(magpieobj)
 }

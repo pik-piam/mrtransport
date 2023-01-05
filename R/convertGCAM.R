@@ -10,7 +10,10 @@
 #' }
 #' @author Johanna Hoppe, Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
-#' @importFrom madrat toolAggregate getISOlist
+#' @importFrom madrat toolAggregate getISOlist calcOutput readSource
+#' @importFrom magclass getYears getItems getSets getItems<- getSets<-
+#' @importFrom rmndt magpie2dt
+#' @importFrom data.table ':=' fread
 convertGCAM <- function(magpieobj, subtype) {
 
   magpieobj <- subtype <- GCAM2iso <- gdp <- IsoCountries <- country <- NULL
@@ -30,7 +33,7 @@ convertGCAM <- function(magpieobj, subtype) {
     # data is not region specific and is applied here to all iso countries similarly
     IsoCountries <- as.data.table(getISOlist(type = "all"))
     IsoCountries[, country := "iso"]
-    magpieobj <- as.data.table(magpieobj)
+    magpieobj <- magpie2dt(magpieobj)
     magpieobj[, country := "iso"]
     magpieobj <- merge(magpieobj, IsoCountries, allow.cartesian = TRUE)
     magpieobj[, country := NULL]

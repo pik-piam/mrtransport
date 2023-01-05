@@ -4,16 +4,18 @@
 #'
 #' @author Johanna Hoppe, Alois Dirnaichner
 #' @param magpieobj the input data read via readSource, a magpie object
-#' @param sourcetype one of the different EDGE-T inputdata sources
+#' @param subtype one of the different EDGE-T inputdata sources
 #' @return a quitte object
 #'
 #' @importFrom rmndt magpie2dt
-#' @import data.table
+#' @importFrom quitte as.quitte
+#' @importFrom data.table setnames fread ':='
 
 toolPrepareGCAM <- function(magpieobj, subtype) {
 
-  magpieobj <- subtype <- dt <- mapfile <- mappingGCAM <- weight <- Units <- esdem <- sector <- value <- GCAMsector <- GCAMsubsector <- GCAMtechnology <- subsector <-
-    technology <- iso <- year <- subsectorL3 <- subsectorL2 <- subsectorL1 <- vehicleType <- ConvBTUtoMJ <- unit <- NULL
+  magpieobj <- subtype <- dt <- mapfile <- mappingGCAM <- weight <- Units <-
+    esdem <- sector <- value <- . <- year <- vehicleType <-
+    convBTUtoMJ <- unit <- NULL
 
   dt <- magpie2dt(magpieobj)
   mapfile <- system.file("extdata", "mappingGCAMtoEDGET.csv",
@@ -35,12 +37,12 @@ toolPrepareGCAM <- function(magpieobj, subtype) {
       dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology")]
       dt <- dt[!is.na(sector)]
 
-      dt <- dt[, .(value = sum(value*esdem)/sum(esdem)),
+      dt <- dt[, .(value = sum(value * esdem) / sum(esdem)),
                by = c("iso", "year", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology")]
 
       #unit conversion from Mbtu/vehkm to MJ/vehkm
-      ConvBTUtoMJ <- 1.055e-3
-      dt[, value := value*ConvBTUtoMJ][, unit := "MJ/vehkm"]
+      convBTUtoMJ <- 1.055e-3
+      dt[, value := value * convBTUtoMJ][, unit := "MJ/vehkm"]
       },
     "loadFactor" = {
 
@@ -57,8 +59,8 @@ toolPrepareGCAM <- function(magpieobj, subtype) {
       dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology")]
       dt <- dt[!is.na(sector)]
 
-      dt <- dt[, .(value = sum(value*esdem)/sum(esdem)),
-               by = c("iso", "year", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology")]
+      dt <- dt[, .(value = sum(value * esdem) / sum(esdem)), by = c("iso", "year", "sector", "subsectorL3",
+                                                                    "subsectorL2", "subsectorL1", "vehicleType", "technology")]
       dt[sector %in% c("trn_pass", "trn_aviation_intl"), unit := "p/veh"]
       dt[sector %in% c("trn_freight", "trn_shipping_intl"), unit := "t/veh"]
     },
@@ -69,7 +71,8 @@ toolPrepareGCAM <- function(magpieobj, subtype) {
       dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology")]
       dt <- dt[!is.na(sector)]
       #aggregate
-      dt <- dt[, .(value = sum(value)), by = c("sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName", "iso", "year", "Units")]
+      dt <- dt[, .(value = sum(value)), by = c("sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType",
+                                               "technology", "univocalName", "iso", "year", "Units")]
       #convert to quitte
       setnames(dt, c("Units", "year"), c("unit", "period"))
       #rename units
@@ -96,7 +99,7 @@ toolPrepareGCAM <- function(magpieobj, subtype) {
       dt <- mappingGCAM[dt, on = c(GCAMsubsector = "subsector")]
       dt <- dt[!is.na(sector)]
 
-      dt <- dt[, .(value = sum(value*esdem)/sum(esdem)),
+      dt <- dt[, .(value = sum(value * esdem) / sum(esdem)),
                by = c("iso", "year", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType")]
       dt[, unit := "km/h"]
       },

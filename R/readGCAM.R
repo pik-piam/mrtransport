@@ -10,12 +10,14 @@
 #' }
 #' @author Johnna Hoppe, Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
-#' @import data.table
+#' @importFrom data.table melt fread setnames ':='
 #' @importFrom magclass as.magpie
+#' @importFrom magrittr %>%
 readGCAM <- function(subtype = c(
                       "feVkmIntensity",  "loadFactor", "histEsDemand", "speedMotorized",
                       "speedNonMotorized", "valueOfTimeMultiplier")) {
-  subtype <- market.name <- dt <- mp <- NULL
+  subtype <- market.name <- dt <- mp <- value <- speed_source <- . <- supplysector <- share_weight <-
+    scenario <- NULL
 
   switch(
     subtype,
@@ -40,7 +42,6 @@ readGCAM <- function(subtype = c(
       mp <- as.magpie(as.data.frame(dt), temporal = 4, spatial = 1, datacol = 5)
     },
     "speedNonMotorized" = {
-      browser()
       dt <- fread("A54.globaltech_nonmotor.csv", skip = 1, sep = ",", header = TRUE)
       setnames(dt, gsub(".", "_", colnames(dt), fixed = TRUE))
       dt[, share_weight := NULL]

@@ -9,7 +9,7 @@ toolPrepareGCAM(magpieobj, subtype)
 \arguments{
 \item{magpieobj}{the input data read via readSource, a magpie object}
 
-\item{sourcetype}{one of the different EDGE-T inputdata sources}
+\item{subtype}{one of the different EDGE-T inputdata sources}
 }
 \value{
 a quitte object
