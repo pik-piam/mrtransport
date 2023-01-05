@@ -9,7 +9,7 @@
 #' }
 #' @author Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
-#' @importFrom madrat toolCountryFill getIsoList toolCountry2isocode
+#' @importFrom madrat toolCountryFill toolCountry2isocode
 convertTRACCS <- function(x, subtype) {
   getItems(x, dim=1) <- toolCountry2isocode(getItems(x, dim=1))
   getSets(x)["d1.1"] <- "iso"

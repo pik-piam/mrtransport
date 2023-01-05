@@ -2,24 +2,26 @@
 #'
 #' Map the source categories to the EDGE-T categories. Apply the full logit structure.
 #'
-#' @author Alois Dirnaichner
+#' @author Johanna Hoppe, Alois Dirnaichner
 #' @param magpieobj the input data read via readSource, a magpie object
 #' @param sourcetype one of the different EDGE-T inputdata sources
 #' @return a quitte object
 #'
 #' @importFrom rmndt magpie2dt
-#' @importFrom data.table fread
+#' @import data.table
 
 toolPrepareGCAM <- function(magpieobj, subtype) {
-  lstruct <- fread(system.file("extdata/logit_structure.csv", package = "edgeTransport", mustWork = TRUE))
+
+  magpieobj <- subtype <- dt <- mapfile <- mappingGCAM <- weight <- Units <- esdem <- sector <- value <- GCAMsector <- GCAMsubsector <- GCAMtechnology <- subsector <-
+    technology <- iso <- year <- subsectorL3 <- subsectorL2 <- subsectorL1 <- vehicleType <- ConvBTUtoMJ <- unit <- NULL
+
   dt <- magpie2dt(magpieobj)
-  mapfile <- system.file("extdata", "mapping_GCAM_categories.csv",
-                         package = "edgeTransport", mustWork = TRUE)
+  mapfile <- system.file("extdata", "mappingGCAMtoEDGET.csv",
+                         package = "mredgeTransport", mustWork = TRUE)
   mappingGCAM <- fread(mapfile)
   switch(
     subtype,
     "feVkmIntensity" = {
-      browser()
       weight <- readSource("GCAM", subtype = "histEsDemand")
       weight <- magpie2dt(weight)[, Units := NULL]
       setnames(weight, "value", "esdem")
@@ -41,7 +43,7 @@ toolPrepareGCAM <- function(magpieobj, subtype) {
       dt[, value := value*ConvBTUtoMJ][, unit := "MJ/vehkm"]
       },
     "loadFactor" = {
-      browser()
+
       weight <- readSource("GCAM", subtype = "histEsDemand")
       weight <- magpie2dt(weight)[, Units := NULL]
       setnames(weight, "value", "esdem")
@@ -90,7 +92,7 @@ toolPrepareGCAM <- function(magpieobj, subtype) {
       #Neglect technology level in GCAM/EDGET mapping
       mappingGCAM[, c("GCAMtechnology", "technology") := NULL]
       mappingGCAM <- unique(mappingGCAM)
-      browser()
+
       dt <- mappingGCAM[dt, on = c(GCAMsubsector = "subsector")]
       dt <- dt[!is.na(sector)]
 

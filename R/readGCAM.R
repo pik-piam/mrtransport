@@ -2,23 +2,24 @@
 #'
 #'
 #' @param subtype One of the possible subtypes, see default argument.
-#' @return magclass object
+#' @return magpie object
 #'
 #' @examples
 #' \dontrun{
 #' a <- readSource("GCAM", subtype="esDemand")
 #' }
-#' @author Alois Dirnaichner
+#' @author Johnna Hoppe, Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
-#' @importFrom data.table fread
+#' @import data.table
 #' @importFrom magclass as.magpie
 readGCAM <- function(subtype = c(
                       "feVkmIntensity",  "loadFactor", "histEsDemand", "speedMotorized",
                       "speedNonMotorized", "valueOfTimeMultiplier")) {
+  subtype <- market.name <- dt <- mp <- NULL
+
   switch(
     subtype,
     "feVkmIntensity" = {
-      browser()
       dt <- fread("L254.StubTranTechCoef.csv", skip = 4)[, market.name := NULL]
       setnames(dt, gsub(".", "_", colnames(dt), fixed = TRUE))
       mp <- as.magpie(as.data.frame(dt), temporal = 5, spatial = 1)

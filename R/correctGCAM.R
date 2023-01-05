@@ -10,12 +10,16 @@
 #' @author Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
 #' @importFrom rmndt magpie2dt
-correctGCAM <- function(x, subtype) {
+#' @importFrom zoo na.approx
+correctGCAM <- function(mcobj, subtype) {
+
+  subtype <- mcobj <- dt <- year <- region <- subsector <- value <- year <- sector <- technology <- miss <- Units <-
+    fr_train <- x <- NULL
+
   switch(
     subtype,
     "histEsDemand" = {
-      browser()
-      dt <- magpie2dt(x)
+      dt <- magpie2dt(mcobj)
       ## HSR data decreases significantly in 2005 and falls to zero in 2010 -> that is not right and needs to be corrected
       #linear interpolation from first value in 1990 to value in 2015
       dt[year %in% c(2005, 2010) & region == "EU-12" & subsector == "HSR", value := NA]
@@ -29,8 +33,8 @@ correctGCAM <- function(x, subtype) {
       fr_train <- dt[miss, on = c("region", "year", "sector", "subsector", "technology", "Units")]
       fr_train[is.na(value), value := 0]
       dt <- rbind(dt[!(subsector == "Freight Rail" & technology == "Electric")], fr_train)
-      x <- as.magpie(as.data.frame(dt), temporal = 2, spatial = 1)
+      mcobj <- as.magpie(as.data.frame(dt), temporal = 2, spatial = 1)
     })
 
-  return(x)
+  return(mcobj)
 }
