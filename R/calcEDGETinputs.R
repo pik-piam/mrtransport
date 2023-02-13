@@ -68,7 +68,7 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
       energyIntensityRawGCAMconventionalCars <- data$enIntGCAM[subsectorL1 == "trn_pass_road_LDV_4W" & technology %in% c("Liquids", "NG") & (!(region %in% ISOcountriesEUR) | region == "ALA")]
       energyIntensityRawGCAMnonCarsnonEUR <- data$enIntGCAM[!(subsectorL1 == "trn_pass_road_LDV_4W") & (!(region %in% ISOcountriesEUR) | region == "ALA")]
 
-      energyIntensityRaw <- rbind(enIntTRACCS, energyIntensityRawPSITrucks, energyIntensityRawPSIalternativeCars, energyIntensityRawGCAMconventionalCars,
+      energyIntensityRaw <- rbind(data$enIntTRACCS, energyIntensityRawPSITrucks, energyIntensityRawPSIalternativeCars, energyIntensityRawGCAMconventionalCars,
                                   energyIntensityRawGCAMnonCarsnonEUR)
 
       setkey(energyIntensityRaw, region,  sector, subsectorL3, subsectorL2, subsectorL1, vehicleType, technology, period, univocalName)
