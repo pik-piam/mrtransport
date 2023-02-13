@@ -4,10 +4,10 @@
 \alias{convertGCAM}
 \title{Convert GCAM road transportation data to iso country.}
 \usage{
-convertGCAM(magpieobj, subtype)
+convertGCAM(x, subtype)
 }
 \arguments{
-\item{magpieobj}{a magpie data object}
+\item{x}{a magpie data object}
 
 \item{subtype}{One of the possible subtypes, see default argument.}
 }

@@ -4,10 +4,10 @@
 \alias{toolPrepareGCAM}
 \title{Perform source specific transformations to ensure a compatible structure.}
 \usage{
-toolPrepareGCAM(magpieobj, subtype)
+toolPrepareGCAM(x, subtype)
 }
 \arguments{
-\item{magpieobj}{the input data read via readSource, a magpie object}
+\item{x}{the input data read via readSource, a magpie object}
 
 \item{subtype}{one of the different EDGE-T inputdata sources}
 }

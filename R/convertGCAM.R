@@ -1,6 +1,6 @@
 #' Convert GCAM road transportation data to iso country.
 #'
-#' @param magpieobj a magpie data object
+#' @param x a magpie data object
 #' @param subtype One of the possible subtypes, see default argument.
 #' @return magpie object
 #'
@@ -13,32 +13,48 @@
 #' @importFrom madrat toolAggregate getISOlist calcOutput readSource
 #' @importFrom magclass getYears getItems getSets getItems<- getSets<-
 #' @importFrom rmndt magpie2dt
-#' @importFrom data.table ':=' fread
-convertGCAM <- function(magpieobj, subtype) {
+#' @importFrom data.table `:=` fread
+#' @export
+convertGCAM <- function(x, subtype) {
 
-  magpieobj <- subtype <- GCAM2iso <- gdp <- IsoCountries <- country <- NULL
+  GCAM2iso <- gdp <- IsoCountries <- country <- NULL
 
-  GCAM2iso <- fread(system.file("extdata", "isoGCAM.csv", package = "mredgeTransport"))
-  gdp <- calcOutput("GDP", aggregate = FALSE)[, getYears(magpieobj),  "gdp_SSP2"]
-  getItems(magpieobj, dim = 1) <- gsub("_", " ", getItems(magpieobj, dim = 1), fixed = TRUE)
+  #GCAM2iso <- fread(system.file("extdata", "isoGCAM.csv", package = "mredgeTransport"))
+  GCAM2iso <- fread("C:/Users/johannah/Documents/Git_repos/mredgetransport/inst/extdata/isoGCAM.csv")
+  #gdp <- calcOutput("GDP", aggregate = FALSE)
+  gdp <- readRDS("C:/Users/johannah/Documents/EDGE-Transport/EDGE-T_standalone_InputData/gdp.RDS")
+  gdp <- gdp[, getYears(x),  "gdp_SSP2"]
+  getItems(x, dim = 1) <- gsub("_", " ", getItems(x, dim = 1), fixed = TRUE)
   if (subtype == "histEsDemand") {
     #extensive variables need a weight for disaggregation
-    magpieobj <- toolAggregate(magpieobj, rel = GCAM2iso, weight = gdp)
-    getSets(magpieobj)["d1.1"] <- "iso"
-  } else if (subtype %in% c("feVkmIntensity", "loadFactor", "speedMotorized")) {
+    x <- toolAggregate(x, rel = GCAM2iso, weight = gdp)
+    getSets(x)["d1.1"] <- "region"
+  } else if (subtype %in% c("energyIntensity", "loadFactor", "speedMotorized")) {
     #intensive variables do not need a weight for disaggregation
-    magpieobj <- toolAggregate(magpieobj, rel = GCAM2iso)
-    getSets(magpieobj)["d1.1"] <- "iso"
+    x <- toolAggregate(x, rel = GCAM2iso)
+    getSets(x)["d1.1"] <- "region"
   } else if (subtype == "speedNonMotorized") {
     # data is not region specific and is applied here to all iso countries similarly
     IsoCountries <- as.data.table(getISOlist(type = "all"))
-    IsoCountries[, country := "iso"]
-    magpieobj <- magpie2dt(magpieobj)
-    magpieobj[, country := "iso"]
-    magpieobj <- merge(magpieobj, IsoCountries, allow.cartesian = TRUE)
-    magpieobj[, country := NULL]
-    setnames(magpieobj, "IsoCountries", "iso")
-    magpieobj <- as.magpie(magpieobj)
+    IsoCountries[, region := "iso"]
+    dt <- magpie2dt(x)
+    dt[, region := "iso"]
+    dt <- merge(dt, IsoCountries, allow.cartesian = TRUE)
+    dt[, region := NULL]
+    setnames(dt, "V1", "region")
+    dt <- dt[, c("region", "year", "tranSubsector", "supplysector", "technology", "variable", "value")]
+    x <- as.magpie(as.data.frame(dt), temporal = 2)
+  } else if (subtype == "valueOfTimeMultiplier") {
+    # data is not region specific and is applied here to all iso countries similarly
+    IsoCountries <- as.data.table(getISOlist(type = "all"))
+    IsoCountries[, region := "iso"]
+    dt <- magpie2dt(x)
+    dt[, region := "iso"]
+    dt <- merge(dt, IsoCountries, allow.cartesian = TRUE)
+    dt[, region := NULL]
+    setnames(dt, "V1", "region")
+    dt <- dt[, c("region", "year", "tranSubsector", "supplysector", "variable", "value")]
+    x <- as.magpie(as.data.frame(dt), temporal = 2)
   }
-  return(magpieobj)
+  return(x)
 }

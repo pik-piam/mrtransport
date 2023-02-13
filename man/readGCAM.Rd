@@ -18,11 +18,6 @@ magpie object
 \description{
 Read GCAM road transportation data.
 }
-\examples{
-\dontrun{
-a <- readSource("GCAM", subtype="esDemand")
-}
-}
 \seealso{
 \code{\link{readSource}}
 }

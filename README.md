@@ -1,6 +1,6 @@
 # What the Package Does (One Line, Title Case)
 
-R package **mredgetransport**, version **0.0.1.9001**
+R package **mredgetransport**, version **0.0.1.9003**
 
 [![CRAN status](https://www.r-pkg.org/badges/version/mredgetransport)](https://cran.r-project.org/package=mredgetransport)  [![R build status](https://github.com/johannah-pik/mredgetransport/workflows/check/badge.svg)](https://github.com/johannah-pik/mredgetransport/actions) [![codecov](https://codecov.io/gh/johannah-pik/mredgetransport/branch/master/graph/badge.svg)](https://app.codecov.io/gh/johannah-pik/mredgetransport) 
 
@@ -38,7 +38,7 @@ In case of questions / problems please contact First Last <first.last@example.co
 
 To cite package **mredgetransport** in publications use:
 
-Last F (2023). _mredgetransport: What the Package Does (One Line, Title Case)_. R package version 0.0.1.9001.
+Last F (2023). _mredgetransport: What the Package Does (One Line, Title Case)_. R package version 0.0.1.9003.
 
 A BibTeX entry for LaTeX users is
 
@@ -47,6 +47,6 @@ A BibTeX entry for LaTeX users is
   title = {mredgetransport: What the Package Does (One Line, Title Case)},
   author = {First Last},
   year = {2023},
-  note = {R package version 0.0.1.9001},
+  note = {R package version 0.0.1.9003},
 }
 ```
