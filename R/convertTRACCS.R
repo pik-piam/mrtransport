@@ -16,4 +16,3 @@ convertTRACCS <- function(x, subtype) {
   x <- toolCountryFill(x, fill = NA, verbosity = 2)
   return(x)
 }
-
