@@ -19,16 +19,18 @@ convertGCAM <- function(x, subtype) {
 
   GCAM2iso <- gdp <- IsoCountries <- country <- NULL
 
-  #GCAM2iso <- fread(system.file("extdata", "isoGCAM.csv", package = "mredgeTransport"))
-  GCAM2iso <- fread("C:/Users/johannah/Documents/Git_repos/mredgetransport/inst/extdata/isoGCAM.csv")
-  #gdp <- calcOutput("GDP", aggregate = FALSE)
-  gdp <- readRDS("C:/Users/johannah/Documents/EDGE-Transport/EDGE-T_standalone_InputData/gdp.RDS")
+  GCAM2iso <- fread(system.file("extdata", "isoGCAM.csv", package = "mredgetransport"))
+  gdp <- calcOutput("GDP", aggregate = FALSE)
   gdp <- gdp[, getYears(x),  "gdp_SSP2"]
   getItems(x, dim = 1) <- gsub("_", " ", getItems(x, dim = 1), fixed = TRUE)
   if (subtype == "histEsDemand") {
     #extensive variables need a weight for disaggregation
     x <- toolAggregate(x, rel = GCAM2iso, weight = gdp)
     getSets(x)["d1.1"] <- "region"
+    #convert unit from million (t|p)km to billion (t|p)km
+    millionToBillion <- 0.001
+    x <- x * millionToBillion
+    getItems(x, dim = 3.4) <- c("billion pkm/yr", "billion tkm/yr")
   } else if (subtype %in% c("energyIntensity", "loadFactor", "speedMotorized")) {
     #intensive variables do not need a weight for disaggregation
     x <- toolAggregate(x, rel = GCAM2iso)

@@ -12,14 +12,11 @@
 
 toolPrepareTRACCS <- function(magpieobj, subtype) {
 
-  mappingTRACCS <- fread("~/Git_repos/mredgeTransport/inst/extdata/mappingTRACCStoEDGET.csv")
-  #mapfile <- system.file("extdata", "mappingTRACCStoEDGET.csv",
-  # package = "mredgeTransport", mustWork = TRUE)
-  #mappingTRACCS = fread(mapfile, skip = 0)
+  mapfile <- system.file("extdata", "mappingTRACCStoEDGET.csv",
+   package = "mredgetransport", mustWork = TRUE)
+  mappingTRACCS = fread(mapfile, skip = 0)
   setkey(mappingTRACCS, TRACCS_category, TRACCS_vehicle_type, TRACCS_technology)
-  #weight <- readSource("TRACCS", subtype = "vehPopulation")
-  weight <- readTRACCS(subtype = "vehPopulation")
-  weight <- convertTRACCS(weight)
+  weight <- readSource("TRACCS", subtype = "vehPopulation")
   weight <- magpie2dt(weight)[, unit := NULL]
   setkey(weight, region,  TRACCS_category, TRACCS_vehicle_type, TRACCS_technology, period)
   setnames(weight, "value", "vehPop")
@@ -40,7 +37,7 @@ toolPrepareTRACCS <- function(magpieobj, subtype) {
     dt <- merge(dt, mappingTRACCS, all.x = TRUE)
     dt <- dt[!sector == ""]
     dt <- unique(dt[, .(value = sum(value * vehPop) / sum(vehPop)), by = c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
-  } else if (subtype %in% c("roadFeDemand", "roadVkmDemand", "roadTkmDemand", "roadPkmDemand", "railFeDemand", "vehPopulation")){
+  } else if (subtype %in% c("roadFeDemand", "roadVkmDemand", "histEsDemand", "railFeDemand", "vehPopulation")){
     dt <- merge(dt, mappingTRACCS, all.x = TRUE)
     dt <- dt[!sector == ""]
     dt <- unique(dt[, .(value = sum(value)), by = c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])

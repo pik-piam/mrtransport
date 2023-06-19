@@ -11,16 +11,16 @@
 #' @importFrom data.table fread
 
 toolPreparePSI <- function(magpieobj, subtype) {
-  mappingPSI <- fread("~/Git_repos/mredgeTransport/inst/extdata/mappingPSItoEDGET.csv")
-  #mapfile <- system.file("extdata", "mappingPSItoEDGET.csv",
-  # package = "mredgeTransport", mustWork = TRUE)
-  #mappingPSI = fread(mapfile, skip = 0)
+  mapfile <- system.file("extdata", "mappingPSItoEDGET.csv",
+   package = "mredgetransport", mustWork = TRUE)
+  mappingPSI = fread(mapfile, skip = 0)
   setkey(mappingPSI, technologyPSI, vehicleTypePSI)
   dt <- magpie2dt(magpieobj)
   dt[, vehicleTypePSI := gsub("_",".", vehicleTypePSI)]
   dt <- merge(dt, mappingPSI, all.x = TRUE, by = c("technologyPSI", "vehicleTypePSI"))
   dt <- dt[!sector == ""]
-  dt <- unique(dt[, .(region, period, unit, sector, subsectorL3, subsectorL2, subsectorL1, vehicleType, technology, univocalName, value)])
+  #Average the energy intensity for petrol and diesel ICEs and PHEVs
+  dt <- dt[, .(value = mean(value)), by = c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")]
   setkey(dt, region,  sector, subsectorL3, subsectorL2, subsectorL1, vehicleType, technology, period, unit, univocalName)
 
   return(dt)

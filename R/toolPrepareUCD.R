@@ -11,15 +11,14 @@
 #' @importFrom data.table fread
 
 toolPrepareUCD <- function(magpieobj, subtype) {
-  mappingUCD <- fread("~/Git_repos/mredgeTransport/inst/extdata/mappingUCDtoEDGET.csv")
-  #mapfile <- system.file("extdata", "mappingUCDtoEDGET.csv",
-                        # package = "mredgeTransport", mustWork = TRUE)
-  #mappingUCD = fread(mapfile, skip = 0)
+  mapfile <- system.file("extdata", "mappingUCDtoEDGET.csv",
+                        package = "mredgetransport", mustWork = TRUE)
+  mappingUCD = fread(mapfile, skip = 0)
   setkey(mappingUCD, UCD_sector, mode, size_class, UCD_technology, UCD_fuel)
 
-  readWeight <- readUCD(subtype = "feDemand")
-  weight <- convertUCD(readWeight, subtype = "feDemand")
-  weight <- magpie2dt(weight)[, c("unit", "year") := NULL]
+  weight <- readSource("UCD", subtype = "feDemand")
+  #fe data is given only for 2005
+  weight <- magpie2dt(weight)[, c("unit", "year", "variable") := NULL]
   setnames(weight, "value", "fe")
   setkey(weight, region, UCD_sector, mode, size_class, UCD_technology, UCD_fuel)
 
@@ -34,9 +33,17 @@ toolPrepareUCD <- function(magpieobj, subtype) {
   dt[, size_class := gsub("_", ".", size_class)]
   setkey(dt, region, UCD_sector, mode, size_class, UCD_technology, UCD_fuel, year)
 
-  if (subtype %in% c("energyIntensity", "loadFactor", "annualMileage", "costsPerVeh", "costsPerVehPerYear", "costsPerVehkm")) {
+  if (subtype %in% c("energyIntensity", "loadFactor", "CAPEX", "nonFuelOPEX", "CAPEXandNonFuelOPEX")) {
     dt <- merge(dt, weight, all.x = TRUE)
     dt <- merge(dt, mappingUCD, all.x = TRUE)
+    dt <- dt[!sector == ""]
+    dt <- unique(dt[, .(value = sum(value * fe) / sum(fe)), by = c("region", "year", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
+  } else if (subtype == "annualMileage") {
+    #Annual mileage is not technology/fuel specific in UCD
+    dt <- unique(dt[, c("UCD_technology", "UCD_fuel") := NULL])
+    weight <- weight[, .(fe = sum(fe)), by = .(region, UCD_sector, mode, size_class)]
+    dt <- merge(dt, weight, all.x = TRUE, allow.cartesian = TRUE)
+    dt <- merge(dt, mappingUCD, all.x = TRUE, allow.cartesian = TRUE)
     dt <- dt[!sector == ""]
     dt <- unique(dt[, .(value = sum(value * fe) / sum(fe)), by = c("region", "year", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
   } else if (subtype %in% c("feDemand", "nonMotorizedDemand")) {

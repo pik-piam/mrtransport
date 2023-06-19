@@ -13,18 +13,25 @@
 #' @importFrom madrat toolAggregate
 convertUCD <- function(x, subtype) {
 
-  UCD2iso <- fread("~/Git_repos/mredgeTransport/inst/extdata/isoUCD.csv")
-  #gdp <- calcOutput("GDP", aggregate = FALSE)
-  gdp <- readRDS("C:/Users/johannah/Documents/EDGE-Transport/EDGE-T_standalone_InputData/gdp.RDS")
+  gdp <- calcOutput("GDP", aggregate = FALSE)
   gdp <- gdp[, getYears(x),  "gdp_SSP2"]
-  #UCD2isoMapFile <- system.file("extdata", "isoUCD.csv",
-   #package = "mredgeTransport", mustWork = TRUE)
-  #UCD2iso = fread(UCD2isoMapFile, skip = 0)
-  if (subtype %in% c("feDemand", "nonMotorizedDemand")) {
+
+  UCD2isoMapFile <- system.file("extdata", "isoUCD.csv",
+   package = "mredgetransport", mustWork = TRUE)
+  UCD2iso = fread(UCD2isoMapFile, skip = 0)
+
+  if (subtype == "feDemand"){
+    x <- toolAggregate(x, rel = UCD2iso, weight = gdp)
+    #Convert PJ to MJ
+    PJToMJ <- 1e9
+    x <- x * PJToMJ
+    getItems(x, dim = 3.7) <- "MJ"
+  } else if (subtype == "nonMotorizedDemand"){
     x <- toolAggregate(x, rel = UCD2iso, weight = gdp)
   } else {
     x <- toolAggregate(x, rel = UCD2iso)
   }
+
   getSets(x)["d1.1"] <- "region"
   return(x)
   }
