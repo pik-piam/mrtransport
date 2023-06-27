@@ -2,47 +2,69 @@
 #'
 #'
 #' @param subtype One of the possible subtypes, see default argument.
-#' @return magclass object
+#' @dturn magclass object
 #'
 #' @examples
 #' \dontrun{
 #' a <- readSource("UCD")
 #' }
-#' @author Alois Dirnaichner
+#' @author Johanna Hoppe, Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
 #' @importFrom data.table fread
 #' @importFrom magclass as.magpie
 readUCD <- function(subtype = c(
-                      "feVkmIntensity", "feDemand", "loadFactor", "annualMileage",
+                      "energyIntensity", "feDemand", "loadFactor", "annualMileage",
                       "nonMotorizedDemand", "speed", "costs")) {
   variable <- NULL
-  db <- fread("UCD_transportation_database.csv", header = TRUE)
+  UCD <- fread("UCD_transportation_database.csv", header = TRUE)
   switch(
     subtype,
-    "feVkmIntensity" = {
-      ret <- db[variable == "intensity"][, variable := NULL]
+    "energyIntensity" = {
+      dt <- UCD[variable == "intensity"]
+      dt[, unit := "MJ/vehkm"]
     },
     "feDemand" = {
-      ret <- db[variable == "energy"][, variable := NULL]
+      #fe data is given only for 2005
+      dt <- UCD[variable == "energy"]
+      dt[, unit := "PJ/yr"]
     },
     "loadFactor" = {
-      ret <- db[variable == "load factor"][, variable := NULL]
+      dt <- UCD[variable == "load factor"]
+      dt[UCD_sector == "Passenger", unit := "p/veh"]
+      dt[UCD_sector == "Freight", unit := "t/veh"]
     },
     "annualMileage" = {
-      ret <- db[variable == "annual travel per vehicle"][, variable := NULL]
+      browser()
+      dt <- UCD[variable == "annual travel per vehicle"]
+      dt[, unit := "vehkm/veh/yr"]
     },
     "nonMotorizedDemand" = {
-      ret <- db[variable == "service output"][, variable := NULL]
+      dt <- UCD[variable == "service output"]
+      dt[, unit := "bn pkm/yr"]
     },
     "speed" = {
-      ret <- db[variable == "speed"][, variable := NULL]
+      dt <- UCD[variable == "speed"]
+      dt[unit, "km/h"]
     },
-    "costs" = {
-      ret <- db[grepl("CAPEX|OPEX|costs|subsidy", variable)]
+    "CAPEX" = {
+      dt <- UCD[variable %in% c("CAPEX", "Capital costs (infrastructure)", "Capital costs (other)", "Capital costs (purchase)", "Capital costs (total)")]
+    },
+    "nonFuelOPEX" = {
+      dt <- UCD[variable == "non-fuel OPEX"]
+      dt[, unit := "US$2005/veh/yr"]
+    },
+    "CAPEXandNonFuelOPEX" = {
+      dt <- UCD[variable == "CAPEX and non-fuel OPEX"]
+      dt[, unit := "US$2005/vehkm"]
+    },
+    "OperatingSubsidies" = {
+      dt <- UCD[variable == "Operating subsidy"]
+      dt[, unit := "US$2005/vehkm"]
     }
   )
-  ret <- data.table::melt(ret, id.vars=colnames(ret)[1:7], variable.name="year")
-  setnames(ret, "size.class", "size_class")
-  return(as.magpie(ret, spatial="UCD_region"))
+
+  dt <- data.table::melt(dt, id.vars = c("UCD_region", "UCD_sector", "mode", "size.class", "UCD_technology", "UCD_fuel", "variable", "unit"), variable.name = "year")
+  setnames(dt, "size.class", "size_class")
+  return(as.magpie(dt, spatial = "UCD_region"))
 
 }

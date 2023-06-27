@@ -2,7 +2,7 @@
 #'
 #' Map the source categories to the EDGE-T categories. Apply the full logit structure.
 #'
-#' @author Alois Dirnaichner
+#' @author Johanna Hoppe
 #' @param magpieobj the input data read via readSource, a magpie object
 #' @param sourcetype one of the different EDGE-T inputdata sources
 #' @return a quitte object
@@ -11,82 +11,41 @@
 #' @importFrom data.table fread
 
 toolPrepareTRACCS <- function(magpieobj, subtype) {
-  lstruct <- fread(system.file("extdata/logit_structure.csv", package="edgeTransport", mustWork=TRUE))
 
-  ## load mappings
-  mapfile <- system.file("extdata", "mapping_TRACCS_roadvehicles.csv",
-                         package = "edgeTransport", mustWork = TRUE)
-  mapping_TRACCS = fread(mapfile, skip = 0)
-  techmapfile <- system.file("extdata", "mapping_TRACCS_techs.csv",
-                         package = "edgeTransport", mustWork = TRUE)
-  techmap = fread(techmapfile, skip = 0)
-
-  weight <- readSource("TRACCS", subtype="roadVkmDemand")
+  mapfile <- system.file("extdata", "mappingTRACCStoEDGET.csv",
+   package = "mredgetransport", mustWork = TRUE)
+  mappingTRACCS = fread(mapfile, skip = 0)
+  setkey(mappingTRACCS, TRACCS_category, TRACCS_vehicle_type, TRACCS_technology)
+  weight <- readSource("TRACCS", subtype = "vehPopulation")
   weight <- magpie2dt(weight)[, unit := NULL]
-  setnames(weight, "value", "vkm")
+  setkey(weight, region,  TRACCS_category, TRACCS_vehicle_type, TRACCS_technology, period)
+  setnames(weight, "value", "vehPop")
+
+  # some technologies have zero or no demand for certain countries
+  #-> set to 1 so that they are equally considered
+  #e.g. CNG and LPG are both mapped on NG. In most countries the population of NG Trucks is zero.
+  #To keep the information on the energy Intensity nevertheless for these countries, both NG and LPG
+  #get a 1 as weight and are thus considered equally when calculating the energy Intensity of NG Trucks
+  weight[vehPop == 0, vehPop := 1]
+
   dt <- magpie2dt(magpieobj)
   dt <- dt[TRACCS_technology != "Other"]
+  setkey(dt, region, TRACCS_category, TRACCS_vehicle_type, TRACCS_technology, period)
 
-  switch(
-    subtype,
-    "loadFactor" = ,
-    "annualMileage" = {
-      wcols <- c("iso", "period", "TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology")
-      dt <- weight[dt, on=wcols]
-
-      dt <- techmap[dt, on="TRACCS_technology"]
-      dt <- mapping_TRACCS[dt, on=c("TRACCS_category", "TRACCS_vehicle_type")]
-
-      dt <- unique(dt[,
-               .(unit, value=sum(value*vkm)/sum(vkm)),
-               by=c("iso", "period", "vehicle_type", "technology")])
-      ## some small countries do not have 40t, we use mean mileage
-      dt[, value := ifelse(is.na(value), mean(value, na.rm=TRUE), value),
-         by=c("period", "vehicle_type", "technology")]
-
-      lstruct <- lstruct[vehicle_type %in% unique(dt$vehicle_type)]
-      full_table <- CJ(iso=dt$iso, period=dt$period, vehicle_type=dt$vehicle_type,
-                       technology=lstruct$technology, unit=dt$unit, unique=T)
-      dt <- dt[full_table, on=c("iso", "period", "vehicle_type", "technology", "unit")]
-      dt[, value := ifelse(is.na(value), .SD[technology == "Liquids", value], value),
-         by=c("iso", "period", "vehicle_type")]
-      dt <- dt[lstruct, on=c("vehicle_type", "technology")]
-    },
-    ## note that leaving the case empty defaults to the next case in R
-    "roadPkmDemand" = ,
-    "roadTkmDemand" = {
-      dt <- techmap[dt, on="TRACCS_technology"]
-      dt <- mapping_TRACCS[dt, on=c("TRACCS_category", "TRACCS_vehicle_type")]
-
-      dt <- unique(dt[
-        , .(unit, value=sum(value)),
-        by=c("iso", "period", "vehicle_type", "technology")])
-
-      lstruct <- lstruct[vehicle_type %in% unique(dt$vehicle_type)]
-      full_table <- CJ(iso=dt$iso, period=dt$period, vehicle_type=dt$vehicle_type,
-                       technology=lstruct$technology, unit=dt$unit, unique=T)
-      dt <- dt[full_table, on=c("iso", "period", "vehicle_type", "technology", "unit")]
-      dt[is.na(value), value := 0]
-      dt <- dt[lstruct, on=c("vehicle_type", "technology")]
-
-    }
-  )
-
-  nc <- colnames(dt)[colnames(dt) != "value"]
-  test <- dt[, ..nc]
-  test <- test[duplicated(test)]
-  if(nrow(test) > 0){
-    print("Duplicates in data in TRACCS prepare")
-    browser()
+  if (subtype %in% c("energyIntensity", "loadFactor", "annualMileage")) {
+    dt <- merge(dt, weight, all.x = TRUE)
+    dt <- merge(dt, mappingTRACCS, all.x = TRUE)
+    dt <- dt[!sector == ""]
+    dt <- unique(dt[, .(value = sum(value * vehPop) / sum(vehPop)), by = c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
+  } else if (subtype %in% c("roadFeDemand", "roadVkmDemand", "histEsDemand", "railFeDemand", "vehPopulation")){
+    dt <- merge(dt, mappingTRACCS, all.x = TRUE)
+    dt <- dt[!sector == ""]
+    dt <- unique(dt[, .(value = sum(value)), by = c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
+  } else if (subtype == "fuelEnDensity") {
+    #do nothing as fuel energy density cannot be mapped on EDGE-T structure
   }
 
-  test <- dt[is.na(value)]
-  if(nrow(test) > 0) {
-    print("Missing data in TRACCS prepare")
-    browser()
-  }
-
-  setnames(dt, "iso", "region")
-  return(as.quitte(dt))
+  dt <- dt[, c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName", "value")]
+  setkey(dt, region,  sector, subsectorL3, subsectorL2, subsectorL1, vehicleType, technology, period, unit, univocalName)
 
 }

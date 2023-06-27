@@ -1,6 +1,6 @@
 Package: mredgetransport
 Title: What the Package Does (One Line, Title Case)
-Version: 0.0.1
+Version: 0.0.1.9003
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
@@ -8,11 +8,16 @@ Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Suggests: 
     covr
-Depends: 
+Imports:
     magclass,
     madrat,
-    mrcommons
-Date: 2022-01-25
+    rmndt,
+    zoo,
+    magrittr,
+    quitte
+Depends: 
+    data.table
+Date: 2023-01-06

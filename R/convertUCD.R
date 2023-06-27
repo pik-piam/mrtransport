@@ -12,16 +12,26 @@
 #' @importFrom data.table fread
 #' @importFrom madrat toolAggregate
 convertUCD <- function(x, subtype) {
-  ## UCD2iso <- fread("mapping_UCDdb_ISO.csv")
-  ## UCD2iso[UCD_region == "Australia NZ", UCD_region := "Australia_NZ"]
-  UCD2iso <- fread(system.file("extdata/iso_UCD.csv", package="edgeTransport"))
-  gdp <- calcOutput("GDP", aggregate=FALSE)[, getYears(x),  "gdp_SSP2"]
 
-  if(subtype == "feDemand") {
-    x <- toolAggregate(x, rel = UCD2iso, weight = gdp)    
+  gdp <- calcOutput("GDP", aggregate = FALSE)
+  gdp <- gdp[, getYears(x),  "gdp_SSP2"]
+
+  UCD2isoMapFile <- system.file("extdata", "isoUCD.csv",
+   package = "mredgetransport", mustWork = TRUE)
+  UCD2iso = fread(UCD2isoMapFile, skip = 0)
+
+  if (subtype == "feDemand"){
+    x <- toolAggregate(x, rel = UCD2iso, weight = gdp)
+    #Convert PJ to MJ
+    PJToMJ <- 1e9
+    x <- x * PJToMJ
+    getItems(x, dim = 3.7) <- "MJ"
+  } else if (subtype == "nonMotorizedDemand"){
+    x <- toolAggregate(x, rel = UCD2iso, weight = gdp)
   } else {
-    x <- toolAggregate(x, rel = UCD2iso)    
+    x <- toolAggregate(x, rel = UCD2iso)
   }
-  getSets(x)["d1.1"] <- "iso"
+
+  getSets(x)["d1.1"] <- "region"
   return(x)
   }

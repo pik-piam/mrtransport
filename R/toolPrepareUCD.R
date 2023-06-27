@@ -11,34 +11,55 @@
 #' @importFrom data.table fread
 
 toolPrepareUCD <- function(magpieobj, subtype) {
-  lstruct <- fread(system.file("extdata/logit_structure.csv", package="edgeTransport", mustWork=TRUE))
+  mapfile <- system.file("extdata", "mappingUCDtoEDGET.csv",
+                        package = "mredgetransport", mustWork = TRUE)
+  mappingUCD = fread(mapfile, skip = 0)
+  setkey(mappingUCD, UCD_sector, mode, size_class, UCD_technology, UCD_fuel)
 
-  ## mapping_UCD <- fread("~/git/edgeTransport/inst/extdata/mapping_UCD_categories.csv")
-  mapfile <- system.file("extdata", "mapping_UCD_categories.csv",
-                         package = "edgeTransport", mustWork = TRUE)
-  mapping_UCD = fread(mapfile, skip = 0)
+  weight <- readSource("UCD", subtype = "feDemand")
+  #fe data is given only for 2005
+  weight <- magpie2dt(weight)[, c("unit", "year", "variable") := NULL]
+  setnames(weight, "value", "fe")
+  setkey(weight, region, UCD_sector, mode, size_class, UCD_technology, UCD_fuel)
 
-  weight <- readSource("UCD", subtype="feDemand")
-  weight <- magpie2dt(weight)[, unit := NULL]
+  # some technologies have zero or no demand for certain countries
+  #-> set to 1 so that they are equally considered
+  #e.g. CNG and LPG are both mapped on NG. In most countries the population of NG Trucks is zero.
+  #To keep the information on the energy Intensity nevertheless for these countries, both NG and LPG
+  #get a 1 as weight and are thus considered equally when calculating the energy Intensity of NG Trucks
+  weight[fe == 0, fe := 1]
 
   dt <- magpie2dt(magpieobj)
-  setnames(weight, "value", "fe")
+  dt[, size_class := gsub("_", ".", size_class)]
+  setkey(dt, region, UCD_sector, mode, size_class, UCD_technology, UCD_fuel, year)
 
-  switch(
-    subtype,
-    "annualMileage" = {
-      ## fe data only available for 2005
-      weight <- weight[, year := NULL]
-      wcols <- c("iso", "UCD_sector", "mode", "size_class")
-      weight <- weight[, .(fe=sum(fe), UCD_technology="All", UCD_fuel="All"), by=wcols]
-      dt <- weight[dt, on=c(wcols, "UCD_technology", "UCD_fuel")]
+  if (subtype %in% c("energyIntensity", "loadFactor", "CAPEX", "nonFuelOPEX", "CAPEXandNonFuelOPEX")) {
+    dt <- merge(dt, weight, all.x = TRUE)
+    dt <- merge(dt, mappingUCD, all.x = TRUE)
+    dt <- dt[!sector == ""]
+    dt <- unique(dt[, .(value = sum(value * fe) / sum(fe)), by = c("region", "year", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
+  } else if (subtype == "annualMileage") {
+    #Annual mileage is not technology/fuel specific in UCD
+    dt <- unique(dt[, c("UCD_technology", "UCD_fuel") := NULL])
+    weight <- weight[, .(fe = sum(fe)), by = .(region, UCD_sector, mode, size_class)]
+    dt <- merge(dt, weight, all.x = TRUE, allow.cartesian = TRUE)
+    dt <- merge(dt, mappingUCD, all.x = TRUE, allow.cartesian = TRUE)
+    dt <- dt[!sector == ""]
+    dt <- unique(dt[, .(value = sum(value * fe) / sum(fe)), by = c("region", "year", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
+  } else if (subtype %in% c("feDemand", "nonMotorizedDemand")) {
+    dt <- merge(dt, mappingUCD, all.x = TRUE)
+    dt <- dt[!sector == ""]
+    dt <- unique(dt[, .(value = sum(value)), by = c("region", "year", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
+  } else if (subtype == "speed"){
+    #the mapping for speed differs. Only the size classes Heavy Bus, Light Bus, Moped, Motorcycle (50-250cc), Motorcycle (>250cc) and Scooter are adressed seperately
+    mappingUCD[!(size.class %in% c("Heavy Bus", "Light Bus", "Moped", "Motorcycle (50-250cc)", "Motorcycle (>250cc)", "Scooter")), size.class := "All"]
+    dt <- merge(dt, mappingUCD, all.x = TRUE)
+    dt <- dt[!sector == ""]
+    dt <- unique(dt[, .(value = sum(value * fe) / sum(fe)), by = c("region", "year", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
+  }
 
-      dt <- mapping_UCD[dt, on=c("UCD_sector", "mode", "size_class")]
-      dt <- unique(dt[, .(unit, value=sum(value*fe)/sum(fe)), by=c("iso", "year", "vehicle_type")])
-      dt <- lstruct[dt, on="vehicle_type", allow.cartesian=T]
-    })
-
-  setnames(dt, "iso", "region")
-  return(as.quitte(dt))
-
+  setnames(dt, c("year"), c("period"))
+  dt <- dt[, c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName", "value")]
+  setkey(dt, region,  sector, subsectorL3, subsectorL2, subsectorL1, vehicleType, technology, period, unit, univocalName)
+  return(dt)
 }
