@@ -60,6 +60,6 @@ toolPrepareUCD <- function(magpieobj, subtype) {
 
   setnames(dt, c("year"), c("period"))
   dt <- dt[, c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName", "value")]
-  setkey(dt, region,  sector, subsectorL3, subsectorL2, subsectorL1, vehicleType, technology, period, unit, univocalName)
+  setkey(dt, region,  sector, subsectorL3, subsectorL2, subsectorL1, vehicleType, technology, period, univocalName, unit)
   return(dt)
 }

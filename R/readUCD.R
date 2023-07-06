@@ -34,7 +34,6 @@ readUCD <- function(subtype = c(
       dt[UCD_sector == "Freight", unit := "t/veh"]
     },
     "annualMileage" = {
-      browser()
       dt <- UCD[variable == "annual travel per vehicle"]
       dt[, unit := "vehkm/veh/yr"]
     },

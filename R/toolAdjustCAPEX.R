@@ -6,7 +6,6 @@
 #' @return a quitte object
 
 toolAdjustCAPEX <- function(dt) {
-
     ## define markups on alternative techs based on the percentage difference we find in EU countries
     PSI_c = rbind(PSI_c, PSI_c[year == 2040][, year := 2100])
     ## in 2100, purchase price for BEVs is 0.8*purchase price, for Hybrid Electric is 0.7, for FCEVs is 0.9

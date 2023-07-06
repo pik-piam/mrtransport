@@ -21,14 +21,14 @@ readPSI <- function(subtype = c("CAPEX", "energyIntensity")) {
     "CAPEX" = {
       dt <- suppressMessages(data.table(read_excel("Car model result_modified.xlsx", ##file is modified from the original one: names are copy pasted to simplify R data wrangling
                  sheet = "Vehicle", "A1:X191", col_names = TRUE)))
-      dt <- dt[scenario %in% c("current","Baseline"), c("scenario", "technology", "vehicle_type_PSI", "Total1_(GLOo)")]
+      dt <- dt[scenario %in% c("current","Baseline"), c("scenario", "technology", "vehicle_type_PSI", "Total1_(Euro)")]
       ## substitute the "scenario" with the year it stands for
       dt[, scenario := ifelse(scenario == "current", 2015, 2040)]
       ## rename columns
       colnames(dt) <- c("period", "technologyPSI", "vehicleTypePSI", "value")
       #automatic column type guessing fails due to additional text information in the 2nd row, set value column as numeric
       dt[, value := as.numeric(value)]
-      dt[, variable := "Capital costs (purchase)"][, unit := "2017GLO/veh"][, region := "GLO"]
+      dt[, variable := "Capital costs (purchase)"][, unit := "2017EUR/veh"][, region := "GLO"]
       # bring to quitte column order
       dt <- dt[, c("region", "period", "variable", "unit", "technologyPSI", "vehicleTypePSI", "value")]
       x <- as.magpie(as.data.frame(dt))

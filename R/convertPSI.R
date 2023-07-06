@@ -25,6 +25,7 @@ convertPSI <- function(x, subtype) {
   PSI2iso <- PSI2iso[, c("iso")][, region := "GLO"]
   #Here data is mapped on all iso countries -> same vaue according to vehicle class/technology/year
   x <- toolAggregate(x, rel = PSI2iso)
+
   switch(
     subtype,
     "CAPEX" = {

@@ -11,6 +11,7 @@
 #' @importFrom data.table fread
 
 toolPreparePSI <- function(magpieobj, subtype) {
+
   mapfile <- system.file("extdata", "mappingPSItoEDGET.csv",
    package = "mredgetransport", mustWork = TRUE)
   mappingPSI = fread(mapfile, skip = 0)
