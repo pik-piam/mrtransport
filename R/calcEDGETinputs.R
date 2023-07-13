@@ -18,7 +18,7 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
     package = "mredgetransport", mustWork = TRUE)
   ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
   setnames(ISOcountriesMap, c("CountryCode"), c("region"))
-  ISOcountries <- ISOcountries[, c("region")][, spatial := "all"]
+  ISOcountries <- ISOcountriesMap[, c("region")][, spatial := "all"]
 
   completeDataSet <- merge(decisionTree, ISOcountries, by = "spatial", allow.cartesian = TRUE)[, spatial := NULL]
   MapCountrySpecificVehicleTypes <- fread(system.file("extdata/MapCountrySpecificVehicleTypes.csv", package = "edgeTransport", mustWork = TRUE))
