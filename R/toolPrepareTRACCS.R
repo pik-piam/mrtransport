@@ -1,6 +1,6 @@
 #' Perform source specific transformations to ensure a compatible structure.
 #'
-#' Map the source categories to the EDGE-T categories. Apply the full logit structure.
+#' Map the source categories to the EDGE-T categories. Apply the full structure of the decision tree.
 #'
 #' @author Johanna Hoppe
 #' @param magpieobj the input data read via readSource, a magpie object
@@ -8,16 +8,17 @@
 #' @return a quitte object
 #'
 #' @importFrom rmndt magpie2dt
-#' @importFrom data.table fread
+#' @importFrom data.table fread setnames setkey merge
 
 toolPrepareTRACCS <- function(magpieobj, subtype) {
+  mapfile <- mappingTRACCS <- weight <- dt <- vehPop <- NULL
 
   mapfile <- system.file("extdata", "mappingTRACCStoEDGET.csv",
    package = "mredgetransport", mustWork = TRUE)
-  mappingTRACCS = fread(mapfile, skip = 0)
+  mappingTRACCS <- fread(mapfile, skip = 0)
   setkey(mappingTRACCS, TRACCS_category, TRACCS_vehicle_type, TRACCS_technology)
-  weight <- readSource("TRACCS", subtype = "vehPopulation")
-  weight <- magpie2dt(weight)[, unit := NULL]
+  weight <- readSource("TRACCS", subtype = "fleetData")
+  weight <- magpie2dt(weight)[, c("unit", "variable") := NULL]
   setkey(weight, region,  TRACCS_category, TRACCS_vehicle_type, TRACCS_technology, period)
   setnames(weight, "value", "vehPop")
 
@@ -36,16 +37,19 @@ toolPrepareTRACCS <- function(magpieobj, subtype) {
     dt <- merge(dt, weight, all.x = TRUE)
     dt <- merge(dt, mappingTRACCS, all.x = TRUE)
     dt <- dt[!sector == ""]
-    dt <- unique(dt[, .(value = sum(value * vehPop) / sum(vehPop)), by = c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
-  } else if (subtype %in% c("roadFeDemand", "roadVkmDemand", "histEsDemand", "railFeDemand", "vehPopulation")){
+    dt <- unique(dt[, .(value = sum(value * vehPop) / sum(vehPop)), by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period")])
+  } else if (subtype %in% c("roadFuelConsumption", "roadESdemand", "histESdemand", "railFeDemand", "fleetData")){
     dt <- merge(dt, mappingTRACCS, all.x = TRUE)
     dt <- dt[!sector == ""]
-    dt <- unique(dt[, .(value = sum(value)), by = c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")])
+    dt <- unique(dt[, .(value = sum(value)), c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period")])
   } else if (subtype == "fuelEnDensity") {
     #do nothing as fuel energy density cannot be mapped on EDGE-T structure
   }
 
-  dt <- dt[, c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName", "value")]
-  setkey(dt, region,  sector, subsectorL3, subsectorL2, subsectorL1, vehicleType, technology, period, unit, univocalName)
-
+  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period", "value")]
+  setkey(dt, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, variable, unit, period)
+  if (nrow(dt[is.na(value)]) > 0) {
+    stop("TRACCS data contains NAs")
+  }
+  return(dt)
 }

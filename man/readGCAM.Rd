@@ -5,7 +5,7 @@
 \title{Read GCAM road transportation data.}
 \usage{
 readGCAM(
-  subtype = c("feVkmIntensity", "loadFactor", "histEsDemand", "speedMotorized",
+  subtype = c("feVkmIntensity", "loadFactor", "histESdemand", "speedMotorized",
     "speedNonMotorized", "valueOfTimeMultiplier")
 )
 }

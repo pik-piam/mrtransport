@@ -23,9 +23,9 @@ readEUROSTAT <- function(subtype = c(
                                       function(x) {
                                         output = suppressMessages(data.table(read_excel(path = file.path("Energy statistical country datasheets", "Energy statistical country datasheets 2023-04.xlsx"),
                                                                                         sheet = x,"C8:AI249")))
-                                        names(output)[1] <- "variable"
-                                        output = output[variable %in% c("International maritime bunkers", "International aviation", "Domestic aviation", "Domestic navigation")]
-                                        output = melt(output, id.vars = c("variable"), variable.name = "period")
+                                        names(output)[1] <- "EUROSTATsector"
+                                        output <- output[EUROSTATsector %in% c("International maritime bunkers", "International aviation", "Domestic aviation", "Domestic navigation")]
+                                        output <- melt(output, id.vars = c("EUROSTATsector"), variable.name = "period")
                                         output$region <- x
                                         output$unit <- "Mtoe"
                                         return(output)
@@ -34,8 +34,9 @@ readEUROSTAT <- function(subtype = c(
   )
 
   #Bring to quitte column order
-  dt <- dt[, c("region", "variable", "unit", "period",  "value")]
-  x <- as.magpie(as.data.frame(dt), spatial = 1)
+  dt[, variable := "Final energy"]
+  dt <- dt[, c("region", "EUROSTATsector", "variable", "unit", "period",  "value")]
+  x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = "period")
   return(x)
 
 }

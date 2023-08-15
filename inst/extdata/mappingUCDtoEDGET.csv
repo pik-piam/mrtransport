@@ -1,4 +1,4 @@
-UCD_sector;mode;size_class;UCD_technology;UCD_fuel;sector;subsectorL3;subsectorL2;subsectorL1;vehicleType;technology;univocalName
+UCD_sector;mode;size_class;UCD_technology;UCD_fuel;sector;subsectorL1;subsectorL2;subsectorL3;vehicleType;technology;univocalName
 Freight;Truck;Truck (0-2t);Liquids;Liquids;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (0-3.5t);Liquids;Truck (0-3.5t)
 Freight;Truck;Truck (0-2t);NG;Natural Gas;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (0-3.5t);NG;Truck (0-3.5t)
 Freight;Truck;Truck (2-5t);Liquids;Liquids;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (0-3.5t);Liquids;Truck (0-3.5t)
@@ -60,50 +60,50 @@ Freight;Ship Domestic;All;Liquids;Liquids;trn_freight;Domestic Ship;Domestic Shi
 Freight;Ship International;All;Liquids;Liquids;trn_shipping_intl;International Ship;International Ship_tmp_subsector_L2;International Ship_tmp_subsector_L1;International Ship_tmp_vehicletype;Liquids;International Ship
 Passenger;LDV_2W;Motorcycle (50-250cc);BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_2W;Motorcycle (50-250cc);BEV;Motorcycle (50-250cc)
 Passenger;LDV_4W;Mini Car;Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Mini Car;Liquids;Mini Car
-Passenger;LDV_4W;Mini Car;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Mini Car;Hybrid Electric;Mini Car
+Passenger;LDV_4W;Mini Car;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Mini Car;Hybrid electric;Mini Car
 Passenger;LDV_4W;Mini Car;NG;Natural Gas;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Mini Car;NG;Mini Car
 Passenger;LDV_4W;Mini Car;BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Mini Car;BEV;Mini Car
 Passenger;LDV_4W;Mini Car;FCEV;Hydrogen;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Mini Car;FCEV;Mini Car
 Passenger;LDV_4W;Subcompact Car;Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;Liquids;Subcompact Car
-Passenger;LDV_4W;Subcompact Car;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;Hybrid Electric;Subcompact Car
+Passenger;LDV_4W;Subcompact Car;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;Hybrid electric;Subcompact Car
 Passenger;LDV_4W;Subcompact Car;NG;Natural Gas;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;NG;Subcompact Car
 Passenger;LDV_4W;Subcompact Car;BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;BEV;Subcompact Car
 Passenger;LDV_4W;Subcompact Car;FCEV;Hydrogen;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;FCEV;Subcompact Car
 Passenger;LDV_4W;Compact Car;Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;Liquids;Compact Car
-Passenger;LDV_4W;Compact Car;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;Hybrid Electric;Compact Car
+Passenger;LDV_4W;Compact Car;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;Hybrid electric;Compact Car
 Passenger;LDV_4W;Compact Car;NG;Natural Gas;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;NG;Compact Car
 Passenger;LDV_4W;Compact Car;BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;BEV;Compact Car
 Passenger;LDV_4W;Compact Car;FCEV;Hydrogen;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;FCEV;Compact Car
 Passenger;LDV_4W;Multipurpose Vehicle;Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Liquids;Large Car and SUV
-Passenger;LDV_4W;Multipurpose Vehicle;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Hybrid Electric;Large Car and SUV
+Passenger;LDV_4W;Multipurpose Vehicle;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Hybrid electric;Large Car and SUV
 Passenger;LDV_4W;Multipurpose Vehicle;NG;Natural Gas;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;NG;Large Car and SUV
 Passenger;LDV_4W;Multipurpose Vehicle;BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;BEV;Large Car and SUV
 Passenger;LDV_4W;Multipurpose Vehicle;FCEV;Hydrogen;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;FCEV;Large Car and SUV
 Passenger;LDV_2W;Motorcycle (>250cc);Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_2W;Motorcycle (>250cc);Liquids;Motorcycle (>250cc)
 Passenger;LDV_2W;Motorcycle (>250cc);BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_2W;Motorcycle (>250cc);BEV;Motorcycle (>250cc)
 Passenger;LDV_4W;Midsize Car;Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;Liquids;Midsize Car
-Passenger;LDV_4W;Midsize Car;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;Hybrid Electric;Midsize Car
+Passenger;LDV_4W;Midsize Car;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;Hybrid electric;Midsize Car
 Passenger;LDV_4W;Midsize Car;NG;Natural Gas;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;NG;Midsize Car
 Passenger;LDV_4W;Midsize Car;BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;BEV;Midsize Car
 Passenger;LDV_4W;Midsize Car;FCEV;Hydrogen;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;FCEV;Midsize Car
 Passenger;LDV_4W;Large Car;Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car;Liquids;Large Car
-Passenger;LDV_4W;Large Car;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car;Hybrid Electric;Large Car
+Passenger;LDV_4W;Large Car;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car;Hybrid electric;Large Car
 Passenger;LDV_4W;Large Car;NG;Natural Gas;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car;NG;Large Car
 Passenger;LDV_4W;Large Car;BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car;BEV;Large Car
 Passenger;LDV_4W;Large Car;FCEV;Hydrogen;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car;FCEV;Large Car
 Passenger;LDV_4W;Light Truck and SUV;Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Liquids;Large Car and SUV
-Passenger;LDV_4W;Light Truck and SUV;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Hybrid Electric;Large Car and SUV
+Passenger;LDV_4W;Light Truck and SUV;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Hybrid electric;Large Car and SUV
 Passenger;LDV_4W;Light Truck and SUV;NG;Natural Gas;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;NG;Large Car and SUV
 Passenger;LDV_4W;Light Truck and SUV;BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;BEV;Large Car and SUV
 Passenger;LDV_4W;Light Truck and SUV;FCEV;Hydrogen;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;FCEV;Large Car and SUV
 Passenger;LDV_4W;Van;Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Van;Liquids;Van
-Passenger;LDV_4W;Van;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Van;Hybrid Electric;Van
+Passenger;LDV_4W;Van;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Van;Hybrid electric;Van
 Passenger;LDV_4W;Van;NG;Natural Gas;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Van;NG;Van
 Passenger;LDV_4W;Van;BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Van;BEV;Van
 Passenger;LDV_4W;Van;FCEV;Hydrogen;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Van;FCEV;Van
 Passenger;LDV_2W;Motorcycle (50-250cc);Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_2W;Motorcycle (50-250cc);Liquids;Motorcycle (50-250cc)
 Passenger;LDV_4W;Large Car and SUV;Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Liquids;Large Car and SUV
-Passenger;LDV_4W;Large Car and SUV;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Hybrid Electric;Large Car and SUV
+Passenger;LDV_4W;Large Car and SUV;Hybrid Liquids;Liquids;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Hybrid electric;Large Car and SUV
 Passenger;LDV_4W;Large Car and SUV;NG;Natural Gas;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;NG;Large Car and SUV
 Passenger;LDV_4W;Large Car and SUV;BEV;Electricity;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;BEV;Large Car and SUV
 Passenger;LDV_4W;Large Car and SUV;FCEV;Hydrogen;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;FCEV;Large Car and SUV

@@ -19,7 +19,7 @@ Correct GCAM road transportation data to iso country.
 }
 \examples{
 \dontrun{
-a <- readSource("GCAM", subtype="histEsDemand")
+a <- readSource("GCAM", subtype="histESdemand")
 }
 }
 \seealso{

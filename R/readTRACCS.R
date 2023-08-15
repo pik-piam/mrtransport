@@ -14,10 +14,11 @@
 #' @importFrom data.table as.data.table
 #' @importFrom magclass setComment
 #' @importFrom stringr str_extract
-readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyIntensity", "loadFactor", "annualMileage",
-                                   "roadVkmDemand", "histEsDemand", "railFeDemand", "vehPopulation")) {
-  `.` <- iso <- period <- categoryTRACCS <- vehicleType <- technology <- value <- NULL
-  subtype <- match.arg(subtype)
+#' @export
+
+readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "energyIntensity", "loadFactor", "annualMileage",
+                                   "roadESdemand", "histESdemand", "railFeDemand", "vehPopulation")) {
+  `.` <- countries <- data <- conv <- output <- NULL
 
   countries <- list.files(
     path = file.path("./TRACCS_ROAD_Final_EXCEL_2013-12-20"),
@@ -41,10 +42,10 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyInten
           return(conv)
         }))
       return(data[
-        , .(country_name, TRACCS_technology, unit = "TJ/t", cf)] %>%
-        as.magpie(spatial = 1, temporal = 0))
+        , .(country_name, TRACCS_technology, variable = "Fuel energy density", unit = "TJ/t",  cf)] %>%
+        as.magpie(spatial = "country_name", temporal = 0))
     },
-    "roadFeDemand" = {
+    "roadFuelConsumption" = {
       data <- rbindlist(lapply(
         countries,
         function(x) {
@@ -62,9 +63,9 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyInten
           return(output)
         }))
       return(data[
-        , .(country_name, period, TRACCS_category, TRACCS_vehicle_type,
-            TRACCS_technology, unit = "t", value)] %>%
-        as.magpie(spatial = 1))
+        , .(country_name, TRACCS_category, TRACCS_vehicle_type,
+            TRACCS_technology, variable = "Road fuel consumption", unit = "t", period, value)] %>%
+        as.magpie(spatial = "country_name", temporal = "period"))
     },
     "energyIntensity" = {
       data <- rbindlist(lapply(
@@ -85,9 +86,9 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyInten
           return(output)
         }))
       return(data[
-        , .(country_name, period, TRACCS_category, TRACCS_vehicle_type,
-            TRACCS_technology, unit = "MJ/vehkm", value)] %>%
-          as.magpie(spatial = 1))
+        , .(country_name, TRACCS_category, TRACCS_vehicle_type,
+            TRACCS_technology, variable = "Energy intensity", unit = "MJ/vehkm", period, value)] %>%
+          as.magpie(spatial = "country_name", temporal = "period"))
     },
     "loadFactor" = {
       data <- rbind(
@@ -106,6 +107,7 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyInten
                                        variable.name = "period")
             output$country_name <- x
             output$unit <- "p/veh"
+            output$variable <- "Load factor"
             return(output)
           })),
         rbindlist(lapply(
@@ -125,12 +127,13 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyInten
                       variable.name = "period")
             output$country_name <- x
             output$unit <- "t/veh"
+            output$variable <- "Load factor"
             return(output)
           })))
       return(data[
-        , .(country_name, period, TRACCS_category, TRACCS_vehicle_type,
-          TRACCS_technology, unit, value)] %>%
-      as.magpie(spatial = 1))
+        , .(country_name, TRACCS_category, TRACCS_vehicle_type,
+          TRACCS_technology, variable, unit, period, value)] %>%
+      as.magpie(spatial = "country_name", temporal = "period"))
     },
     "annualMileage" = {
       data <- rbindlist(lapply(
@@ -150,12 +153,12 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyInten
           return(output)
         }))
       mpobj <- data[
-        , .(country_name, period, TRACCS_category, TRACCS_vehicle_type,
-          TRACCS_technology, unit = "vehkm/veh/yr", value)] %>%
-        as.magpie(spatial = 1)
+        , .(country_name, TRACCS_category, TRACCS_vehicle_type,
+          TRACCS_technology, variable = "Annual mileage", unit = "vehkm/veh/yr", period, value)] %>%
+        as.magpie(spatial = "country_name", temporal = "period")
       return(mpobj)
     },
-    "roadVkmDemand" = {
+    "roadESdemand" = {
       data <- rbindlist(lapply(
         countries,
         function(x) {
@@ -174,11 +177,11 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyInten
           return(output)
         }))
       return(data[
-        , .(country_name, period, TRACCS_category, TRACCS_vehicle_type,
-          TRACCS_technology, unit = "vkm/yr", value)] %>%
-        as.magpie(spatial = 1))
+        , .(country_name, TRACCS_category, TRACCS_vehicle_type,
+          TRACCS_technology, variable = "Energy service demand", unit = "vehkm/yr", period, value)] %>%
+        as.magpie(spatial = "country_name", temporal = "period"))
     },
-    "histEsDemand" = {
+    "histESdemand" = {
       data <- rbind(rbindlist(lapply(
         countries,
         function(x) {
@@ -216,9 +219,9 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyInten
             return(output)
           })))
       return(data[
-        , .(country_name, period, TRACCS_category, TRACCS_vehicle_type,
-          TRACCS_technology, unit, value)] %>%
-        as.magpie(spatial = 1))
+        , .(country_name, TRACCS_category, TRACCS_vehicle_type,
+          TRACCS_technology, variable = "Energy service demand", unit, period, value)] %>%
+        as.magpie(spatial = "country_name", temporal = "period"))
     },
     "railFeDemand" = {
       data <- suppressMessages(data.table(read_excel(
@@ -232,10 +235,10 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyInten
       setnames(data, c("RailTraction", "RailTrafficType", "Country"), c("TRACCS_technology", "TRACCS_vehicle_type", "country_name"))
       data[, TRACCS_category := "Rail"]
       return(data[!is.na(value)][
-        , .(country_name, period, TRACCS_category, TRACCS_vehicle_type, TRACCS_technology, unit = "Mio kWh or t", value)] %>%
-        as.magpie(spatial = 1))
+        , .(country_name, TRACCS_category, TRACCS_vehicle_type, TRACCS_technology, variable = "Final energy demand", unit = "Mio kWh or t", period, value)] %>%
+        as.magpie(spatial = "country_name", temporal = "period"))
     },
-    "vehPopulation" = {
+    "fleetData" = {
       data <- rbindlist(lapply(
         countries,
         function(x) {
@@ -253,9 +256,9 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFeDemand", "energyInten
           return(output)
         }))
       return(data[
-        , .(country_name, period, TRACCS_category, TRACCS_vehicle_type,
-            TRACCS_technology, unit = "veh", value)] %>%
-          as.magpie(spatial = 1))
+        , .(country_name, TRACCS_category, TRACCS_vehicle_type,
+            TRACCS_technology, variable = "Fleet", unit = "veh", period, value)] %>%
+          as.magpie(spatial = "country_name", temporal = "period"))
     },
 
   )

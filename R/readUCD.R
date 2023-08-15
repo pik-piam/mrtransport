@@ -12,15 +12,19 @@
 #' @seealso \code{\link{readSource}}
 #' @importFrom data.table fread
 #' @importFrom magclass as.magpie
+#' @export
+
 readUCD <- function(subtype = c(
                       "energyIntensity", "feDemand", "loadFactor", "annualMileage",
                       "nonMotorizedDemand", "speed", "costs")) {
-  variable <- NULL
+  UCD <- dt <- NULL
+
   UCD <- fread("UCD_transportation_database.csv", header = TRUE)
   switch(
     subtype,
     "energyIntensity" = {
       dt <- UCD[variable == "intensity"]
+      dt[, variable := "Energy intensity"]
       dt[, unit := "MJ/vehkm"]
     },
     "feDemand" = {
@@ -30,26 +34,30 @@ readUCD <- function(subtype = c(
     },
     "loadFactor" = {
       dt <- UCD[variable == "load factor"]
+      dt[, variable := "Load factor"]
       dt[UCD_sector == "Passenger", unit := "p/veh"]
       dt[UCD_sector == "Freight", unit := "t/veh"]
     },
     "annualMileage" = {
       dt <- UCD[variable == "annual travel per vehicle"]
+      dt[, variable := "Annual mileage"]
       dt[, unit := "vehkm/veh/yr"]
     },
     "nonMotorizedDemand" = {
       dt <- UCD[variable == "service output"]
+      dt[, variable := "Energy service demand"]
       dt[, unit := "bn pkm/yr"]
     },
     "speed" = {
       dt <- UCD[variable == "speed"]
+      dt[, variable := "Speed"]
       dt[unit, "km/h"]
     },
     "CAPEX" = {
-      dt <- UCD[variable %in% c("CAPEX", "Capital costs (infrastructure)", "Capital costs (other)", "Capital costs (purchase)", "Capital costs (total)")]
+      dt <- UCD[variable %in% c("CAPEX", "Capital costs (infrastructure)", "Capital costs (other)", "Capital costs (purchase)")]
     },
     "nonFuelOPEX" = {
-      dt <- UCD[variable == "non-fuel OPEX"]
+      dt <- UCD[variable %in% c("Non-fuel OPEX", "Operating costs (maintenance)", "Operating costs (registration and insurance)", "Operating costs (tolls)")]
       dt[, unit := "US$2005/veh/yr"]
     },
     "CAPEXandNonFuelOPEX" = {
@@ -62,8 +70,8 @@ readUCD <- function(subtype = c(
     }
   )
 
-  dt <- data.table::melt(dt, id.vars = c("UCD_region", "UCD_sector", "mode", "size.class", "UCD_technology", "UCD_fuel", "variable", "unit"), variable.name = "year")
+  dt <- data.table::melt(dt, id.vars = c("UCD_region", "UCD_sector", "mode", "size.class", "UCD_technology", "UCD_fuel", "variable", "unit"), variable.name = "period")
   setnames(dt, "size.class", "size_class")
-  return(as.magpie(dt, spatial = "UCD_region"))
+  return(as.magpie(dt, spatial = "UCD_region", temporal = "period"))
 
 }

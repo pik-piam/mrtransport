@@ -8,21 +8,26 @@
 #' @return a quitte object
 #'
 #' @importFrom rmndt magpie2dt
-#' @importFrom data.table fread
+#' @importFrom data.table fread setkey merge
+#' @export
 
 toolPreparePSI <- function(magpieobj, subtype) {
+  mapfile <- mappingPSI <- dt <- NULL
 
   mapfile <- system.file("extdata", "mappingPSItoEDGET.csv",
    package = "mredgetransport", mustWork = TRUE)
-  mappingPSI = fread(mapfile, skip = 0)
+  mappingPSI <- fread(mapfile, skip = 0)
   setkey(mappingPSI, technologyPSI, vehicleTypePSI)
   dt <- magpie2dt(magpieobj)
   dt[, vehicleTypePSI := gsub("_",".", vehicleTypePSI)]
   dt <- merge(dt, mappingPSI, all.x = TRUE, by = c("technologyPSI", "vehicleTypePSI"))
   dt <- dt[!sector == ""]
   #Average the energy intensity for petrol and diesel ICEs and PHEVs
-  dt <- dt[, .(value = mean(value)), by = c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName")]
-  setkey(dt, region,  sector, subsectorL3, subsectorL2, subsectorL1, vehicleType, technology, period, unit, univocalName)
+  dt <- dt[, .(value = mean(value)), by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period")]
+  setkey(dt, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, variable, unit, period)
 
+  if (nrow(dt[is.na(value)]) > 0) {
+    stop("PSI data contains NAs")
+  }
   return(dt)
 }

@@ -13,7 +13,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, ariadneAdjustments = TRUE)
   if(ariadneAdjustments){
     ## according to ViZ data from 2020 there has been a 10% reduction wrt 2010 values
     ## (from 14 kkm to 13.6 kkm per vehicle and year)
-    dt[region == "DEU" & subsectorL1 == "trn_pass_road_LDV_4W", value := value * 0.9]
+    dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W", value := value * 0.9]
   }
 
 #2: Assume missing data
@@ -25,12 +25,15 @@ toolAdjustAnnualMileage <- function(dt, completeData, ariadneAdjustments = TRUE)
   #Non-motorized modes do not get an annual mileage (no fleet tracking possible for walking/not planned for non-motorized cycling)
   completeData <- completeData[!univocalName %in% c("Cycle", "Walk")]
   dt <- merge(completeData, dt, all = TRUE)
-  #CompleteData is missing a unit
-  dt[, unit := "vehkm/veh/yr"][, check := NULL]
+  #For some regions an annual mileage is provided for certain vehicle types, but no demand. These values need to be deleted
+  dt <- dt[!is.na(check)]
+  #update variable and unit for introduced NAs
+  dt[, unit := "vehkm/veh/yr"][, variable := "Annual mileage"][, check := NULL]
   #Average first within regions over technologies -> e.g. BEV gets the same value as other technologies
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("region", "period", "vehicleType")]
   #If there are still NAs, average over regions -> e.g. ICE in FRA gets the same value as ICE in DEU
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("period", "vehicleType", "technology")]
+
 
 #b) Annual Mileage for Trucks is missing completely - insert assumptions made by Alois in 2022 (probably from ARIADNE)
   annualMileageTrucks <- fread(

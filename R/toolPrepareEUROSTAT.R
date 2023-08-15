@@ -8,22 +8,26 @@
 #' @return a quitte object
 #'
 #' @importFrom rmndt magpie2dt
-#' @importFrom data.table fread
+#' @importFrom data.table fread setnames setkey merge
+#' @export
 
 toolPrepareEUROSTAT <- function(magpieobj, subtype) {
+  mapfile <- mappingEUROSTAT <- dt <- NULL
 
   mapfile <- system.file("extdata", "mappingEUROSTATtoEDGET.csv",
    package = "mredgetransport", mustWork = TRUE)
-  mappingEUROSTAT = fread(mapfile, skip = 0)
-  setkey(mappingEUROSTAT, EUROSTAT)
-
+  mappingEUROSTAT <- fread(mapfile, skip = 0)
+  setkey(mappingEUROSTAT, EUROSTATsector)
   dt <- magpie2dt(magpieobj)
-  setnames(dt, "variable", "EUROSTAT")
-  setkey(dt, region, EUROSTAT, period)
+  setkey(dt, region, EUROSTATsector, period)
 
   dt <- merge(dt, mappingEUROSTAT, all.x = TRUE, allow.cartesian = TRUE)
 
-  dt <- dt[, c("region", "period", "unit", "sector", "subsectorL3", "subsectorL2", "subsectorL1", "vehicleType", "technology", "univocalName", "value")]
-  setkey(dt, region,  sector, subsectorL3, subsectorL2, subsectorL1, vehicleType, technology, period, unit, univocalName)
+  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period", "value")]
+  setkey(dt, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, variable, unit, period)
+
+  if (nrow(dt[is.na(value)]) > 0) {
+    stop("EUROSTAT data contains NAs")
+  }
   return(dt)
 }

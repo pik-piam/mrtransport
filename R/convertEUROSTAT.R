@@ -13,12 +13,12 @@
 #' @importFrom magclass as.magpie getItems getSets mselect
 
 convertEUROSTAT <- function(x, subtype) {
-  getItems(x, dim = 1) <- toolCountry2isocode(getItems(x, dim = 1), mapping=c("EL"="GRC"))
+  getItems(x, dim = 1) <- toolCountry2isocode(getItems(x, dim = 1), mapping = c("EL" = "GRC"))
   getSets(x)["d1.1"] <- "region"
   #Convert Mtoe to MJ
   MtoeToMJ <- 41868000000
   x <- x * MtoeToMJ
-  getItems(x, dim = 3.2) <- "MJ"
+  getItems(x, dim = "unit") <- "MJ"
   x <- suppressMessages(toolCountryFill(x, fill = NA))
   return(x)
 }

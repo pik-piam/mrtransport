@@ -10,17 +10,19 @@
 #' }
 #' @author Johanna Hoppe
 #' @seealso \code{\link{readSource}}
-#' @importFrom madrat toolAggregate getISOlist calcOutput readSource
-#' @importFrom magclass getYears getItems getSets getItems<- getSets<-
+#' @importFrom madrat toolAggregate
+#' @importFrom magclass getItems
 #' @importFrom rmndt magpie2dt
-#' @importFrom data.table `:=` fread
+#' @importFrom data.table fread setnames
 #' @export
+
 convertPSI <- function(x, subtype) {
+  PSI2isoMapFile <- PSI2iso <- EUR2017toUSD2017 <- USD2017toUSD2005 <- kJPerVehkmtoMJperVehkm <- NULL
 
   #PSI data is mapped on iso countries - Note that we do not have regionally differentiated data
   PSI2isoMapFile <- system.file("extdata", "regionmapping21.csv",
     package = "edgeTransport", mustWork = TRUE)
-  PSI2iso = fread(PSI2isoMapFile, skip = 0)
+  PSI2iso <- fread(PSI2isoMapFile, skip = 0)
   setnames(PSI2iso, c("CountryCode"), c("iso"))
   PSI2iso <- PSI2iso[, c("iso")][, region := "GLO"]
   #Here data is mapped on all iso countries -> same vaue according to vehicle class/technology/year
@@ -33,15 +35,14 @@ convertPSI <- function(x, subtype) {
       EUR2017toUSD2017 <- 1.14
       USD2017toUSD2005 <- 0.78
       x <- x * EUR2017toUSD2017 * USD2017toUSD2005
-      getItems(x, dim = 3.2) <- "US$2005/veh"
+      getItems(x, dim = "unit") <- "US$2005/veh"
     },
     "energyIntensity" = {
       #PSI energy intensity needs to be transformed to MJ/vehkm
       kJPerVehkmtoMJperVehkm <- 1e-3
       x <- x * kJPerVehkmtoMJperVehkm
-      getItems(x, dim = 3.2) <- "MJ/vehkm"
+      getItems(x, dim = "unit") <- "MJ/vehkm"
     }
   )
-
   return(x)
 }

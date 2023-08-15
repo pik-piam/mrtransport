@@ -6,7 +6,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' a <- readSource("GCAM", subtype="histEsDemand")
+#' a <- readSource("GCAM", subtype="histESdemand")
 #' }
 #' @author Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
@@ -16,13 +16,12 @@
 #' @importFrom magclass as.magpie
 #' @export
 correctGCAM <- function(x, subtype) {
-
   dt <- period <- region <- subsector <- value <-
-    technology <- miss <- Units <- frTrain  <- NULL
+    technology <- miss <- unit <- frTrain  <- NULL
 
   switch(
     subtype,
-    "histEsDemand" = {
+    "histESdemand" = {
       dt <- magpie2dt(x)
       # HSR data decreases significantly in 2005 and falls to zero in 2010
       #-> that is not right and needs to be corrected
@@ -32,13 +31,13 @@ correctGCAM <- function(x, subtype) {
                   by = c("region", "sector", "subsector", "technology")]
 
       ## Electric trains do not exist in certain countries and need to be listed as zero demand
-      miss <- CJ(region = dt$region, period = dt$period, sector = "trn_freight", Units = "million ton-km",
+      miss <- CJ(region = dt$region, period = dt$period, sector = "trn_freight", unit = "million ton-km",
                  subsector = "Freight Rail", technology = "Electric",
                  unique = TRUE)
-      frTrain <- dt[miss, on = c("region", "period", "sector", "subsector", "technology", "Units")]
+      frTrain <- dt[miss, on = c("region", "period", "sector", "subsector", "technology", "unit")]
       frTrain[is.na(value), value := 0]
       dt <- rbind(dt[!(subsector == "Freight Rail" & technology == "Electric")], frTrain)
-      x <- as.magpie(as.data.frame(dt), temporal = 2, spatial = 1)
+      x <- as.magpie(as.data.frame(dt), temporal = "period", spatial = "region")
     })
 
   return(x)
