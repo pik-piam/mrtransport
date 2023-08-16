@@ -7,7 +7,7 @@
 #' @importFrom data.table data.table merge
 #' @return a quitte object
 
-toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs) {
+toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData) {
   LDV4WEUR <- decr <- LDV4WnonEUR <- markup <- BEV <- FCEV <- altCost <- targetYearEarly <- targetYearLate <- NULL
 
   ## CAPEX data for LDV 4 Wheelers in EUR from PSI is not region specific
@@ -53,8 +53,39 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs) {
                        (subsectorL1 == "trn_freight_road" & technology == "FCEV" & period >= targetYearLate)]
   #follow linear trends until target years/cost parity with ICE cost -> after the target years we assume no further cost decline. This is somehow odd and should be checked
   altCost <- approx_dt(altCost, yrs, "period", "value",
-                       c("region", "unit", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName"), extrapolate = TRUE)
+                       c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit"), extrapolate = TRUE)
   dt <- rbind(altCost, dt)
+
+  browser()
+  completeData <- completeData[subsectorL1 == "trn_freight_road" | subsectorL3 == "trn_pass_road_LDV_4W" | subsectorL2 == "Bus"]
+  dt <- merge(dt, completeData, all.y = TRUE)
+  dt <- rbind(dt[!(region %in% c("KOR") & vehicleType %in% c("Truck (0-3.5t)", "Truck (7.5t)"))], dt[region %in% c("JPN") & vehicleType %in% c("Truck (0-3.5t)", "Truck (7.5t)")][, region := "KOR"])
+  #Some Truck types are missing for many countries, use those from the lower category (this fix should be removed by updateing the database in the future)
+  missing18t <- dt[is.na(value) & vehicleType == "Truck (18t)"]
+
+  dt[is.na(value) & vehicleType == "Truck (40t)", value := value[vehicleType == "Truck (26t)"], by = c("region", "technology", "period")]
+  dt <- rbind(dt,
+                dt[region == "JPN" & vehicleType %in% c("Truck (0-3.5t)", "Truck (7.5t)")][, region := "KOR"], # Truck (0-3.5t) is missing in KOR (South Korea), choose same as in Japan
+                dt[region %in% unique(EU_data$dem_eurostat$region) & vehicle_type == "Truck (0-3.5t)"][, vehicle_type := "Truck (7.5t)"],
+                dt[region %in% unique(EU_data$dem_eurostat$region) & vehicle_type == "Truck (26t)"][, vehicle_type := "Truck (18t)"],
+                dt[region %in% unique(REMIND2region_MAPPING[region=="REF", region]) & vehicle_type == "Truck (26t)"][, vehicle_type := "Truck (18t)"],      ## REF has missing 18t
+                dt[region %in% unique(REMIND2region_MAPPING[region=="REF", region]) & vehicle_type == "Truck (0-3.5t)"][, vehicle_type := "Truck (7.5t)"],  ## REF has missing 7.5t
+                dt[region %in% unique(REMIND2region_MAPPING[region=="CAZ", region]) & vehicle_type == "Truck (26t)"][, vehicle_type := "Truck (40t)"],      ## CAZ has missing 40t
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("OAS", "SSA"), region]) & vehicle_type == "Truck (18t)"][, vehicle_type := "Truck (26t)"],  ## OAS and SSAhas missing 26t
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("OAS", "SSA"), region]) & vehicle_type == "Truck (18t)"][, vehicle_type := "Truck (40t)"],  ## OAS has missing 40t
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("CAZ"), region]) & vehicle_type == "Large Car"][, vehicle_type := "Large Car and SUV"],  ## OAS has missing 40t
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("OAS"), region]) & vehicle_type == "Large Car and SUV"][, vehicle_type := "Van"],  ## OAS has missing 40t
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("CAZ"), region]) & vehicle_type == "Motorcycle (>250cc)"][, vehicle_type := "Motorcycle (50-250cc)"],  ## OAS has missing 40t
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("CAZ"), region]) & vehicle_type == "Motorcycle (>250cc)"][, vehicle_type := "Moped"],  ## OAS has missing 40t
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("CAZ"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Mini Car"],
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("CAZ"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Subcompact Car"],
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("SSA"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Large Car"],
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("SSA"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Large Car and SUV"],
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("SSA"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Van"],
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("REF"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Mini Car"],
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("SSA"), region]) & vehicle_type == "Motorcycle (50-250cc)"][, vehicle_type := "Moped"],
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("SSA"), region]) & vehicle_type == "Motorcycle (50-250cc)"][, vehicle_type := "Motorcycle (>250cc)"],
+                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("ENC", "NEN", "NES", "UKI"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Mini Car"])
 
 return(dt)
 }

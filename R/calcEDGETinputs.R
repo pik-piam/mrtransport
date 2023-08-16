@@ -295,9 +295,11 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
                      c("region",  "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit"), extrapolate = TRUE)
 
       #Values given in US$2005/vehkm need to be transferred to US$2005/veh with the help of annual mileage and annuity factor
-      annualMileage <-  magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",  warnNA = FALSE, aggregate = FALSE))
+      annualMileage <-  magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",  warnNA = FALSE, aggregate = FALSE))[, c("unit", "variable") := NULL]
       setnames(annualMileage, "value", "annualMileage")
-      annualMileage[, c("unit", "variable") := NULL]
+      #magclass converts "." in vehicle types to "_" (e.g. Truck (0-3.5t))
+      annualMileage[subsectorL1 == "trn_freight_road", univocalName := gsub("_", ".", univocalName)]
+      annualMileage[subsectorL1 == "trn_freight_road", vehicleType := gsub("_", ".", vehicleType)]
       setkey(annualMileage, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, period)
 
       #UCD applied interest rate of 10% and uniform vehicle lifetime of 15 yrs (https://itspubs.ucdavis.edu/publication_detail.php?id=1884)
@@ -311,7 +313,7 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
       #Use own unit name
       CAPEXUCD4W[unit == "2005$/veh", unit := "US$2005/veh"]
       #Aggregate CAPEX to totals, as for the PSI data only the total purchase costs are red in
-      CAPEXUCD4W[, .(value = sum(value)), by = c("region",  "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "unit", "period")]
+      CAPEXUCD4W <- CAPEXUCD4W[, .(value = sum(value)), by = c("region",  "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "unit", "period")]
       CAPEXUCD4W[, variable := "CAPEX"]
 
       #CAPEX for Busses and Trucks given combined with non-fuel OPEX in the UCD data
@@ -336,16 +338,14 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
       CAPEXcombinedUCD[, value := value * annualMileage][, unit := "US$2005/veh/yr"]
       #Divide by annuity factor to get CAPEX per veh
       CAPEXcombinedUCD[, value := value / annuityFactor][, unit := "US$2005/veh"][, variable := "CAPEX"][, annualMileage := NULL]
-      CAPEXUCD <- rbind(CAPEXUCD, CAPEXcombinedUCD)
 
       #Merge data
       #PSI > UCD
       #PSI vehicle purchase costs are used for LDV 4 Wheelers in EUR
       PSIcarsEUR <- data$CAPEXPSI[region %in% ISOcountriesMap[Aggregate21to12Reg == "EUR"]$region]
-      browser()
       CAPEXraw <- rbind(PSIcarsEUR, CAPEXUCD4W[!region %in% ISOcountriesMap[Aggregate21to12Reg == "EUR"]$region], CAPEXcombinedUCD)
 
-      CAPEX <- toolAdjustCAPEXtrackedFleet(CAPEXraw, ISOcountriesMap, years)
+      CAPEX <- toolAdjustCAPEXtrackedFleet(CAPEXraw, ISOcountriesMap, years, completeDataSet)
 
       #CAPEXtrackedFleet data only includes CAPEX data for LDV 4 Wheelers, Trucks and Busses
       completeDataSet <- completeDataSet[subsectorL1 == "trn_freight_road" | subsectorL3 == "trn_pass_road_LDV_4W" | subsectorL2 == "Bus"]
@@ -377,7 +377,11 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
 
       #Values given in US$2005/vehkm need to be transferred to US$2005/veh/yr with the help of annual mileage
       annualMileage <- magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",  warnNA = FALSE, aggregate = FALSE))[, c("unit", "variable") := NULL]
+      #magclass converts "." in vehicle types to "_" (e.g. Truck (0-3.5t))
+      annualMileage[subsectorL1 == "trn_freight_road", univocalName := gsub("_", ".", univocalName)]
+      annualMileage[subsectorL1 == "trn_freight_road", vehicleType := gsub("_", ".", vehicleType)]
       setnames(annualMileage, "value", "annualMileage")
+      setkey(annualMileage, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, period)
 
       #UCD provides combined CAPEX and non-fuel OPEX for Busses, Trucks, Trains and Ships
       #Apply assumptions on non-fuel OPEX share share
@@ -397,8 +401,7 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
       nonFuelOPEXcombinedUCD[subsectorL1 == "trn_freight_road" & technology %in% c("Electric", "FCEV"), value := value * (1- 0.5)]
 
       #Multiply with annual mileage to get [unit = US$2005/veh/yr]
-      nonFuelOPEXcombinedUCD <- merge(CAPEXcombinedUCD, annualMileage, all.x = TRUE, by = c("region",  "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-                                                                                            "technology", "univocalName", "period"))
+      nonFuelOPEXcombinedUCD <- merge(CAPEXcombinedUCD, annualMileage, all.x = TRUE)
       nonFuelOPEXcombinedUCD[, value := value * annualMileage][, unit := "US$2005/veh/yr"]
 
       NonFuelOPEXraw <- rbind(nonFuelOPEXUCD, data$nonFuelOPEXcombinedUCD)

@@ -97,3 +97,17 @@ Van;PHEV-d;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Van;Hyb
 60t;ICEV-d;;;;;;;
 60t;ICEV-g;;;;;;;
 60t;PHEV-d;;;;;;;
+Large;PHEV;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Hybrid electric;Large Car and SUV
+Lower medium;PHEV;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;Hybrid electric;Compact Car
+Medium;PHEV;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;Hybrid electric;Midsize Car
+Mini;PHEV;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Mini Car;Hybrid electric;Mini Car
+SUV;PHEV;;;;;;;
+Small;PHEV;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;Hybrid electric;Subcompact Car
+Van;PHEV;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Van;Hybrid electric;Van
+3.5t;PHEV;;;;;;;
+7.5t;PHEV;;;;;;;
+18t;PHEV;;;;;;;
+26t;PHEV;;;;;;;
+32t;PHEV;;;;;;;
+40t;PHEV;;;;;;;
+60t;PHEV;;;;;;;
