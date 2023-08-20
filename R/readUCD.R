@@ -54,10 +54,14 @@ readUCD <- function(subtype = c(
       dt[unit, "km/h"]
     },
     "CAPEX" = {
-      dt <- UCD[variable %in% c("CAPEX", "Capital costs (infrastructure)", "Capital costs (other)", "Capital costs (purchase)")]
+      #Either CAPEX are reported in detail or as totals (never in detail + totals)
+      dt <- UCD[variable %in% c("CAPEX", "Capital costs (infrastructure)", "Capital costs (other)", "Capital costs (purchase)", "Capital costs (total)")]
+      dt[unit == "2005$/vkt", unit := "US$2005/vehkm"]
+      dt[unit == "2005$/veh", unit := "US$2005/veh"]
     },
     "nonFuelOPEX" = {
-      dt <- UCD[variable %in% c("Non-fuel OPEX", "Operating costs (maintenance)", "Operating costs (registration and insurance)", "Operating costs (tolls)")]
+      #Either non fuel OPEX are reported in detail or as totals (never in detail + totals)
+      dt <- UCD[variable %in% c("Non-fuel OPEX", "Operating costs (maintenance)", "Operating costs (registration and insurance)", "Operating costs (tolls)", "Operating costs (total non-fuel)")]
       dt[, unit := "US$2005/veh/yr"]
     },
     "CAPEXandNonFuelOPEX" = {

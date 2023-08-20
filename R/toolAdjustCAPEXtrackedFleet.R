@@ -10,7 +10,12 @@
 toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData) {
   LDV4WEUR <- decr <- LDV4WnonEUR <- markup <- BEV <- FCEV <- altCost <- targetYearEarly <- targetYearLate <- NULL
 
-  ## CAPEX data for LDV 4 Wheelers in EUR from PSI is not region specific
+  #1: LDV 4 Wheeler adjustments
+  #1a: Delete Capital costs other, as it is unclear what it repesents and aggregate all CAPEX types
+  dt <- dt[!(subsectorL3 == "trn_pass_road_LDV_4W" & variable == "Capital costs (other)")]
+  dt <- dt[, .(value = sum(value)), by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "unit", "period")][, variable := "CAPEX"]
+
+  #1b: CAPEX data for LDV 4 Wheelers in EUR from PSI is not region specific
   #+ real data is only available for 2015 and 2040 -> rest is interpolated
   # -> define markups on alternative techs based on the percentage difference in EU countries
   LDV4WEUR <- copy(dt[subsectorL3 == "trn_pass_road_LDV_4W" & region %in% ISOcountries[Aggregate21to12Reg == "EUR"]$region])
@@ -35,9 +40,10 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData) {
   LDV4WEUR[, markup := NULL]
   dt <- rbind(dt[!subsectorL3 == "trn_pass_road_LDV_4W"], LDV4WEUR, LDV4WnonEUR)
 
+  #2: Alternative trucks and busses
   #Data for alternative trucks and busses is missing
-  BEV <- dt[subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus" & technology == "Liquids" ][, technology := "BEV"]
-  FCEV <- dt[subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus" & technology == "Liquids" ][, technology := "FCEV"]
+  BEV <- dt[(subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus") & technology == "Liquids"][, technology := "BEV"]
+  FCEV <- dt[(subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus") & technology == "Liquids"][, technology := "FCEV"]
   altCost <- rbind(BEV, FCEV)
   targetYearEarly <- 2035  ## target year for electric trucks and electric and FCEV buses
   targetYearLate <- 2150  ## target year for FCEV trucks
@@ -56,36 +62,204 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData) {
                        c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit"), extrapolate = TRUE)
   dt <- rbind(altCost, dt)
 
-  browser()
+  #3: CAPEX are given combined with non fuel OPEX for trucks and busses: Apply assumptions on CAPEX share
+  #3a: Busses
+  ## https://mdpi-res.com/d_attachment/wevj/wevj-11-00056/article_deploy/wevj-11-00056.pdf?version=1597829235
+  ## BEV busses: veh + batt. = 25% of TCO
+  dt[subsectorL2 == "Bus" & technology %in% c("BEV", "FCEV"), value := value * 0.25]
+  ## diesel busses: 15% of TCO
+  dt[subsectorL2 == "Bus" & technology %in% c("Liquids", "NG"), value := value * 0.15]
+  dt[subsectorL2 == "Bus", variable := "CAPEX"]
+  ## Trucks
+  ## https://theicct.org/sites/default/files/publications/TCO-BETs-Europe-white-paper-v4-nov21.pdf
+  ## p. 11: retail price = 150k for diesel, 500 - 200k for BEV
+  ## p. 22: TCO 550 for diesel, TCO = 850 - 500k for BEV
+  ## CAPEX share diesel = 27%, 60-40% for BEV -> 50%
+  dt[subsectorL1 == "trn_freight_road" & technology %in% c("Liquids", "NG"), value := value * 0.3]
+  dt[subsectorL1 == "trn_freight_road" & technology %in% c("BEV", "FCEV"), value := value * 0.5]
+  dt[subsectorL1 == "trn_freight_road", variable := "CAPEX"]
+  #Values given in US$2005/vehkm need to be transferred to US$2005/veh with the help of annual mileage and annuity factor
+  annualMileage <-  magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",  warnNA = FALSE, aggregate = FALSE))[, c("unit", "variable") := NULL]
+  setnames(annualMileage, "value", "annualMileage")
+  #magclass converts "." in vehicle types to "_" (e.g. Truck (0-3.5t))
+  annualMileage[subsectorL1 == "trn_freight_road", univocalName := gsub("_", ".", univocalName)]
+  annualMileage[subsectorL1 == "trn_freight_road", vehicleType := gsub("_", ".", vehicleType)]
+  setkey(annualMileage, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, period)
+
+  #UCD applied interest rate of 10% and uniform vehicle lifetime of 15 yrs (https://itspubs.ucdavis.edu/publication_detail.php?id=1884)
+  #Calc annuity factor
+  discountRate <- 0.1   #discount rate for vehicle purchases
+  lifeTime <- 15    #Number of years over which vehicle capital payments are amortized
+  annuityFactor <- (discountRate * (1 + discountRate) ^ lifeTime) / ((1 + discountRate) ^ lifeTime - 1)
+  #Divide by Annual Mileage to get [unit = US$2005/veh/yr]
+  dt <- merge(dt, annualMileage, all.x = TRUE)
+  dt[subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus" , value := value * annualMileage]
+  dt[subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus" , unit := "US$2005/veh/yr"]
+  #Divide by annuity factor to get CAPEX per veh
+  dt[subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus", value := value / annuityFactor][, annualMileage := NULL]
+  dt[subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus",  unit := "US$2005/veh"]
+
+  #3: Missing vehicle types in certain countries
   completeData <- completeData[subsectorL1 == "trn_freight_road" | subsectorL3 == "trn_pass_road_LDV_4W" | subsectorL2 == "Bus"]
   dt <- merge(dt, completeData, all.y = TRUE)
-  dt <- rbind(dt[!(region %in% c("KOR") & vehicleType %in% c("Truck (0-3.5t)", "Truck (7.5t)"))], dt[region %in% c("JPN") & vehicleType %in% c("Truck (0-3.5t)", "Truck (7.5t)")][, region := "KOR"])
-  #Some Truck types are missing for many countries, use those from the lower category (this fix should be removed by updateing the database in the future)
-  missing18t <- dt[is.na(value) & vehicleType == "Truck (18t)"]
 
-  dt[is.na(value) & vehicleType == "Truck (40t)", value := value[vehicleType == "Truck (26t)"], by = c("region", "technology", "period")]
-  dt <- rbind(dt,
-                dt[region == "JPN" & vehicleType %in% c("Truck (0-3.5t)", "Truck (7.5t)")][, region := "KOR"], # Truck (0-3.5t) is missing in KOR (South Korea), choose same as in Japan
-                dt[region %in% unique(EU_data$dem_eurostat$region) & vehicle_type == "Truck (0-3.5t)"][, vehicle_type := "Truck (7.5t)"],
-                dt[region %in% unique(EU_data$dem_eurostat$region) & vehicle_type == "Truck (26t)"][, vehicle_type := "Truck (18t)"],
-                dt[region %in% unique(REMIND2region_MAPPING[region=="REF", region]) & vehicle_type == "Truck (26t)"][, vehicle_type := "Truck (18t)"],      ## REF has missing 18t
-                dt[region %in% unique(REMIND2region_MAPPING[region=="REF", region]) & vehicle_type == "Truck (0-3.5t)"][, vehicle_type := "Truck (7.5t)"],  ## REF has missing 7.5t
-                dt[region %in% unique(REMIND2region_MAPPING[region=="CAZ", region]) & vehicle_type == "Truck (26t)"][, vehicle_type := "Truck (40t)"],      ## CAZ has missing 40t
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("OAS", "SSA"), region]) & vehicle_type == "Truck (18t)"][, vehicle_type := "Truck (26t)"],  ## OAS and SSAhas missing 26t
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("OAS", "SSA"), region]) & vehicle_type == "Truck (18t)"][, vehicle_type := "Truck (40t)"],  ## OAS has missing 40t
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("CAZ"), region]) & vehicle_type == "Large Car"][, vehicle_type := "Large Car and SUV"],  ## OAS has missing 40t
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("OAS"), region]) & vehicle_type == "Large Car and SUV"][, vehicle_type := "Van"],  ## OAS has missing 40t
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("CAZ"), region]) & vehicle_type == "Motorcycle (>250cc)"][, vehicle_type := "Motorcycle (50-250cc)"],  ## OAS has missing 40t
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("CAZ"), region]) & vehicle_type == "Motorcycle (>250cc)"][, vehicle_type := "Moped"],  ## OAS has missing 40t
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("CAZ"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Mini Car"],
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("CAZ"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Subcompact Car"],
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("SSA"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Large Car"],
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("SSA"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Large Car and SUV"],
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("SSA"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Van"],
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("REF"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Mini Car"],
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("SSA"), region]) & vehicle_type == "Motorcycle (50-250cc)"][, vehicle_type := "Moped"],
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("SSA"), region]) & vehicle_type == "Motorcycle (50-250cc)"][, vehicle_type := "Motorcycle (>250cc)"],
-                dt[region %in% unique(REMIND2region_MAPPING[region %in% c("ENC", "NEN", "NES", "UKI"), region]) & vehicle_type == "Compact Car"][, vehicle_type := "Mini Car"])
+  #3a: Some Truck types are missing for many countries in the UCD database
+
+  # First approach: If other countries of the same region feature these truck types, assign mean values of them
+  # missingTrucks <- dt[subsectorL1 == "trn_freight_road"]
+  # missingTrucks <- missingTrucks[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "period", "value")]
+  # missingTrucks <- dcast(missingTrucks, region + sector + subsectorL1 + subsectorL2 + subsectorL3 + technology + period ~ vehicleType, value.var = "value")
+  # missingTrucks <- merge(missingTrucks, ISOcountries[, c("region", "RegionCode", "Aggregate21to12Reg")], by = "region")
+  # #Calculating means for every truck type (using Aggregate21to12Reg instead does not lead to more available values)
+  # missingTrucks[, `mean Truck (0-3.5t)` := mean(`Truck (0-3.5t)`, na.rm = TRUE), by = c("technology", "period", "RegionCode")]
+  # missingTrucks[, `mean Truck (7.5t)` := mean(`Truck (7.5t)`, na.rm = TRUE), by = c("technology", "period", "RegionCode")]
+  # missingTrucks[, `mean Truck (18t)` := mean(`Truck (18t)`, na.rm = TRUE), by = c("technology", "period", "RegionCode")]
+  # missingTrucks[, `mean Truck (26t)` := mean(`Truck (26t)`, na.rm = TRUE), by = c("technology", "period", "RegionCode")]
+  # missingTrucks[, `mean Truck (40t)` := mean(`Truck (40t)`, na.rm = TRUE), by = c("technology", "period", "RegionCode")]
+  #
+  # missingTrucks[is.na(`Truck (0-3.5t)`), `Truck (0-3.5t)` := `mean Truck (0-3.5t)`]
+  # missingTrucks[is.na(`Truck (7.5t)`), `Truck (7.5t)` := `mean Truck (7.5t)`]
+  # missingTrucks[is.na(`Truck (18t)`), `Truck (18t)` := `mean Truck (18t)`]
+  # missingTrucks[is.na(`Truck (26t)`), `Truck (26t)` := `mean Truck (26t)`]
+  # missingTrucks[is.na(`Truck (40t)`), `Truck (40t)` := `mean Truck (40t)`]
+  # meanTrucks <-  unique(missingTrucks[, c("RegionCode", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "technology", "period", "mean Truck (0-3.5t)", "mean Truck (7.5t)", "mean Truck (18t)", "mean Truck (26t)", "mean Truck (40t)")])
+  # missingTrucks <- missingTrucks[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "technology", "period", "Truck (0-3.5t)", "Truck (7.5t)", "Truck (18t)", "Truck (26t)", "Truck (40t)")]
+  # missingTrucks <- melt(missingTrucks,  id.vars = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "technology", "period"), variable.name = "vehicleType")
+  # missingTrucks[is.nan(value), value := NA]
+  #
+  # #this is a good example, that our current truck data is somewhat odd, mean Truck 18t are nearly double the price of truck 26t
+  # #that is a result of small countries setting the price due to missing data. Here, Puerto Rico (PRI) is setting the price for 18t and
+  # #is assigned to the USA region in UCD (therefore prices are much higher)
+  # meanTrucks <- meanTrucks[RegionCode == "LAM"]
+  # meanTrucks[, fac1 := `mean Truck (0-3.5t)` / `mean Truck (7.5t)`]
+  # meanTrucks[, fac2 := `mean Truck (7.5t)` / `mean Truck (18t)`]
+  # meanTrucks[, fac3 := `mean Truck (18t)` / `mean Truck (26t)`]
+  # meanTrucks[, fac4 := `mean Truck (26t)` / `mean Truck (40t)`]
+  # meanTrucks <- meanTrucks[, .(fac1 = mean(fac1), fac2 = mean(fac2), fac3 = mean(fac3), fac4 = mean(fac4))]
+
+  #Replacing the missing values with values from other countries in the same region does not work at the moment,
+  #2nd approach: Replace with other vehicle types in the same country
+
+  #Find NAs
+  #KOR does not feature truck (0-3.5t) and truck (7.5t) in the UCD database
+  missing3t <-  dt[is.na(value) & vehicleType == "Truck (0-3.5t)"]
+  missing7t <-  dt[is.na(value) & vehicleType == "Truck (7.5t)"]
+  #NEU, EUR and REF do not feature truck (18t) in the UCD database
+  missing18t <- dt[is.na(value) & vehicleType == "Truck (18t)"]
+  #OAS, SSA and MEA do not feature truck (26t) in the UCD database
+  missing26t <- dt[is.na(value) & vehicleType == "Truck (26t)"]
+  #OAS, SSA, MEA and CAZ do not feature truck(40t) in the UCD database
+  missing40t <- dt[is.na(value) & vehicleType == "Truck (40t)"]
+
+  #Get values for other truck types
+  truck26t <- dt[!is.na(value) & vehicleType == "Truck (26t)"]
+  truck26t <- truck26t[, c("region", "technology", "period", "value")]
+  setnames(truck26t, "value", "truck26t")
+
+  truck7t <- dt[!is.na(value) & vehicleType == "Truck (7.5t)"]
+  truck7t <- truck7t[, c("region", "technology", "period", "value")]
+  setnames(truck7t, "value", "truck7t")
+
+  truck18t <- dt[!is.na(value) & vehicleType == "Truck (18t)"]
+  truck18t <- truck18t[, c("region", "technology", "period", "value")]
+  setnames(truck18t, "value", "truck18t")
+
+  #Replace NAs step by step with values of other truck types until data is complete
+  missing18t <- merge(missing18t, truck26t, by = c("region", "technology", "period"), all.x = TRUE)
+  missing18t <- merge(missing18t, truck7t, by = c("region", "technology", "period"), all.x = TRUE)
+  missing18t[, value := truck26t][, truck26t := NULL]
+  missing18t[is.na(value), value := truck7t][, truck7t := NULL]
+
+  missing26t <- merge(missing26t, truck18t, by = c("region", "technology", "period"), all.x = TRUE)
+  missing26t <- merge(missing26t, truck7t, by = c("region", "technology", "period"), all.x = TRUE)
+  missing26t[, value := truck18t][, truck18t := NULL]
+  missing26t[is.na(value), value := truck7t][, truck7t := NULL]
+
+  missing40t <- merge(missing40t, truck26t, by = c("region", "technology", "period"), all.x = TRUE)
+  missing40t <- merge(missing40t, truck18t, by = c("region", "technology", "period"), all.x = TRUE)
+  missing40t <- merge(missing40t, truck7t, by = c("region", "technology", "period"), all.x = TRUE)
+  missing40t[, value := truck26t][, truck26t := NULL]
+  missing40t[is.na(value), value := truck18t][, truck18t := NULL]
+  #JPN gets 7.5t assigned -> this should be fixed
+  missing40t[is.na(value), value := truck7t][, truck7t := NULL]
+
+  missingTrucks <- rbind(missing18t, missing26t, missing40t)
+  #Korea (KOR) is missing all truck types and gets assigned the values of Taiwan (TWN)
+  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "CAPEX"][, unit := "US$2005/veh"]
+
+  dt <- rbind(dt[!(is.na(value) & subsectorL1 == "trn_freight_road")], missingTrucks)
+  trucksKOR <- dt[region == "TWN" & subsectorL1 == "trn_freight_road"][, region := "KOR"]
+  dt <- rbind(dt, trucksKOR)
+
+  #3b: Some car vehicle classes are missing as well and are replaced by other vehicle classes
+  #Find missing values
+  missingVan <- dt[is.na(value) & vehicleType == "Van"]
+  missingMini <- dt[is.na(value) & vehicleType == "Mini Car"]
+  missingMid <- dt[is.na(value) & vehicleType == "Midsize Car"]
+  missingSub <- dt[is.na(value) & vehicleType == "Subcompact Car"]
+  missingCom <- dt[is.na(value) & vehicleType == "Compact Car"]
+  missingLar <- dt[is.na(value) & vehicleType == "Large Car"]
+
+  #Get values of other vehicle types
+  SUV <- dt[!is.na(value) & vehicleType == "Large Car and SUV"]
+  SUV <- SUV[, c("region", "technology", "period", "value")]
+  setnames(SUV, "value", "SUV")
+
+  large <- dt[!is.na(value) & vehicleType == "Large Car"]
+  large <- large[, c("region", "technology", "period", "value")]
+  setnames(large, "value", "large")
+
+  mid <- dt[!is.na(value) & vehicleType == "Midsize Car"]
+  mid <- mid[, c("region", "technology", "period", "value")]
+  setnames(mid, "value", "mid")
+
+  sub <- dt[!is.na(value) & vehicleType == "Subcompact Car"]
+  sub <- sub[, c("region", "technology", "period", "value")]
+  setnames(sub, "value", "sub")
+
+  com <- dt[!is.na(value) & vehicleType == "Compact Car"]
+  com <- com[, c("region", "technology", "period", "value")]
+  setnames(com, "value", "com")
+
+  mini <- dt[!is.na(value) & vehicleType == "Mini Car"]
+  mini <- mini[, c("region", "technology", "period", "value")]
+  setnames(mini, "value", "mini")
+
+  #Assign values of other vehicle types (step by step)
+  missingVan <- merge(missingVan, SUV, by = c("region", "technology", "period"), all.x = TRUE)
+  missingVan[, value := SUV][, SUV := NULL]
+
+  missingMini <- merge(missingMini, sub, by = c("region", "technology", "period"), all.x = TRUE)
+  missingMini <- merge(missingMini, com, by = c("region", "technology", "period"), all.x = TRUE)
+  missingMini <- merge(missingMini, mid, by = c("region", "technology", "period"), all.x = TRUE)
+  missingMini <- merge(missingMini, SUV, by = c("region", "technology", "period"), all.x = TRUE)
+  missingMini[, value := sub][, sub := NULL]
+  missingMini[is.na(value), value := com][, com := NULL]
+  missingMini[is.na(value), value := mid][, mid := NULL]
+  #this applies only to Saint Pierre and Miquelon (SPM) -> fairly small (SPM has data for midsize cars in the UCD database, but is listed in EDGE-T as a country
+  #without midsize cars) -> after a data update, the country specific vehicle map should be checked again
+  missingMini[is.na(value), value := SUV][, SUV := NULL]
+
+  missingMid <- merge(missingMid, com, by = c("region", "technology", "period"), all.x = TRUE)
+  missingMid[, value := com][, com := NULL]
+
+  missingSub <- merge(missingSub, com, by = c("region", "technology", "period"), all.x = TRUE)
+  missingSub <- merge(missingSub, SUV, by = c("region", "technology", "period"), all.x = TRUE)
+  missingSub[, value := com][, com := NULL]
+  #This again only applies to SPM
+  missingSub[is.na(value), value := SUV][, SUV := NULL]
+
+  missingCom <- merge(missingCom, SUV, by = c("region", "technology", "period"), all.x = TRUE)
+  #This again only applies to SPM
+  missingCom[, value := SUV][, SUV := NULL]
+
+  missingLar <- merge(missingLar, SUV, by = c("region", "technology", "period"), all.x = TRUE)
+  missingLar[, value := SUV][, SUV := NULL]
+
+  missing4W <- rbind(missingVan, missingMini, missingMid, missingSub, missingCom, missingLar)
+  missing4W[is.na(variable), variable := "CAPEX"]
+  missing4W[is.na(unit), unit := "US$2005/veh"]
+  dt <- rbind(dt[!(is.na(value) & subsectorL3 == "trn_pass_road_LDV_4W")], missing4W)[, check := NULL]
 
 return(dt)
 }
