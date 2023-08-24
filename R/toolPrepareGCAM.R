@@ -98,7 +98,7 @@ toolPrepareGCAM <- function(x, subtype) {
       #GCAM data for speed of modes is not technology specific
       mappingGCAM <- mappingGCAM[, c("GCAMtechnology", "technology") := NULL]
       mappingGCAM <- unique(mappingGCAM)
-      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector")]
+      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector"), allow.cartesian = TRUE]
       dt <- dt[sector == "trn_pass"]
       dt <- dt[, .(value = sum(value * esdem) / sum(esdem)),
                by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName", "variable", "unit", "period")]
@@ -110,7 +110,7 @@ toolPrepareGCAM <- function(x, subtype) {
       #GCAM data for speed of modes is not technology specific
       mappingGCAM <- mappingGCAM[, c("GCAMtechnology", "technology") := NULL]
       mappingGCAM <- unique(mappingGCAM)
-      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector")]
+      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector"), allow.cartesian = TRUE]
       dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
                      "univocalName", "variable", "unit", "value")]
       dt <- dt[subsectorL1 %in% c("Cycle", "Walk")]
@@ -136,7 +136,7 @@ toolPrepareGCAM <- function(x, subtype) {
       #GCAM data for speed of modes is not technology specific
       mappingGCAM <- mappingGCAM[, c("GCAMtechnology", "technology") := NULL]
       mappingGCAM <- unique(mappingGCAM)
-      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector")]
+      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector"), allow.cartesian = TRUE]
       dt <- dt[sector == "trn_pass"]
       dt <- dt[, .(value = sum(value * esdem) / sum(esdem)),
                by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName", "variable", "unit")]

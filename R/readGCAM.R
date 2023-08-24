@@ -76,6 +76,14 @@ readGCAM <- function(subtype = c(
       dt[, variable := "Value of time multiplier"][, unit := "-"]
       dt <- dt[, c("supplysector", "tranSubsector", "variable", "unit", "value")]
       x <- as.magpie(as.data.frame(dt), temporal = 0, spatial = 0)
+    },
+    "PPPtoMERfactor" = {
+      dt <- fread("GCAM_PPP_MER.csv", header = T)
+      dt <- dt[, c("PPP_MER", "region")]
+      setnames(dt, "PPP_MER", "value")
+      dt[, variable := "Factor to move from PPP to MER for the time value multiplier"][, unit := "-"]
+      dt <- dt[, c("region", "variable", "unit", "value")]
+      x <- as.magpie(as.data.frame(dt), temporal = 0, spatial = "region")
     }
   )
 

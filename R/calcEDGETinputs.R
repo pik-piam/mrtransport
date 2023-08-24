@@ -163,16 +163,14 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
       #- EU data is used from TRACCS, rest is filled with UCD
       annualMileageRaw <- rbind(data$AMTRACCS, data$AMUCD[!(region %in% unique(data$AMTRACCS$region))])
 
-      setkey(annualMileageRaw, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, period, univocalName)
+      setkey(annualMileageRaw, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, period, univocalName, variable, unit)
 
       annualMileage <- toolAdjustAnnualMileage(annualMileageRaw, completeDataSet)
 
       #Add annual mileage of zero for active modes
       activeModes <- completeDataSet[univocalName %in% c("Cycle", "Walk")]
-      activeModes[, unit := "MJ/vehkm"][, variable := "Annual mileage"][, value := 0][, check := NULL]
+      activeModes[, unit := "vehkm/veh/yr"][, variable := "Annual mileage"][, value := 0][, check := NULL]
       annualMileage <- rbind(annualMileage, activeModes)
-
-      #annualMileage[, variable := "Annual mileage"]
 
       #Check whether data is complete
       check <- merge(completeDataSet, annualMileage, all = TRUE)
@@ -519,15 +517,15 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
       speedNonMotGCAM[, all := "All"]
       speedNonMotGCAM <- merge(speedNonMotGCAM, allYears, by = "all", allow.cartesian = TRUE)[, all := NULL]
       speedGCAM <- approx_dt(speedGCAM, years, "period", "value",
-                     c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit"), extrapolate = TRUE)
+                     c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName", "variable", "unit"), extrapolate = TRUE)
       #Merge data
       speedOfModesRaw <- rbind(speedGCAM, speedNonMotGCAM)
-      speedOfModes <- toolAdjustSpeedOfModes(speedOfModesRaw, ISOcountriesMap, completeDataSet)
+      speedOfModes <- toolAdjustSpeedOfModes(speedOfModesRaw, completeDataSet)
 
       #Check whether data is complete
       #speed of modes is only featured for passenger transport (to calculatetime value costs)
       completeDataSet <- completeDataSet[sector == "trn_pass"]
-      check <- merge(completeDataSet, energyIntensity, all = TRUE)
+      check <- merge(completeDataSet, speedOfModes, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("Speed of modes input data is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
@@ -556,28 +554,25 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
      allYears[, all := "All"]
      VOTGCAM[, all := "All"]
      VOTGCAM <- merge(VOTGCAM, allYears, by = "all", allow.cartesian = TRUE)[, all := NULL]
-     speedGCAM <- approx_dt(speedGCAM, years, "period", "value",
-                            c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit"), extrapolate = TRUE)
-     #Merge data
-     speedOfModesRaw <- rbind(speedGCAM, speedNonMotGCAM)
-     speedOfModes <- toolAdjustSpeedOfModes(speedOfModesRaw, ISOcountriesMap, completeDataSet)
+
+     VOT <- toolAdjustValueOfTimeMultiplier(VOTGCAM, completeDataSet)
 
      #Check whether data is complete
      #speed of modes is only featured for passenger transport (to calculate value of time)
      completeDataSet <- completeDataSet[sector == "trn_pass"]
-     check <- merge(completeDataSet, energyIntensity, all = TRUE)
+     check <- merge(completeDataSet, VOT, all = TRUE)
      if (nrow(check[is.na(value)]) > 0) {
-       stop("Speed of modes input data is incomplete")
+       stop("Value of time multiplier input data is incomplete")
      } else if (nrow(check[is.na(check)]) > 0) {
-       stop("Unnecessary data is provided for speed of modes")
+       stop("Unnecessary data is provided for value of time multiplier")
      } else if (length(unique(check$unit)) > 1){
-       stop("Something went wrong in generating speed input data. Data does not have the same unit.")
+       stop("Something went wrong in generating value of time multiplier input data. Data does not have the same unit.")
      } else if (length(unique(check$variable)) > 1){
-       stop("Something went wrong in generating speed input data. Data does not have the same variable type.")
-     } else if (anyNA(speedOfModes) == TRUE){
-       stop("Speed of modes data includes NAs")
+       stop("Something went wrong in generating value of time multiplier input data. Data does not have the same variable type.")
+     } else if (anyNA(VOT) == TRUE){
+       stop("Value of time multiplier data includes NAs")
      }
-     quitteobj <- speedOfModes
+     quitteobj <- VOT
    }
 
 
