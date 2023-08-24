@@ -42,9 +42,9 @@ convertGCAM <- function(x, subtype) {
     dt[, region := "iso"]
     dt <- merge(dt, IsoCountries, allow.cartesian = TRUE)
     dt[, region := NULL]
-    setnames(dt, "V1", "region")
-    dt <- dt[, c("region", "tranSubsector", "supplysector", "technology", "variable", "unit", "period", "value")]
-    x <- as.magpie(as.data.frame(dt), temporal = "period")
+    setnames(dt, c("V1"), c("region"))
+    dt <- dt[, c("region", "tranSubsector", "supplysector", "variable", "unit", "value")]
+    x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = 0)
   } else if (subtype == "valueOfTimeMultiplier") {
     # data is not region specific and is applied here to all iso countries similarly
     IsoCountries <- as.data.table(getISOlist(type = "all"))
@@ -54,8 +54,8 @@ convertGCAM <- function(x, subtype) {
     dt <- merge(dt, IsoCountries, allow.cartesian = TRUE)
     dt[, region := NULL]
     setnames(dt, "V1", "region")
-    dt <- dt[, c("region", "tranSubsector", "supplysector", "variable", "unit", "period", "value")]
-    x <- as.magpie(as.data.frame(dt), temporal = "period")
+    dt <- dt[, c("region", "tranSubsector", "supplysector", "variable", "unit", "value")]
+    x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = 0)
   }
   return(x)
 }

@@ -136,6 +136,8 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
         stop("Something went wrong in generating energy intensity input data. Data does not have the same unit.")
       } else if (length(unique(check$variable)) > 1){
         stop("Something went wrong in generating energy intensity input data. Data does not have the same variable type.")
+      } else if (anyNA(energyIntensity) == TRUE){
+        stop("Energy intensity data includes NAs")
       }
 
       quitteobj <- energyIntensity
@@ -170,7 +172,7 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
       activeModes[, unit := "MJ/vehkm"][, variable := "Annual mileage"][, value := 0][, check := NULL]
       annualMileage <- rbind(annualMileage, activeModes)
 
-      annualMileage[, variable := "Annual mileage"]
+      #annualMileage[, variable := "Annual mileage"]
 
       #Check whether data is complete
       check <- merge(completeDataSet, annualMileage, all = TRUE)
@@ -182,6 +184,8 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
         stop("Something went wrong in generating annual mileage input data. Data does not have the same unit.")
       } else if (length(unique(check$variable)) > 1){
         stop("Something went wrong in generating annual mileage input data. Data does not have the same variable type.")
+      } else if (anyNA(annualMileage) == TRUE){
+        stop("Annual mileage data includes NAs")
       }
 
       quitteobj <- annualMileage
@@ -191,7 +195,6 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
 
       unit <- "billion (p|t)km/yr"
       description <- "Energy service demand on technology level. Sources: GCAM, TRACCS, EUROSTAT"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years[years <= 2010], "gdp_SSP2"]
 
       #calc different source data
       esDemandGCAM <- toolPrepareGCAM(readSource("GCAM", subtype), subtype)
@@ -244,6 +247,8 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
         stop("Something went wrong in generating historical energy service demand input data. Data does not have the same unit.")
       } else if (length(unique(check$variable)) > 1){
         stop("Something went wrong in generating historical energy service demand input data. Data does not have the same variable type.")
+      } else if (anyNA(esDemand) == TRUE){
+        stop("Historical energy service demand data includes NAs")
       }
 
       quitteobj <- esDemand
@@ -286,6 +291,8 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
        stop("Something went wrong in generating load factor input data. Data does not have the same unit.")
      } else if (length(unique(check$variable)) > 1){
        stop("Something went wrong in generating load factor input data. Data does not have the same variable type.")
+     } else if (anyNA(loadFactor) == TRUE){
+       stop("Load factor data includes NAs")
      }
      quitteobj <- loadFactor
     },
@@ -337,6 +344,8 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
         stop("Something went wrong in generating CAPEX input data for the tracked fleet. Data does not have the same unit.")
       } else if (length(unique(check$variable)) > 1){
         stop("Something went wrong in generating CAPEX input data for the tracked fleet. Data does not have the same variable type.")
+      } else if (anyNA(CAPEX) == TRUE){
+        stop("CAPEX data for the tracked fleet includes NAs")
       }
 
       quitteobj <- CAPEX
@@ -374,6 +383,8 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
         stop("Something went wrong in generating non fuel OPEX input data for the tracked fleet. Data does not have the same unit.")
       } else if (length(unique(check$variable)) > 1){
         stop("Something went wrong in generating non fuel OPEX input data for the tracked fleet. Data does not have the same variable type.")
+      } else if (anyNA(nonFuelOPEX) == TRUE){
+        stop("Non fuel OPEX data for the tracked fleet includes NAs")
       }
 
       quitteobj <- NonFuelOPEX
@@ -427,6 +438,8 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
         stop("Something went wrong in generating CAPEX input data for vehicle types that do not feature fleet tracking. Data does not have the same unit.")
       } else if (length(unique(check$variable)) > 1){
         stop("Something went wrong in generating CAPEX input data for vehicle types that do not feature fleet tracking. Data does not have the same variable type.")
+      } else if (anyNA(CAPEX) == TRUE){
+        stop("CAPEX data for vehicle types that do not feature fleet tracking includes NAs")
       }
 
       quitteobj <- CAPEX
@@ -434,7 +447,7 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
     },
     "nonFuelOPEXother" = {
 
-      unit <- "US$2005/veh/yr"
+      unit <- "US$2005/vehkm"
       description <- "Non fuel OPEX on technology level for vehicle types that do not feature fleet tracking (other than cars, trucks, busses). Sources: UCD, PSI"
       weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
 
@@ -444,21 +457,56 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
       nonFuelOPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
       nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!(subsectorL1 == "trn_freight_road" | subsectorL3 == "trn_pass_road_LDV_4W" | subsectorL2 == "Bus")]
 
-      ## Trains
-      ## https://www.unescap.org/sites/default/files/1.%20Part%20A.%20Point%20to%20point%20railway%20traffic%20costing%20model.pdf
-      ## O&M 80% for low traffic lines
-      ## 50% for high traffic lines
-      ## -> 60% O&M -> CAPEX share = 40%
-      CAPEXcombinedUCD[subsectorL1 %in% c("Freight Rail", "Passenger Rail", "HSR"), value := value * (1 - 0.4)]
-      ## Ships
-      ## CCS ships doi:10.1016/j.egypro.2014.11.285
-      ## CAPEX ~ 30%
-      CAPEXcombinedUCD[subsectorL1 %in% c("Domestic Ship", "International Ship"), value := value * (1 - 0.3)]
+      #Inter- and extrapolate all data to model input data years
+      data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD, nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD)
+      data <- lapply(data, approx_dt, years, "period", "value",
+                     c("region",  "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit"), extrapolate = TRUE)
+
+      #Includes aviation and two wheelers (used for all vehicle types other than 4 wheelers)
+      nonFuelOPEXUCD <- data$nonFuelOPEXUCD[!subsectorL3 == "trn_pass_road_LDV_4W"]
+      #Data for two wheelers is given in US$2005/veh and needs to be converted to US$2005/vehkm with the help of annual mileage
+      AMUCD2W <- toolPrepareUCD(readSource("UCD", "annualMileage"), "annualMileage")
+      AMUCD2W <- AMUCD2W[subsectorL3 == "trn_pass_road_LDV_2W"]
+      AMUCD2W <- AMUCD2W[, c("region", "univocalName", "technology", "period", "value")]
+      AMUCD2W <- approx_dt(AMUCD2W, years, "period", "value", c("region", "technology", "univocalName"), extrapolate = TRUE)
+      setnames(AMUCD2W, "value", "annualMileage")
+      nonFuelOPEXUCD <- merge(nonFuelOPEXUCD, AMUCD2W, by = c("region", "univocalName", "technology", "period"), all.x = TRUE)
+      nonFuelOPEXUCD[subsectorL3 == "trn_pass_road_LDV_2W", value := value / annualMileage]
+      nonFuelOPEXUCD[subsectorL3 == "trn_pass_road_LDV_2W", unit := "US$2005/vehkm"][, annualMileage := NULL]
+
+      #CAPEX given combined with non-fuel OPEX in the UCD data for shipping and rail (all other than busses and trucks)
+      nonFuelOPEXcombinedUCD <- data$nonFuelOPEXcombinedUCD
+      nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!(subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus")]
+
+      #Merge data
+      nonFuelOPEXraw <- rbind(nonFuelOPEXUCD, nonFuelOPEXcombinedUCD)
+
+      nonFuelOPEX <- toolAdjustNonFuelOPEXother(nonFuelOPEXraw, ISOcountriesMap, years, completeDataSet)
+
+      #CAPEXtrackedFleet data only includes CAPEX data for LDV 4 Wheelers, Trucks and Busses
+      completeDataSet <- completeDataSet[!(subsectorL1 %in% c("trn_freight_road", "Cycle", "Walk") | subsectorL3 == "trn_pass_road_LDV_4W" | subsectorL2 == "Bus")]
+      #Check whether data is complete
+      check <- merge(completeDataSet, CAPEX, all = TRUE)
+      if (nrow(check[is.na(value)]) > 0) {
+        stop("Non fuel OPEX input data for vehicle types that do not feature fleet tracking is incomplete")
+      } else if (nrow(check[is.na(check)]) > 0) {
+        stop("Non fuel OPEX input data for vehicle types that do not feature fleet tracking includes unnecessary data")
+      } else if (length(unique(check$unit)) > 1){
+        stop("Something went wrong in generating non fuel OPEX input data for vehicle types that do not feature fleet tracking. Data does not have the same unit.")
+      } else if (length(unique(check$variable)) > 1){
+        stop("Something went wrong in generating non fuel OPEX input data for vehicle types that do not feature fleet tracking. Data does not have the same variable type.")
+      } else if (anyNA(nonFuelOPEX) == TRUE){
+        stop("Non fuel OPEX data for vehicle types that do not feature fleet tracking includes NAs")
+      }
+
+      quitteobj <- nonFuelOPEX
+
     },
     "speedOfModes" = {
 
       unit <- "km/h"
-      description <- "Speed of traveling on technology level. Sources: GCAM"
+      description <- "Speed of traveling on vehicle type level (same for all technologies). Changes over time for the motorized modes.
+                         Used to calculate the time value costs for passenger transport modes. Sources: GCAM"
       weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
 
       #read sources
@@ -466,23 +514,72 @@ calcEdgeTransportSAinputs <- function(subtype, adjustments = TRUE) {
       speedNonMotGCAM <- toolPrepareGCAM(readSource("GCAM", "speedNonMotorized"), "speedNonMotorized")
 
       #Inter- and extrapolate all data to model input data years
-      data <- list(SpeedGCAM = SpeedGCAM, SpeedNonMotGCAM = SpeedNonMotGCAM)
-      data <- lapply(data, approx_dt, years, "period", "value",
-                     c("region", "unit", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName"), extrapolate = TRUE)
-
+      allYears <- data.table(period = years)
+      allYears[, all := "All"]
+      speedNonMotGCAM[, all := "All"]
+      speedNonMotGCAM <- merge(speedNonMotGCAM, allYears, by = "all", allow.cartesian = TRUE)[, all := NULL]
+      speedGCAM <- approx_dt(speedGCAM, years, "period", "value",
+                     c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit"), extrapolate = TRUE)
       #Merge data
-      speedOfModesRaw <- rbind(data$SpeedGCAM, data$LSpeedNonMotGCAM)
-      speedOfModes <- toolAdjustSpeedOfModes(SpeedOfModesRaw)
+      speedOfModesRaw <- rbind(speedGCAM, speedNonMotGCAM)
+      speedOfModes <- toolAdjustSpeedOfModes(speedOfModesRaw, ISOcountriesMap, completeDataSet)
 
       #Check whether data is complete
+      #speed of modes is only featured for passenger transport (to calculatetime value costs)
+      completeDataSet <- completeDataSet[sector == "trn_pass"]
       check <- merge(completeDataSet, energyIntensity, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("Speed of modes input data is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
         stop("Unnecessary data is provided for speed of modes")
+      } else if (length(unique(check$unit)) > 1){
+        stop("Something went wrong in generating speed input data. Data does not have the same unit.")
+      } else if (length(unique(check$variable)) > 1){
+        stop("Something went wrong in generating speed input data. Data does not have the same variable type.")
+      } else if (anyNA(speedOfModes) == TRUE){
+        stop("Speed of modes data includes NAs")
       }
       quitteobj <- speedOfModes
-    }
+    },
+   "valueOfTimeMultiplier" = {
+
+     unit <- "-"
+     description <- "Cost associated with travel expressed as a multiplier of the wage rate.
+                        Same for all regions and years. Used to calculate the time value costs for passenger transport modes. Sources: GCAM"
+     weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
+
+     #read sources
+     VOTGCAM <- toolPrepareGCAM(readSource("GCAM", "valueOfTimeMultiplier"), "valueOfTimeMultiplier")
+
+     #Inter- and extrapolate all data to model input data years
+     allYears <- data.table(period = years)
+     allYears[, all := "All"]
+     VOTGCAM[, all := "All"]
+     VOTGCAM <- merge(VOTGCAM, allYears, by = "all", allow.cartesian = TRUE)[, all := NULL]
+     speedGCAM <- approx_dt(speedGCAM, years, "period", "value",
+                            c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit"), extrapolate = TRUE)
+     #Merge data
+     speedOfModesRaw <- rbind(speedGCAM, speedNonMotGCAM)
+     speedOfModes <- toolAdjustSpeedOfModes(speedOfModesRaw, ISOcountriesMap, completeDataSet)
+
+     #Check whether data is complete
+     #speed of modes is only featured for passenger transport (to calculate value of time)
+     completeDataSet <- completeDataSet[sector == "trn_pass"]
+     check <- merge(completeDataSet, energyIntensity, all = TRUE)
+     if (nrow(check[is.na(value)]) > 0) {
+       stop("Speed of modes input data is incomplete")
+     } else if (nrow(check[is.na(check)]) > 0) {
+       stop("Unnecessary data is provided for speed of modes")
+     } else if (length(unique(check$unit)) > 1){
+       stop("Something went wrong in generating speed input data. Data does not have the same unit.")
+     } else if (length(unique(check$variable)) > 1){
+       stop("Something went wrong in generating speed input data. Data does not have the same variable type.")
+     } else if (anyNA(speedOfModes) == TRUE){
+       stop("Speed of modes data includes NAs")
+     }
+     quitteobj <- speedOfModes
+   }
+
 
     )
 

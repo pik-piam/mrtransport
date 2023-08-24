@@ -54,15 +54,17 @@ readGCAM <- function(subtype = c(
       #data includes a lot of duplicates
       dt <- dt[!duplicated(dt, by = c("region", "supplysector", "tranSubsector", "period"))]
       dt[, variable := "Speed"][, unit := "km/h"]
-      dt <- dt[, c("region", "supplysector", "tranSubsector", "variable", "unit", "period", "speed")]
+      setnames(dt, "speed", "value")
+      dt <- dt[, c("region", "supplysector", "tranSubsector", "variable", "unit", "period", "value")]
       x <- as.magpie(as.data.frame(dt), temporal = "period", spatial = "region")
     },
     "speedNonMotorized" = {
       dt <- fread("A54.globaltech_nonmotor.csv", skip = 1, sep = ",", header = TRUE)
       dt[, c("renewable.input", "share.weight", "technology") := NULL]
       dt[, variable := "Speed"][, unit := "km/h"]
-      dt <- dt[, c("supplysector", "tranSubsector", "variable", "unit", "speed")]
-      x <- as.magpie(as.data.frame(dt), temporal = 0, datacol = "speed")
+      setnames(dt, "speed", "value")
+      dt <- dt[, c("supplysector", "tranSubsector", "variable", "unit", "value")]
+      x <- as.magpie(as.data.frame(dt), temporal = 0, spatial = 0)
     },
     "valueOfTimeMultiplier" = {
       dt <- fread("A54.tranSubsector_VOTT.csv", skip = 1)[!grepl("#", supplysector)] %>%
@@ -73,7 +75,7 @@ readGCAM <- function(subtype = c(
       dt[, value := as.numeric(value)]
       dt[, variable := "Value of time multiplier"][, unit := "-"]
       dt <- dt[, c("supplysector", "tranSubsector", "variable", "unit", "value")]
-      x <- as.magpie(as.data.frame(dt), temporal = 0, datacol = "value")
+      x <- as.magpie(as.data.frame(dt), temporal = 0, spatial = 0)
     }
   )
 

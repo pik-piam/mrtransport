@@ -26,7 +26,7 @@ toolPreparePSI <- function(magpieobj, subtype) {
   dt <- dt[, .(value = mean(value)), by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period")]
   setkey(dt, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, variable, unit, period)
 
-  if (nrow(dt[is.na(value)]) > 0) {
+  if (anyNA(dt) == TRUE) {
     stop("PSI data contains NAs")
   }
   return(dt)

@@ -63,7 +63,7 @@ toolPrepareUCD <- function(magpieobj, subtype) {
   dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period", "value")]
   setkey(dt, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, variable, unit, period)
 
-  if (nrow(dt[is.na(value)]) > 0) {
+  if (anyNA(dt) == TRUE) {
     stop("UCD data contains NAs")
   }
   return(dt)
