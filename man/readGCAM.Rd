@@ -2,10 +2,10 @@
 % Please edit documentation in R/readGCAM.R
 \name{readGCAM}
 \alias{readGCAM}
-\title{Read GCAM road transportation data.}
+\title{Read GCAM transportation data.}
 \usage{
 readGCAM(
-  subtype = c("feVkmIntensity", "loadFactor", "histESdemand", "speedMotorized",
+  subtype = c("energyIntensity", "loadFactor", "histESdemand", "speedMotorized",
     "speedNonMotorized", "valueOfTimeMultiplier")
 )
 }
@@ -16,7 +16,12 @@ readGCAM(
 magpie object
 }
 \description{
-Read GCAM road transportation data.
+Read GCAM transportation data.
+}
+\examples{
+\dontrun{
+a <- readSource("GCAM", subtype = "histEDsemand")
+}
 }
 \seealso{
 \code{\link{readSource}}

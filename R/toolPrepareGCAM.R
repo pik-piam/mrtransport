@@ -4,18 +4,17 @@
 #'
 #' @author Johanna Hoppe
 #' @param x the input data read via readSource, a magpie object
-#' @param subtype one of the different EDGE-T inputdata sources
+#' @param subtype one of the different EDGE-T inputdata subtypes
 #' @return a quitte object
 #'
 #' @importFrom rmndt magpie2dt
 #' @importFrom quitte as.quitte
-#' @importFrom data.table setnames fread `:=`
+#' @import data.table
 #' @export
 
 toolPrepareGCAM <- function(x, subtype) {
-  dt <- mapfile <- mappingGCAM <- weight <-
-    esdem <- sector <- value <- . <- period <- convBTUtoMJ <-
-       unit <- NULL
+  region <- period <- sector <- subsectorL1 <- subsectorL2 <- subsectorL3 <-
+    vehicleType <- technology <- univocalName <- variable <- unit <- esdem <- value <- . <- NULL
 
   dt <- magpie2dt(x)
   mapfile <- system.file("extdata", "mappingGCAMtoEDGET.csv", package = "mredgetransport", mustWork = TRUE)
@@ -31,21 +30,26 @@ toolPrepareGCAM <- function(x, subtype) {
       setnames(dt, c("tranSubsector", "stub_technology"), c("subsector", "technology"))
       dt <- weight[dt, on = c("region", "period", "subsector", "technology")]
       # some technologies have zero or no demand for certain countries
-      #-> set to 1 so that they are equally considered
+      # -> set to 1 so that they are equally considered
       dt[is.na(esdem) | esdem == 0, esdem := 1]
 
-      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology")]
-      #GCAM data partly contains aggregated values for different levels of the decision tree -> take only the lowest level
+      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector",
+                                   GCAMtechnology = "technology")]
+      # GCAM data partly contains aggregated values for different levels of the decision tree
+      # -> take only the lowest level
       dt <- dt[!is.na(sector)]
 
-      dt <- dt[, .(value = sum(value * esdem) / sum(esdem)), by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
+      dt <- dt[, .(value = sum(value * esdem) / sum(esdem)),
+               by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
                                                                     "univocalName", "variable", "unit", "period")]
 
-      #unit conversion from Mbtu/vehkm to MJ/vehkm
+      # unit conversion from Mbtu/vehkm to MJ/vehkm
       convBTUtoMJ <- 1.055e-3
       dt[, value := value * convBTUtoMJ][, unit := "MJ/vehkm"]
-      dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period", "value")]
-      setkey(dt, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, variable, unit, period)
+      dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
+                   "univocalName", "variable", "unit", "period", "value")]
+      setkey(dt, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName,
+             variable, unit, period)
       },
     "loadFactor" = {
       weight <- readSource("GCAM", subtype = "histESdemand")
@@ -55,38 +59,47 @@ toolPrepareGCAM <- function(x, subtype) {
       setnames(dt, c("tranSubsector", "stub_technology"), c("subsector", "technology"))
       dt <- weight[dt, on = c("region", "period", "subsector", "technology")]
       # some technologies have zero or no demand for certain countries
-      #-> set to 1 so that they are equally considered
+      # -> set to 1 so that they are equally considered
       dt[is.na(esdem) | esdem == 0, esdem := 1]
 
       dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology")]
-      #GCAM data partly contains aggregated values for different levels of the decision tree -> take only the lowest level
+      # GCAM data partly contains aggregated values for different levels of the decision tree
+      # -> take only the lowest level
       dt <- dt[!is.na(sector)]
 
-      dt <- dt[, .(value = sum(value * esdem) / sum(esdem)), by = c("region", "sector", "subsectorL1",
-                                                                    "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period")]
+      dt <- dt[, .(value = sum(value * esdem) / sum(esdem)),
+               by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
+                      "technology", "univocalName", "variable", "unit", "period")]
       dt[sector %in% c("trn_pass", "trn_aviation_intl"), unit := "p/veh"]
       dt[sector %in% c("trn_freight", "trn_shipping_intl"), unit := "t/veh"]
-      dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period", "value")]
-      setkey(dt, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, variable, unit, period)
+      dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
+                   "univocalName", "variable", "unit", "period", "value")]
+      setkey(dt, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName,
+             variable, unit, period)
     },
     "histESdemand" = {
-      #use only historical demand
+      # use only historical demand
       dt <- dt[period %in% c(1990, 2005, 2010)]
-      #map
+      # map
       dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology")]
-      #GCAM data partly contains aggregated values for different levels of the decision tree -> take only the lowest level
+      # GCAM data partly contains aggregated values for different levels of the decision tree
+      # -> take only the lowest level
       dt <- dt[!is.na(sector)]
-      #aggregate
-      dt <- dt[, .(value = sum(value)), by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
-                                               "univocalName", "variable", "unit", "period")]
-      dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period", "value")]
-      setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName, variable, unit, period)
+      # aggregate
+      dt <- dt[, .(value = sum(value)),
+               by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3",
+                    "vehicleType", "technology", "univocalName", "variable", "unit", "period")]
+      dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
+                   "univocalName", "variable", "unit", "period", "value")]
+      setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName,
+             variable, unit, period)
       },
     "speedMotorized" = {
-      #weights are needed for GCAM vehicle types that are mapped on the same EDGE-T vehicle type
+      # weights are needed for GCAM vehicle types that are mapped on the same EDGE-T vehicle type
       weight <- readSource("GCAM", subtype = "histESdemand")
       weight <- magpie2dt(weight)
-      #Speed is not differentiated between different technologies -> aggregate weights (ES demand) to VehicleType level
+      # Speed is not differentiated between different technologies -> aggregate weights (ES demand)
+      # to VehicleType level
       weight <- weight[, .(value = sum(value)),
                by = c("region", "period", "sector", "subsector")]
       setnames(weight, "value", "esdem")
@@ -101,9 +114,12 @@ toolPrepareGCAM <- function(x, subtype) {
       dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector"), allow.cartesian = TRUE]
       dt <- dt[sector == "trn_pass"]
       dt <- dt[, .(value = sum(value * esdem) / sum(esdem)),
-               by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName", "variable", "unit", "period")]
-      dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName", "variable", "unit", "period", "value")]
-      setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, univocalName, variable, unit, period)
+               by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName",
+                      "variable", "unit", "period")]
+      dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName",
+                   "variable", "unit", "period", "value")]
+      setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, univocalName, variable,
+             unit, period)
       },
     "speedNonMotorized" = {
       setnames(dt, c("supplysector", "tranSubsector"), c("sector", "subsector"))
@@ -120,7 +136,8 @@ toolPrepareGCAM <- function(x, subtype) {
       #weights are needed for GCAM vehicle types that are mapped on the same EDGE-T vehicle type
       weight <- readSource("GCAM", subtype = "histESdemand")
       weight <- magpie2dt(weight)
-      #Speed is not differentiated between different technologies -> aggregate weights (ES demand) to VehicleType level
+      #Speed is not differentiated between different technologies -> aggregate weights (ES demand)
+      # to VehicleType level
       weight <- weight[, .(value = sum(value)),
                        by = c("region", "period", "sector", "subsector")]
       setnames(weight, "value", "esdem")
@@ -139,8 +156,10 @@ toolPrepareGCAM <- function(x, subtype) {
       dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector"), allow.cartesian = TRUE]
       dt <- dt[sector == "trn_pass"]
       dt <- dt[, .(value = sum(value * esdem) / sum(esdem)),
-               by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName", "variable", "unit")]
-      dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName", "variable", "unit", "value")]
+               by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
+                      "univocalName", "variable", "unit")]
+      dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName",
+                   "variable", "unit", "value")]
       setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, univocalName, variable, unit)
     }
   )

@@ -26,5 +26,5 @@ a <- readSource("GCAM", subtype="histESdemand")
 \code{\link{readSource}}
 }
 \author{
-Alois Dirnaichner
+Johanna Hoppe, Alois Dirnaichner
 }

@@ -2,7 +2,7 @@
 #'
 #'
 #' @param subtype One of the possible subtypes, see default argument.
-#' @dturn magclass object
+#' @return magclass object
 #'
 #' @examples
 #' \dontrun{
@@ -10,14 +10,14 @@
 #' }
 #' @author Johanna Hoppe, Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
-#' @importFrom data.table fread
+#' @import data.table
 #' @importFrom magclass as.magpie
 #' @export
 
 readUCD <- function(subtype = c(
                       "energyIntensity", "feDemand", "loadFactor", "annualMileage",
                       "nonMotorizedDemand", "speed", "costs")) {
-  UCD <- dt <- NULL
+  variable <- unit <- UCD_sector <- NULL
 
   UCD <- fread("UCD_transportation_database.csv", header = TRUE)
   switch(
@@ -55,18 +55,22 @@ readUCD <- function(subtype = c(
     },
     "CAPEX" = {
       #Either CAPEX are reported in detail or as totals (never in detail + totals)
-      dt <- UCD[variable %in% c("CAPEX", "Capital costs (infrastructure)", "Capital costs (other)", "Capital costs (purchase)", "Capital costs (total)")]
+      dt <- UCD[variable %in% c("CAPEX", "Capital costs (infrastructure)", "Capital costs (other)",
+                                "Capital costs (purchase)", "Capital costs (total)")]
       dt[unit == "2005$/vkt", unit := "US$2005/vehkm"]
       dt[unit == "2005$/veh", unit := "US$2005/veh"]
     },
     "nonFuelOPEX" = {
       #Either non fuel OPEX are reported in detail or as totals (never in detail + totals)
-      dt <- UCD[variable %in% c("Non-fuel OPEX", "Operating costs (maintenance)", "Operating costs (registration and insurance)", "Operating costs (tolls)", "Operating costs (total non-fuel)")]
-      dt[, unit := "US$2005/veh/yr"]
+      dt <- UCD[variable %in% c("non-fuel OPEX", "Operating costs (maintenance)",
+                                "Operating costs (registration and insurance)",
+                                "Operating costs (tolls)", "Operating costs (total non-fuel)")]
+      dt[unit == "2005$/vkt", unit := "US$2005/vehkm"]
+      dt[unit == "2005$/veh/yr", unit := "US$2005/veh/yr"]
     },
     "CAPEXandNonFuelOPEX" = {
       dt <- UCD[variable == "CAPEX and non-fuel OPEX"]
-      dt[, unit := "US$2005/vehkm"]
+      dt[unit == "2005$/vkt", unit := "US$2005/vehkm"]
     },
     "OperatingSubsidies" = {
       dt <- UCD[variable == "Operating subsidy"]
@@ -74,7 +78,8 @@ readUCD <- function(subtype = c(
     }
   )
 
-  dt <- data.table::melt(dt, id.vars = c("UCD_region", "UCD_sector", "mode", "size.class", "UCD_technology", "UCD_fuel", "variable", "unit"), variable.name = "period")
+  dt <- data.table::melt(dt, id.vars = c("UCD_region", "UCD_sector", "mode", "size.class", "UCD_technology",
+                                         "UCD_fuel", "variable", "unit"), variable.name = "period")
   setnames(dt, "size.class", "size_class")
   return(as.magpie(dt, spatial = "UCD_region", temporal = "period"))
 

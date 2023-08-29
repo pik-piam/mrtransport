@@ -2,7 +2,7 @@
 % Please edit documentation in R/convertGCAM.R
 \name{convertGCAM}
 \alias{convertGCAM}
-\title{Convert GCAM road transportation data to iso country.}
+\title{Convert GCAM transportation data to iso country level.}
 \usage{
 convertGCAM(x, subtype)
 }
@@ -15,7 +15,7 @@ convertGCAM(x, subtype)
 magpie object
 }
 \description{
-Convert GCAM road transportation data to iso country.
+Convert GCAM transportation data to iso country level.
 }
 \examples{
 \dontrun{

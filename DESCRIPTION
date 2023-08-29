@@ -1,23 +1,30 @@
 Package: mredgetransport
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.1.9003
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: MIT + file LICENSE
+Title: Input data generation for the EDGE-Transport model
+Version: 0.0.1.9004
+Authors@R: c(
+    person("Johanna", "Hoppe", , "johanna.hoppe@pik-potsdam.de", role = c("aut", "cre"),
+           comment = c(ORCID = "0009-0004-6753-5090")),
+    person("Alois", "Dirnaichner", role = "aut"))
+Description: The mrtransport package contains data preprocessing for the
+    EDGE-Transport model.
+License: LGPL-3 | file LICENSE
+URL: https://github.com/pik-piam/mrtransport
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Suggests: 
     covr
 Imports:
     magclass,
     madrat,
     rmndt,
+    stringr,
+    mrremind,
+    readxl,
     zoo,
     magrittr,
     quitte
 Depends: 
-    data.table
-Date: 2023-01-06
+    R (>= 3.1),
+    data.table (>= 1.11.0)
+Date: 2023-08-29

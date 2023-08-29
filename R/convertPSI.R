@@ -10,14 +10,14 @@
 #' }
 #' @author Johanna Hoppe
 #' @seealso \code{\link{readSource}}
+#' @import data.table
 #' @importFrom madrat toolAggregate
-#' @importFrom magclass getItems
+#' @importFrom magclass getItems getItems<-
 #' @importFrom rmndt magpie2dt
-#' @importFrom data.table fread setnames
 #' @export
 
 convertPSI <- function(x, subtype) {
-  PSI2isoMapFile <- PSI2iso <- EUR2017toUSD2017 <- USD2017toUSD2005 <- kJPerVehkmtoMJperVehkm <- NULL
+  region <- NULL
 
   #PSI data is mapped on iso countries - Note that we do not have regionally differentiated data
   PSI2isoMapFile <- system.file("extdata", "regionmapping21.csv",
@@ -35,13 +35,13 @@ convertPSI <- function(x, subtype) {
       EUR2017toUSD2017 <- 1.14
       USD2017toUSD2005 <- 0.78
       x <- x * EUR2017toUSD2017 * USD2017toUSD2005
-      getItems(x, dim = "unit") <- "US$2005/veh"
+      getItems(x, dim = "unit") <- "US$2005/veh"       # nolint: object_usage_linter
     },
     "energyIntensity" = {
       #PSI energy intensity needs to be transformed to MJ/vehkm
       kJPerVehkmtoMJperVehkm <- 1e-3
       x <- x * kJPerVehkmtoMJperVehkm
-      getItems(x, dim = "unit") <- "MJ/vehkm"
+      getItems(x, dim = "unit") <- "MJ/vehkm"          # nolint: object_usage_linter
     }
   )
   return(x)

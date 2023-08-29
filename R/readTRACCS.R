@@ -10,15 +10,16 @@
 #' }
 #' @author Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
-#' @importFrom readxl read_xlsx
-#' @importFrom data.table as.data.table
+#' @import data.table
+#' @importFrom readxl read_excel
 #' @importFrom magclass setComment
 #' @importFrom stringr str_extract
 #' @export
 
-readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "energyIntensity", "loadFactor", "annualMileage",
-                                   "roadESdemand", "histESdemand", "railFeDemand", "vehPopulation")) {
-  `.` <- countries <- data <- conv <- output <- NULL
+readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "energyIntensity", "loadFactor",
+                                   "annualMileage", "roadESdemand", "histESdemand", "railFeDemand", "vehPopulation")) {
+  cf <- country_name <- . <- TRACCS_technology <- TRACCS_category <- TRACCS_vehicle_type <- period <- value <-
+    variable <- unit <- NULL
 
   countries <- list.files(
     path = file.path("./TRACCS_ROAD_Final_EXCEL_2013-12-20"),
@@ -31,11 +32,11 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
       data <- rbindlist(lapply(
         countries,
         function(x) {
-          conv <- suppressMessages(data.table(read_excel(
+          conv <- suppressMessages(data.table(read_excel(      # nolint: object_usage_linter
             path = file.path(
               "TRACCS_ROAD_Final_EXCEL_2013-12-20",
               paste0("Road Data ", x, "_Output.xlsx")),
-            sheet = "INFO","A32:B38")))
+            sheet = "INFO", "A32:B38")))
           colnames(conv) <- c("TRACCS_technology", "cf")
           conv[, cf := as.numeric(str_extract(cf, "\\d+\\.\\d+"))]
           conv[, country_name := x]
@@ -49,11 +50,11 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
       data <- rbindlist(lapply(
         countries,
         function(x) {
-          output <- suppressMessages(data.table(read_excel(
+          output <- suppressMessages(data.table(read_excel(         # nolint: object_usage_linter
             path = file.path(
               "TRACCS_ROAD_Final_EXCEL_2013-12-20",
               paste0("Road Data ", x, "_Output.xlsx")),
-            sheet = "FCcalc","A2:I75")))
+            sheet = "FCcalc", "A2:I75")))
           colnames(output) <- c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology",
                                 2005:2010)
           output <- output[!TRACCS_technology %in% c("All", "Total")]
@@ -71,11 +72,11 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
       data <- rbindlist(lapply(
         countries,
         function(x) {
-          output <- suppressMessages(data.table(read_excel(
+          output <- suppressMessages(data.table(read_excel(   # nolint: object_usage_linter
             path = file.path(
               "TRACCS_ROAD_Final_EXCEL_2013-12-20",
               paste0("Road Data ", x, "_Output.xlsx")),
-            sheet="FC_EFs","A2:TB73")))
+            sheet = "FC_EFs", "A2:TB73")))
           output <- output[, c(1, 2, 3, 372, 402, 432, 462, 492, 522)]
           colnames(output) <- c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology",
                                 2005:2010)
@@ -95,16 +96,16 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
         rbindlist(lapply(
           countries,
           function(x) {
-            output <- suppressMessages(data.table(read_excel(
+            output <- suppressMessages(data.table(read_excel(   # nolint: object_usage_linter
               path = file.path(
                 "TRACCS_ROAD_Final_EXCEL_2013-12-20",
                 paste0("Road Data ", x, "_Output.xlsx")),
-              sheet = "Occupancy ratio","A2:I51")))
+              sheet = "Occupancy ratio", "A2:I51")))
             colnames(output) <- c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology",
                                   2005:2010)
             output <- output[!TRACCS_technology %in% c("All", "Total")]
-            output <- data.table::melt(output, id.vars = c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology"),
-                                       variable.name = "period")
+            output <- data.table::melt(output, id.vars = c("TRACCS_category", "TRACCS_vehicle_type",
+                                       "TRACCS_technology"), variable.name = "period")
             output$country_name <- x
             output$unit <- "p/veh"
             output$variable <- "Load factor"
@@ -113,7 +114,7 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
         rbindlist(lapply(
           countries,
           function(x) {
-            output <- suppressMessages(data.table(read_excel(
+            output <- suppressMessages(data.table(read_excel(   # nolint: object_usage_linter
               path = file.path(
                 "TRACCS_ROAD_Final_EXCEL_2013-12-20",
                 paste0("Road Data ", x, "_Output.xlsx")),
@@ -139,11 +140,11 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
       data <- rbindlist(lapply(
         countries,
         function(x) {
-          output <- suppressMessages(data.table(read_excel(
+          output <- suppressMessages(data.table(read_excel(  # nolint: object_usage_linter
             path = file.path(
               "TRACCS_ROAD_Final_EXCEL_2013-12-20",
               paste0("Road Data ", x, "_Output.xlsx")),
-            sheet = "Mileage per Veh. (Km)","A2:I74")))
+            sheet = "Mileage per Veh. (Km)", "A2:I74")))
           colnames(output) <- c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology",
                                 2005:2010)
           output <- output[!TRACCS_technology %in% c("All", "Total")]
@@ -162,15 +163,15 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
       data <- rbindlist(lapply(
         countries,
         function(x) {
-          output = suppressMessages(data.table(
-            read_excel(
+          output <- suppressMessages(data.table(
+            read_excel(                                        # nolint: object_usage_linter
               path = file.path(
                 "TRACCS_ROAD_Final_EXCEL_2013-12-20",
                 paste0("Road Data ", x, "_Output.xlsx")),
-              sheet="Veh-Km","A2:I73")))
+              sheet = "Veh-Km", "A2:I73")))
           setnames(output, c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology",
-                             as.character(seq(2005,2010,1))))
-          output=output[!TRACCS_technology %in% c("Total", "All")]
+                             as.character(seq(2005, 2010, 1))))
+          output <- output[!TRACCS_technology %in% c("Total", "All")]
           output <- data.table::melt(output, id.vars = c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology"),
                                      variable.name = "period")
           output$country_name <- x
@@ -185,15 +186,15 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
       data <- rbind(rbindlist(lapply(
         countries,
         function(x) {
-          output = suppressMessages(data.table(
-            read_excel(
+          output <- suppressMessages(data.table(
+            read_excel(                                             # nolint: object_usage_linter
               path = file.path(
                 "TRACCS_ROAD_Final_EXCEL_2013-12-20",
                 paste0("Road Data ", x, "_Output.xlsx")),
               sheet = "Tonne-Km", "A2:I18")))
           setnames(output, c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology",
-                             as.character(seq(2005,2010,1))))
-          output = output[!TRACCS_technology %in% c("Total", "All")]
+                             as.character(seq(2005, 2010, 1))))
+          output <- output[!TRACCS_technology %in% c("Total", "All")]
           output <- data.table::melt(output, id.vars = c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology"),
                                      variable.name = "period")
           output[, country_name := x]
@@ -203,17 +204,17 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
         rbindlist(lapply(
           countries,
           function(x) {
-            output = suppressMessages(data.table(
-              read_excel(
+            output <- suppressMessages(data.table(
+              read_excel(                           # nolint: object_usage_linter
                 path = file.path(
                   "TRACCS_ROAD_Final_EXCEL_2013-12-20",
                   paste0("Road Data ", x, "_Output.xlsx")),
                 sheet = "Pass-Km", "A2:I51")))
             setnames(output, c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology",
-                               as.character(seq(2005,2010,1))))
-            output = output[!TRACCS_technology %in% c("Total", "All")]
-            output <- data.table::melt(output, id.vars = c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology"),
-                                       variable.name = "period")
+                               as.character(seq(2005, 2010, 1))))
+            output <- output[!TRACCS_technology %in% c("Total", "All")]
+            output <- data.table::melt(output, id.vars = c("TRACCS_category", "TRACCS_vehicle_type",
+                                       "TRACCS_technology"), variable.name = "period")
             output[, country_name := x]
             output[, unit := "million pkm/yr"]
             return(output)
@@ -224,7 +225,7 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
         as.magpie(spatial = "country_name", temporal = "period"))
     },
     "railFeDemand" = {
-      data <- suppressMessages(data.table(read_excel(
+      data <- suppressMessages(data.table(read_excel(     # nolint: object_usage_linter
         path = "TRACCS_RAIL_Final_EXCEL_2013-12-20/TRACCS_Rail_Final_Eval.xlsx",
         sheet = "eval_rail_energy", "A6:L124")))
       data <- data.table::melt(
@@ -232,21 +233,23 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
         id.vars = c("RailTraction", "Unit_short", "CountryID", "Country",
                     "Countrytype_short", "RailTrafficType"),
         variable.name = "period")
-      setnames(data, c("RailTraction", "RailTrafficType", "Country"), c("TRACCS_technology", "TRACCS_vehicle_type", "country_name"))
+      setnames(data, c("RailTraction", "RailTrafficType", "Country"),
+               c("TRACCS_technology", "TRACCS_vehicle_type", "country_name"))
       data[, TRACCS_category := "Rail"]
       return(data[!is.na(value)][
-        , .(country_name, TRACCS_category, TRACCS_vehicle_type, TRACCS_technology, variable = "Final energy demand", unit = "Mio kWh or t", period, value)] %>%
+        , .(country_name, TRACCS_category, TRACCS_vehicle_type, TRACCS_technology,
+        variable = "Final energy demand", unit = "Mio kWh or t", period, value)] %>%
         as.magpie(spatial = "country_name", temporal = "period"))
     },
     "fleetData" = {
       data <- rbindlist(lapply(
         countries,
         function(x) {
-          output <- suppressMessages(data.table(read_excel(
+          output <- suppressMessages(data.table(read_excel(      # nolint: object_usage_linter
             path = file.path(
               "TRACCS_ROAD_Final_EXCEL_2013-12-20",
               paste0("Road Data ", x, "_Output.xlsx")),
-            sheet = "Population (Veh.)","A2:I75")))
+            sheet = "Population (Veh.)", "A2:I75")))
           colnames(output) <- c("TRACCS_category", "TRACCS_vehicle_type", "TRACCS_technology",
                                 2005:2010)
           output <- output[!TRACCS_technology %in% c("All", "Total")]

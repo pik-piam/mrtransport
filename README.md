@@ -1,12 +1,13 @@
-# What the Package Does (One Line, Title Case)
+# Input data generation for the EDGE-Transport model
 
-R package **mredgetransport**, version **0.0.1.9003**
+R package **mredgetransport**, version **0.0.1.9004**
 
-[![CRAN status](https://www.r-pkg.org/badges/version/mredgetransport)](https://cran.r-project.org/package=mredgetransport)  [![R build status](https://github.com/johannah-pik/mredgetransport/workflows/check/badge.svg)](https://github.com/johannah-pik/mredgetransport/actions) [![codecov](https://codecov.io/gh/johannah-pik/mredgetransport/branch/master/graph/badge.svg)](https://app.codecov.io/gh/johannah-pik/mredgetransport) 
+[![CRAN status](https://www.r-pkg.org/badges/version/mredgetransport)](https://cran.r-project.org/package=mredgetransport)  [![R build status](https://github.com/pik-piam/mrtransport/workflows/check/badge.svg)](https://github.com/pik-piam/mrtransport/actions) [![codecov](https://codecov.io/gh/pik-piam/mrtransport/branch/master/graph/badge.svg)](https://app.codecov.io/gh/pik-piam/mrtransport) 
 
 ## Purpose and Functionality
 
-What the package does (one paragraph).
+The mrtransport package contains data preprocessing for the
+    EDGE-Transport model.
 
 
 ## Installation
@@ -32,21 +33,22 @@ update.packages()
 
 ## Questions / Problems
 
-In case of questions / problems please contact First Last <first.last@example.com>.
+In case of questions / problems please contact Johanna Hoppe <johanna.hoppe@pik-potsdam.de>.
 
 ## Citation
 
 To cite package **mredgetransport** in publications use:
 
-Last F (2023). _mredgetransport: What the Package Does (One Line, Title Case)_. R package version 0.0.1.9003.
+Hoppe J, Dirnaichner A (2023). _mredgetransport: Input data generation for the EDGE-Transport model_. R package version 0.0.1.9004, <https://github.com/pik-piam/mrtransport>.
 
 A BibTeX entry for LaTeX users is
 
  ```latex
 @Manual{,
-  title = {mredgetransport: What the Package Does (One Line, Title Case)},
-  author = {First Last},
+  title = {mredgetransport: Input data generation for the EDGE-Transport model},
+  author = {Johanna Hoppe and Alois Dirnaichner},
   year = {2023},
-  note = {R package version 0.0.1.9003},
+  note = {R package version 0.0.1.9004},
+  url = {https://github.com/pik-piam/mrtransport},
 }
 ```

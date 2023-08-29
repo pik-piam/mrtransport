@@ -10,19 +10,19 @@
 #' }
 #' @author Johanna Hoppe, Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
+#' @import data.table
 #' @importFrom madrat toolAggregate getISOlist calcOutput readSource
-#' @importFrom magclass getYears getItems getSets
+#' @importFrom magclass getYears getItems getSets getItems<- getSets<-
 #' @importFrom rmndt magpie2dt
-#' @importFrom data.table `:=` fread
 #' @export
 
 convertGCAM <- function(x, subtype) {
-  GCAM2iso <- gdp <- IsoCountries <- country <- NULL
+  region <- NULL
 
   GCAM2iso <- fread(system.file("extdata", "isoGCAM.csv", package = "mredgetransport"))
   gdp <- calcOutput("GDP", aggregate = FALSE)
   gdp <- gdp[, getYears(x),  "gdp_SSP2"]
-  getItems(x, dim = 1) <- gsub("_", " ", getItems(x, dim = 1), fixed = TRUE)
+  getItems(x, dim = 1) <- gsub("_", " ", getItems(x, dim = 1), fixed = TRUE) # nolint: object_usage_linter
 
   if (subtype == "histESdemand") {
     #extensive variables need a weight for disaggregation
@@ -30,7 +30,7 @@ convertGCAM <- function(x, subtype) {
     #convert unit from million (t|p)km to billion (t|p)km
     millionToBillion <- 0.001
     x <- x * millionToBillion
-    getItems(x, dim = "unit") <- c("billion pkm/yr", "billion tkm/yr")
+    getItems(x, dim = "unit") <- c("billion pkm/yr", "billion tkm/yr")       # nolint: object_usage_linter
   } else if (subtype %in% c("energyIntensity", "loadFactor", "speedMotorized", "PPPtoMERfactor")) {
     #intensive variables do not need a weight for disaggregation
     x <- toolAggregate(x, rel = GCAM2iso)
@@ -40,7 +40,7 @@ convertGCAM <- function(x, subtype) {
     IsoCountries[, region := "iso"]
     dt <- magpie2dt(x)
     dt[, region := "iso"]
-    dt <- merge(dt, IsoCountries, allow.cartesian = TRUE)
+    dt <- merge.data.table(dt, IsoCountries, allow.cartesian = TRUE)
     dt[, region := NULL]
     setnames(dt, c("V1"), c("region"))
     dt <- dt[, c("region", "tranSubsector", "supplysector", "variable", "unit", "value")]
@@ -51,7 +51,7 @@ convertGCAM <- function(x, subtype) {
     IsoCountries[, region := "iso"]
     dt <- magpie2dt(x)
     dt[, region := "iso"]
-    dt <- merge(dt, IsoCountries, allow.cartesian = TRUE)
+    dt <- merge.data.table(dt, IsoCountries, allow.cartesian = TRUE)
     dt[, region := NULL]
     setnames(dt, "V1", "region")
     dt <- dt[, c("region", "tranSubsector", "supplysector", "variable", "unit", "value")]

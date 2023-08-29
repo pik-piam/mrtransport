@@ -9,14 +9,14 @@ toolPrepareGCAM(x, subtype)
 \arguments{
 \item{x}{the input data read via readSource, a magpie object}
 
-\item{subtype}{one of the different EDGE-T inputdata sources}
+\item{subtype}{one of the different EDGE-T inputdata subtypes}
 }
 \value{
 a quitte object
 }
 \description{
-Map the source categories to the EDGE-T categories. Apply the full logit structure.
+Map the source categories to the EDGE-T categories. Apply the full structure of the decision tree.
 }
 \author{
-Johanna Hoppe, Alois Dirnaichner
+Johanna Hoppe
 }

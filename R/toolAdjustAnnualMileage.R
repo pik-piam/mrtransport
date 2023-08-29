@@ -3,14 +3,15 @@
 #'
 #' @author Johanna Hoppe
 #' @param dt calculated raw data without adjustments
-#' @param sourcetype one of the different EDGE-T inputdata sources
-#' @param ariadneAdjustments optional parameter adjustements according to ARIADNE model intercomparison in 2022
+#' @param completeData complete EDGE-T decision tree
+#' @param ariadneAdjustments switch on and off adjustments according to ARIADNE model intercomparison in 2022
 #' @return a quitte object
 
 toolAdjustAnnualMileage <- function(dt, completeData, ariadneAdjustments = TRUE) {
+ region <- subsectorL3 <- value <- univocalName <- check <- unit <- variable <- annualMileage <- NULL
 
 #1: Adjustments made by Alois in consequence of the ARIADNE model intercomparison in 2022
-  if(ariadneAdjustments){
+  if (ariadneAdjustments) {
     ## according to ViZ data from 2020 there has been a 10% reduction wrt 2010 values
     ## (from 14 kkm to 13.6 kkm per vehicle and year)
     dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W", value := value * 0.9]
@@ -18,20 +19,23 @@ toolAdjustAnnualMileage <- function(dt, completeData, ariadneAdjustments = TRUE)
 
 #2: Assume missing data
 #a) Some modes and technologies are missing an annual mileage
-  #TRACCS sets annual mileage for not available technologies in certain countries (e.g. NG or BEVs in early years) to zero.
-  #This is not helpful for us. We therefore assign a "hypothetical" annual mileage that can be used for fleet calculation once the technologies
-  #get into the mix in later years
+  # TRACCS sets annual mileage for not available technologies in certain countries
+  # (e.g. NG or BEVs in early years) to zero.
+  # This is not helpful for us. We therefore assign a "hypothetical" annual mileage that
+  # can be used for fleet calculation once the technologies get into the mix in later years
   dt[value == 0, value := NA]
-  #Non-motorized modes do not get an annual mileage (no fleet tracking possible for walking/not planned for non-motorized cycling)
+  # Non-motorized modes do not get an annual mileage (no fleet tracking possible for walking/
+  # not planned for non-motorized cycling)
   completeData <- completeData[!univocalName %in% c("Cycle", "Walk")]
-  dt <- merge(completeData, dt, all = TRUE)
-  #For some regions an annual mileage is provided for certain vehicle types, but no demand. These values need to be deleted
+  dt <- merge.data.table(completeData, dt, all = TRUE)
+  # For some regions an annual mileage is provided for certain vehicle types, but no demand.
+  # These values need to be deleted
   dt <- dt[!is.na(check)]
-  #update variable and unit for introduced NAs
+  # update variable and unit for introduced NAs
   dt[, unit := "vehkm/veh/yr"][, variable := "Annual mileage"][, check := NULL]
-  #Average first within regions over technologies -> e.g. BEV gets the same value as other technologies
+  # Average first within regions over technologies -> e.g. BEV gets the same value as other technologies
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("region", "period", "vehicleType")]
-  #If there are still NAs, average over regions -> e.g. ICE in FRA gets the same value as ICE in DEU
+  # If there are still NAs, average over regions -> e.g. ICE in FRA gets the same value as ICE in DEU
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("period", "vehicleType", "technology")]
 
 
@@ -43,7 +47,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, ariadneAdjustments = TRUE)
               Truck (18t), 53000
               Truck (26t), 74000
               Truck (40t), 136500")
-  dt <- merge(dt, annualMileageTrucks, by = "univocalName", all.x = TRUE, allow.cartesian = TRUE)
+  dt <- merge.data.table(dt, annualMileageTrucks, by = "univocalName", all.x = TRUE, allow.cartesian = TRUE)
   dt[, value := ifelse(!is.na(annualMileage), annualMileage, value)][, annualMileage := NULL]
 
 #c) We do not have vintage tracking for the rest of the modes -> insert zeros
@@ -57,7 +61,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, ariadneAdjustments = TRUE)
               Domestic Ship, 0
               International Ship, 0
               Freight Rail, 0")
-  dt <- merge(dt, missingAnnualMileageData, by = "univocalName", all.x = TRUE, allow.cartesian = TRUE)
+  dt <- merge.data.table(dt, missingAnnualMileageData, by = "univocalName", all.x = TRUE, allow.cartesian = TRUE)
   dt[, value := ifelse(!is.na(annualMileage), annualMileage, value)][, annualMileage := NULL]
 
 return(dt)

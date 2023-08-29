@@ -4,11 +4,23 @@
 \name{mredgetransport-package}
 \alias{mredgetransport}
 \alias{mredgetransport-package}
-\title{mredgetransport: What the Package Does (One Line, Title Case)}
+\title{mredgetransport: Input data generation for the EDGE-Transport model}
 \description{
-What the package does (one paragraph).
+The mrtransport package contains data preprocessing for the EDGE-Transport model.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/pik-piam/mrtransport}
+}
+
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Johanna Hoppe \email{johanna.hoppe@pik-potsdam.de} (\href{https://orcid.org/0009-0004-6753-5090}{ORCID})
+
+Authors:
+\itemize{
+  \item Alois Dirnaichner
+}
 
 }

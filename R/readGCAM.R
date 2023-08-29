@@ -10,7 +10,7 @@
 #' }
 #' @author Johnna Hoppe, Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
-#' @importFrom data.table melt fread setnames `:=`
+#' @import data.table
 #' @importFrom magclass as.magpie
 #' @importFrom magrittr `%>%`
 #' @export
@@ -18,17 +18,17 @@
 readGCAM <- function(subtype = c(
   "energyIntensity",  "loadFactor", "histESdemand", "speedMotorized",
   "speedNonMotorized", "valueOfTimeMultiplier")) {
-  market.name <- dt <- x <- value <- speed_source <- . <- supplysector <- share_weight <-
-    scenario <- NULL
 
-  switch(
-    subtype,
+  market.name <- variable <- unit <- scenario <- . <- supplysector <- value <- NULL
+
+  switch(subtype,
     "energyIntensity" = {
       dt <- fread("L254.StubTranTechCoef.csv", skip = 4)[, market.name := NULL]
       setnames(dt, "year", "period")
       setnames(dt, gsub(".", "_", colnames(dt), fixed = TRUE))
       dt[, variable := "Energy intensity"][, unit := "MJ/vehkm"]
-      dt <- dt[, c("region", "supplysector", "tranSubsector", "stub_technology", "minicam_energy_input", "variable", "unit", "period", "coefficient")]
+      dt <- dt[, c("region", "supplysector", "tranSubsector", "stub_technology", "minicam_energy_input",
+                   "variable", "unit", "period", "coefficient")]
       x <- as.magpie(as.data.frame(dt), temporal = "period", spatial = "region")
     },
     "loadFactor" = {
@@ -36,12 +36,13 @@ readGCAM <- function(subtype = c(
       setnames(dt, "year", "period")
       setnames(dt, gsub(".", "_", colnames(dt), fixed = TRUE))
       dt[, variable := "Load factor"][, unit := "(t|p)/veh"]
-      dt <- dt[, c("region", "supplysector", "tranSubsector", "stub_technology", "variable", "unit", "period", "loadFactor")]
+      dt <- dt[, c("region", "supplysector", "tranSubsector", "stub_technology", "variable", "unit",
+                   "period", "loadFactor")]
       x <- as.magpie(as.data.frame(dt), temporal = "period", spatial = "region")
     },
     "histESdemand" = {
       dt <- fread("tech_output.csv", skip = 1, sep = ";", header = TRUE) %>%
-      melt(measure.vars = 6:26, variable.name = "period")
+        melt(measure.vars = 6:26, variable.name = "period")
       dt[, scenario := NULL]
       dt[, variable := "Energy service demand"]
       setnames(dt, "Units", "unit")
@@ -51,7 +52,7 @@ readGCAM <- function(subtype = c(
     "speedMotorized" = {
       dt <- fread("L254.tranSubsectorSpeed.csv", skip = 4)
       setnames(dt, "year", "period")
-      #data includes a lot of duplicates
+      # data includes a lot of duplicates
       dt <- dt[!duplicated(dt, by = c("region", "supplysector", "tranSubsector", "period"))]
       dt[, variable := "Speed"][, unit := "km/h"]
       setnames(dt, "speed", "value")
@@ -70,7 +71,8 @@ readGCAM <- function(subtype = c(
       dt <- fread("A54.tranSubsector_VOTT.csv", skip = 1)[!grepl("#", supplysector)] %>%
         unique() %>%
         setnames(gsub(".", "_", colnames(.), fixed = TRUE))
-      dt[, c("speed_source", "fuelprefElasticity", "addTimeValue", "wait_walk_vott", "wait_walk_share", "in_vehicle_VOTT") := NULL]
+      dt[, c("speed_source", "fuelprefElasticity", "addTimeValue", "wait_walk_vott",
+             "wait_walk_share", "in_vehicle_VOTT") := NULL]
       dt <- melt(dt, id.vars = c("supplysector", "tranSubsector"), na.rm = TRUE)
       dt[, value := as.numeric(value)]
       dt[, variable := "Value of time multiplier"][, unit := "-"]
@@ -78,7 +80,7 @@ readGCAM <- function(subtype = c(
       x <- as.magpie(as.data.frame(dt), temporal = 0, spatial = 0)
     },
     "PPPtoMERfactor" = {
-      dt <- fread("GCAM_PPP_MER.csv", header = T)
+      dt <- fread("GCAM_PPP_MER.csv", header = TRUE)
       dt <- dt[, c("PPP_MER", "region")]
       setnames(dt, "PPP_MER", "value")
       dt[, variable := "Factor to move from PPP to MER for the time value multiplier"][, unit := "-"]
