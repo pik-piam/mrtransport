@@ -1,4 +1,4 @@
-Package: mredgetransport
+Package: mrtransport
 Title: Input data generation for the EDGE-Transport model
 Version: 0.0.1.9004
 Authors@R: c(

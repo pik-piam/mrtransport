@@ -26,7 +26,7 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
   # available in certain countries
   # Here we create the full structure of the nested decision tree differentiated for all countries to make it testable
   ISOcountriesMap <- system.file("extdata", "regionmapping21EU11.csv",
-    package = "mredgetransport", mustWork = TRUE
+    package = "mrtransport", mustWork = TRUE
   )
   ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
   setnames(ISOcountriesMap, c("CountryCode"), c("region"))

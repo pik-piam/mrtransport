@@ -17,7 +17,7 @@ toolPrepareUCD <- function(x, subtype) {
     UCD_sector <- size_class <- UCD_technology <- UCD_fuel <- fe <- size_class <- size.class <- NULL
 
   mapfile <- system.file("extdata", "mappingUCDtoEDGET.csv",
-                        package = "mredgetransport", mustWork = TRUE)
+                        package = "mrtransport", mustWork = TRUE)
   mappingUCD <- fread(mapfile, skip = 0)
   setkey(mappingUCD, UCD_sector, mode, size_class, UCD_technology, UCD_fuel)
   weight <- readSource("UCD", subtype = "feDemand")

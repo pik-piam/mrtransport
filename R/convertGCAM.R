@@ -19,7 +19,7 @@
 convertGCAM <- function(x, subtype) {
   region <- NULL
 
-  GCAM2iso <- fread(system.file("extdata", "isoGCAM.csv", package = "mredgetransport"))
+  GCAM2iso <- fread(system.file("extdata", "isoGCAM.csv", package = "mrtransport"))
   gdp <- calcOutput("GDP", aggregate = FALSE)
   gdp <- gdp[, getYears(x),  "gdp_SSP2"]
   getItems(x, dim = 1) <- gsub("_", " ", getItems(x, dim = 1), fixed = TRUE) # nolint: object_usage_linter

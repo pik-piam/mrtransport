@@ -16,7 +16,7 @@ toolPreparePSI <- function(x) {
     technologyPSI <- vehicleTypePSI <- NULL
 
   mapfile <- system.file("extdata", "mappingPSItoEDGET.csv",
-   package = "mredgetransport", mustWork = TRUE)
+   package = "mrtransport", mustWork = TRUE)
   mappingPSI <- fread(mapfile, skip = 0)
   setkey(mappingPSI, technologyPSI, vehicleTypePSI)
   dt <- magpie2dt(x)

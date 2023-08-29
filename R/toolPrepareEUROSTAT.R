@@ -15,7 +15,7 @@ toolPrepareEUROSTAT <- function(x) {
     vehicleType <- technology <- univocalName <- variable <- unit <- period <- NULL
 
   mapfile <- system.file("extdata", "mappingEUROSTATtoEDGET.csv",
-   package = "mredgetransport", mustWork = TRUE)
+   package = "mrtransport", mustWork = TRUE)
   mappingEUROSTAT <- fread(mapfile, skip = 0)
   setkey(mappingEUROSTAT, EUROSTATsector)
   dt <- magpie2dt(x)

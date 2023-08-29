@@ -21,7 +21,7 @@ convertUCD <- function(x, subtype) {
   gdp <- gdp[, getYears(x),  "gdp_SSP2"]
 
   UCD2isoMapFile <- system.file("extdata", "isoUCD.csv",
-   package = "mredgetransport", mustWork = TRUE)
+   package = "mrtransport", mustWork = TRUE)
   UCD2iso <- fread(UCD2isoMapFile, skip = 0)
 
   if (subtype == "feDemand") {

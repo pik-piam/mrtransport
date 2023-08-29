@@ -1,8 +1,8 @@
 # Input data generation for the EDGE-Transport model
 
-R package **mredgetransport**, version **0.0.1.9004**
+R package **mrtransport**, version **0.0.1.9004**
 
-[![CRAN status](https://www.r-pkg.org/badges/version/mredgetransport)](https://cran.r-project.org/package=mredgetransport)  [![R build status](https://github.com/pik-piam/mrtransport/workflows/check/badge.svg)](https://github.com/pik-piam/mrtransport/actions) [![codecov](https://codecov.io/gh/pik-piam/mrtransport/branch/master/graph/badge.svg)](https://app.codecov.io/gh/pik-piam/mrtransport) 
+[![CRAN status](https://www.r-pkg.org/badges/version/mrtransport)](https://cran.r-project.org/package=mrtransport)  [![R build status](https://github.com/pik-piam/mrtransport/workflows/check/badge.svg)](https://github.com/pik-piam/mrtransport/actions) [![codecov](https://codecov.io/gh/pik-piam/mrtransport/branch/master/graph/badge.svg)](https://app.codecov.io/gh/pik-piam/mrtransport) 
 
 ## Purpose and Functionality
 
@@ -22,7 +22,7 @@ The additional repository can be made available permanently by adding the line a
 After that the most recent version of the package can be installed using `install.packages`:
 
 ```r 
-install.packages("mredgetransport")
+install.packages("mrtransport")
 ```
 
 Package updates can be installed using `update.packages` (make sure that the additional repository has been added before running that command):
@@ -37,15 +37,15 @@ In case of questions / problems please contact Johanna Hoppe <johanna.hoppe@pik-
 
 ## Citation
 
-To cite package **mredgetransport** in publications use:
+To cite package **mrtransport** in publications use:
 
-Hoppe J, Dirnaichner A (2023). _mredgetransport: Input data generation for the EDGE-Transport model_. R package version 0.0.1.9004, <https://github.com/pik-piam/mrtransport>.
+Hoppe J, Dirnaichner A (2023). _mrtransport: Input data generation for the EDGE-Transport model_. R package version 0.0.1.9004, <https://github.com/pik-piam/mrtransport>.
 
 A BibTeX entry for LaTeX users is
 
  ```latex
 @Manual{,
-  title = {mredgetransport: Input data generation for the EDGE-Transport model},
+  title = {mrtransport: Input data generation for the EDGE-Transport model},
   author = {Johanna Hoppe and Alois Dirnaichner},
   year = {2023},
   note = {R package version 0.0.1.9004},

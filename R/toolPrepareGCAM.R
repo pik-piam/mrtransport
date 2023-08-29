@@ -17,7 +17,7 @@ toolPrepareGCAM <- function(x, subtype) {
     vehicleType <- technology <- univocalName <- variable <- unit <- esdem <- value <- . <- NULL
 
   dt <- magpie2dt(x)
-  mapfile <- system.file("extdata", "mappingGCAMtoEDGET.csv", package = "mredgetransport", mustWork = TRUE)
+  mapfile <- system.file("extdata", "mappingGCAMtoEDGET.csv", package = "mrtransport", mustWork = TRUE)
   mappingGCAM <- fread(mapfile)
 
   switch(
