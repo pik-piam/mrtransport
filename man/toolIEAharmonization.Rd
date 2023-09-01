@@ -10,7 +10,7 @@ toolIEAharmonization(enIntensity)
 \item{enIntensity}{energy intensity}
 }
 \description{
-We provide energy service trajectories. IEA energy balances have to be met and are \emph{not}
+We provide energy service trajectories. IEA energy balances have to be met and are not
 consistent with GCAM intensities and energy service trajectories.
 Therefore we have to adjust energy intensities.
 }
