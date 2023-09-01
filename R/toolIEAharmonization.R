@@ -1,12 +1,12 @@
 #' Harmonize the energy intensities to match the IEA energy balances regarding final energy.
 #'
-#' We provide energy service trajectories. IEA energy balances have to be met and are *not*
+#' We provide energy service trajectories. IEA energy balances have to be met and are not
 #' consistent with GCAM intensities and energy service trajectories.
 #' Therefore we have to adjust energy intensities.
 #'
 #' @param enIntensity energy intensity
 #' @importFrom rmndt magpie2dt
-
+#' @export
 
 toolIEAharmonization <- function(enIntensity) {
  fe <- te <- period <- isBunk <- flow <- . <- feIEA <- region <- subsectorL1 <- univocalName <-

@@ -149,9 +149,8 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       energyIntensity <- toolAdjustEnergyIntensity(energyIntensityRaw, countriesTRACCS, data$enIntPSI)
       # Harmonize energy intensity data in order to match IEA final energy values
       if (IEAharm == TRUE) {
-        energyIntensity <- toolIEAharmonization(energyIntensity)
+        energyIntensity <- mrtransport::toolIEAharmonization(energyIntensity)
       }
-
 
       # Add energy intensity of zero for active modes
       activeModes <- completeDataSet[univocalName %in% c("Cycle", "Walk")]
