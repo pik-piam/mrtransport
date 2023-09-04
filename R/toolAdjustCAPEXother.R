@@ -84,8 +84,8 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData) {
   # motorcycles (> 250cc). We assign UMI to OAS
   # 1st approach: take mean value of OAS for UMI
   # missingUMI <- dt[!is.na(value) & vehicleType == "Motorcycle (>250cc)"] # nolint: commented_code_linter
-  # missingUMI <- merge.data.table(missingUMI, ISOcountries[, c("region", "RegionCode")], by = "region") # nolint: commented_code_linter
-  # missingUMI <- missingUMI[RegionCode == "OAS"]        # nolint: commented_code_linter
+  # missingUMI <- merge.data.table(missingUMI, ISOcountries[, c("region", "regionCode21")], by = "region") # nolint: commented_code_linter
+  # missingUMI <- missingUMI[regionCode21 == "OAS"]        # nolint: commented_code_linter
   # missingUMI <- missingUMI[, .(value = mean(value)), by = c("sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "variable", "univocalName", "unit", "period")] # nolint: commented_code_linter
   # BEV > 250cc is featured only by a small number of countries where prices are overall much higher # nolint: commented_code_linter
   # -> this would lead to unrealistic prices for BEV compared to ICEs

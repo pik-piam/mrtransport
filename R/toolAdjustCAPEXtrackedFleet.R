@@ -11,7 +11,7 @@
 #' @return a quitte object
 
 toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData) {
- subsectorL3 <- variable <- . <- value <- region <- Aggregate21to12Reg <- period <-
+ subsectorL3 <- variable <- . <- value <- region <- regionCode12 <- period <-
    technology <- subsectorL1 <- subsectorL2 <- vehicleType <- markup <- univocalName <-
      sector <- unit <- check <- NULL
 
@@ -26,7 +26,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData) {
   # and real data is only available for 2015 and 2040 -> rest is interpolated
   # -> define markups on alternative techs based on the percentage difference in EU countries
   LDV4WEUR <- copy(dt[subsectorL3 == "trn_pass_road_LDV_4W"
-                      & region %in% ISOcountries[Aggregate21to12Reg == "EUR"]$region])
+                      & region %in% ISOcountries[regionCode12 == "EUR"]$region])
   LDV4WEUR[period == 2040 & technology %in% c("Hybrid electric", "BEV"), value := 0.8 * value]
   LDV4WEUR[period == 2040 & technology %in% c("FCEV"), value := 0.8 * value]
   # in 2100, purchase price for BEVs is 0.8 * purchase price, for Hybrid electric is 0.7, for FCEVs is 0.9
@@ -46,7 +46,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData) {
   LDV4WEUR[, markup := value / value[technology == "Liquids"], by = c("vehicleType", "period")]
   # Apply cost ratio of ICEs vs alternative technologies also on non EUR countries
   LDV4WnonEUR <- copy(dt[subsectorL3 == "trn_pass_road_LDV_4W" &
-                           !region %in% ISOcountries[Aggregate21to12Reg == "EUR"]$region])
+                           !region %in% ISOcountries[regionCode12 == "EUR"]$region])
   LDV4WnonEUR <- merge.data.table(LDV4WnonEUR, unique(LDV4WEUR[, c("vehicleType", "technology", "period", "markup")],
                                                       by = c("vehicleType", "technology", "period"), all.x = TRUE))
   LDV4WnonEUR[technology %in% c("BEV", "Hybrid electric", "FCEV"), value := value * markup][, markup := NULL]
@@ -135,20 +135,20 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData) {
   # "technology", "period", "value")] # nolint: commented_code_linter
   # missingTrucks <- dcast(missingTrucks, region + sector + subsectorL1 + subsectorL2 + subsectorL3 + # nolint: commented_code_linter
   # technology + period ~ vehicleType, value.var = "value") # nolint: commented_code_linter
-  # missingTrucks <- merge.data.table(missingTrucks, ISOcountries[, c("region", "RegionCode", "Aggregate21to12Reg")], by = "region") # nolint: commented_code_linter
-  # #Calculating means for every truck type (using Aggregate21to12Reg instead does not lead to more available values) # nolint: commented_code_linter
-  # missingTrucks[, `mean Truck (0-3.5t)` := mean(`Truck (0-3.5t)`, na.rm = TRUE), by = c("technology", "period", "RegionCode")] # nolint: commented_code_linter
-  # missingTrucks[, `mean Truck (7.5t)` := mean(`Truck (7.5t)`, na.rm = TRUE), by = c("technology", "period", "RegionCode")] # nolint: commented_code_linter
-  # missingTrucks[, `mean Truck (18t)` := mean(`Truck (18t)`, na.rm = TRUE), by = c("technology", "period", "RegionCode")] # nolint: commented_code_linter
-  # missingTrucks[, `mean Truck (26t)` := mean(`Truck (26t)`, na.rm = TRUE), by = c("technology", "period", "RegionCode")] # nolint: commented_code_linter
-  # missingTrucks[, `mean Truck (40t)` := mean(`Truck (40t)`, na.rm = TRUE), by = c("technology", "period", "RegionCode")] # nolint: commented_code_linter
+  # missingTrucks <- merge.data.table(missingTrucks, ISOcountries[, c("region", "regionCode21", "regionCode12")], by = "region") # nolint: commented_code_linter
+  # #Calculating means for every truck type (using regionCode12 instead does not lead to more available values) # nolint: commented_code_linter
+  # missingTrucks[, `mean Truck (0-3.5t)` := mean(`Truck (0-3.5t)`, na.rm = TRUE), by = c("technology", "period", "regionCode21")] # nolint: commented_code_linter
+  # missingTrucks[, `mean Truck (7.5t)` := mean(`Truck (7.5t)`, na.rm = TRUE), by = c("technology", "period", "regionCode21")] # nolint: commented_code_linter
+  # missingTrucks[, `mean Truck (18t)` := mean(`Truck (18t)`, na.rm = TRUE), by = c("technology", "period", "regionCode21")] # nolint: commented_code_linter
+  # missingTrucks[, `mean Truck (26t)` := mean(`Truck (26t)`, na.rm = TRUE), by = c("technology", "period", "regionCode21")] # nolint: commented_code_linter
+  # missingTrucks[, `mean Truck (40t)` := mean(`Truck (40t)`, na.rm = TRUE), by = c("technology", "period", "regionCode21")] # nolint: commented_code_linter
   #
   # missingTrucks[is.na(`Truck (0-3.5t)`), `Truck (0-3.5t)` := `mean Truck (0-3.5t)`] # nolint: commented_code_linter
   # missingTrucks[is.na(`Truck (7.5t)`), `Truck (7.5t)` := `mean Truck (7.5t)`] # nolint: commented_code_linter
   # missingTrucks[is.na(`Truck (18t)`), `Truck (18t)` := `mean Truck (18t)`] # nolint: commented_code_linter
   # missingTrucks[is.na(`Truck (26t)`), `Truck (26t)` := `mean Truck (26t)`] # nolint: commented_code_linter
   # missingTrucks[is.na(`Truck (40t)`), `Truck (40t)` := `mean Truck (40t)`] # nolint: commented_code_linter
-  # meanTrucks <-  unique(missingTrucks[, c("RegionCode", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "technology", "period", # nolint: commented_code_linter
+  # meanTrucks <-  unique(missingTrucks[, c("regionCode21", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "technology", "period", # nolint: commented_code_linter
   # "mean Truck (0-3.5t)", "mean Truck (7.5t)", "mean Truck (18t)", "mean Truck (26t)", "mean Truck (40t)")]) # nolint: commented_code_linter
   # missingTrucks <- missingTrucks[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "technology", "period", # nolint: commented_code_linter
   # "Truck (0-3.5t)", "Truck (7.5t)", "Truck (18t)", "Truck (26t)", "Truck (40t)")] # nolint: commented_code_linter
@@ -161,7 +161,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData) {
   # #that is a result of small countries setting the price due to missing data.
   # Here, Puerto Rico (PRI) is setting the price for 18t and
   # #is assigned to the USA region in UCD (therefore prices are much higher)
-  # meanTrucks <- meanTrucks[RegionCode == "LAM"]   # nolint: commented_code_linter
+  # meanTrucks <- meanTrucks[regionCode21 == "LAM"]   # nolint: commented_code_linter
   # meanTrucks[, fac1 := `mean Truck (0-3.5t)` / `mean Truck (7.5t)`] # nolint: commented_code_linter
   # meanTrucks[, fac2 := `mean Truck (7.5t)` / `mean Truck (18t)`] # nolint: commented_code_linter
   # meanTrucks[, fac3 := `mean Truck (18t)` / `mean Truck (26t)`] # nolint: commented_code_linter

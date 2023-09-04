@@ -1,4 +1,4 @@
-CountryName;CountryCode;RegionCode;Aggregate21to12Reg
+countryName;countryCode;regionCode21;regionCode12
 Afghanistan;AFG;OAS;OAS
 Aland Islands;ALA;ENC;EUR
 Albania;ALB;NES;NEU
