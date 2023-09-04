@@ -20,10 +20,10 @@ convertPSI <- function(x, subtype) {
   region <- NULL
 
   #PSI data is mapped on iso countries - Note that we do not have regionally differentiated data
-  PSI2isoMapFile <- system.file("extdata", "regionmapping21.csv",
-    package = "edgeTransport", mustWork = TRUE)
+  PSI2isoMapFile <- system.file("extdata", "regionmappingISOto21to12.csv",
+    package = "mrtransport", mustWork = TRUE)
   PSI2iso <- fread(PSI2isoMapFile, skip = 0)
-  setnames(PSI2iso, c("CountryCode"), c("iso"))
+  setnames(PSI2iso, c("countryCode"), c("iso"))
   PSI2iso <- PSI2iso[, c("iso")][, region := "GLO"]
   #Here data is mapped on all iso countries -> same vaue according to vehicle class/technology/year
   x <- toolAggregate(x, rel = PSI2iso)

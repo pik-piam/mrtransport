@@ -11,7 +11,7 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
 
   temporal <- spatial <- present <- period <- region <- sector <- subsectorL1 <-
     subsectorL2 <- subsectorL3 <- vehicleType <- technology <- univocalName <-
-    altTech <- variable <- value <- Aggregate21to12Reg <- NULL
+    altTech <- variable <- value <- regionCode12 <- NULL
 
   years <- data.table(temporal = "all", period = c(
     1990,
@@ -20,22 +20,22 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
     2130, 2150
   ))
   # decisionTree.csv contains all possible branches of the decision tree
-  decisionTree <- fread(system.file("extdata/decisionTree.csv", package = "edgeTransport", mustWork = TRUE))
+  decisionTree <- fread(system.file("extdata/decisionTree.csv", package = "mrtransport", mustWork = TRUE))
   decisionTree[, temporal := "all"][, spatial := "all"]
   # Not all countries feature the same branches of the decision tree - Some vehicleTypes and modes are not
   # available in certain countries
   # Here we create the full structure of the nested decision tree differentiated for all countries to make it testable
-  ISOcountriesMap <- system.file("extdata", "regionmapping21EU11.csv",
+  ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv",
     package = "mrtransport", mustWork = TRUE
   )
   ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
-  setnames(ISOcountriesMap, c("CountryCode"), c("region"))
+  setnames(ISOcountriesMap, c("countryCode"), c("region"))
   ISOcountries <- ISOcountriesMap[, c("region")][, spatial := "all"]
 
   completeDataSet <- merge.data.table(decisionTree, ISOcountries, by = "spatial", allow.cartesian = TRUE)
   completeDataSet[, spatial := NULL]
-  mapCountrySpecificVehicleTypes <- fread(system.file("extdata/MapCountrySpecificVehicleTypes.csv",
-    package = "edgeTransport", mustWork = TRUE))
+  mapCountrySpecificVehicleTypes <- fread(system.file("extdata/mapCountrySpecificVehicleTypes.csv",
+    package = "mrtransport", mustWork = TRUE))
 
   completeDataSet <- merge.data.table(completeDataSet, mapCountrySpecificVehicleTypes,
     by = c("region", "univocalName"), all = TRUE)
@@ -149,9 +149,8 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       energyIntensity <- toolAdjustEnergyIntensity(energyIntensityRaw, countriesTRACCS, data$enIntPSI)
       # Harmonize energy intensity data in order to match IEA final energy values
       if (IEAharm == TRUE) {
-        energyIntensity <- toolIEAharmonization(energyIntensity)
+        energyIntensity <- mrtransport::toolIEAharmonization(energyIntensity)
       }
-
 
       # Add energy intensity of zero for active modes
       activeModes <- completeDataSet[univocalName %in% c("Cycle", "Walk")]
@@ -375,10 +374,10 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
 
       # merge.data.table data
       # PSI vehicle purchase costs are used for LDV 4 Wheelers in EUR
-      PSIcarsEUR <- data$CAPEXPSI[region %in% ISOcountriesMap[Aggregate21to12Reg == "EUR"]$region]
+      PSIcarsEUR <- data$CAPEXPSI[region %in% ISOcountriesMap[regionCode12 == "EUR"]$region]
       # PSI CAPEX for 4 Wheelers feature only purchase costs - take other capital costs from UCD for EUR regions
-      CAPEXraw <- rbind(PSIcarsEUR, CAPEXUCD4W[!(region %in% ISOcountriesMap[Aggregate21to12Reg == "EUR"]$region) |
-        (region %in% ISOcountriesMap[Aggregate21to12Reg == "EUR"]$region & !variable == "Capital costs (purchase)")],
+      CAPEXraw <- rbind(PSIcarsEUR, CAPEXUCD4W[!(region %in% ISOcountriesMap[regionCode12 == "EUR"]$region) |
+        (region %in% ISOcountriesMap[regionCode12 == "EUR"]$region & !variable == "Capital costs (purchase)")],
          CAPEXcombinedUCD)
 
       CAPEX <- toolAdjustCAPEXtrackedFleet(CAPEXraw, ISOcountriesMap, years, completeDataSet)

@@ -1,12 +1,12 @@
 #' Harmonize the energy intensities to match the IEA energy balances regarding final energy.
 #'
-#' We provide energy service trajectories. IEA energy balances have to be met and are *not*
+#' We provide energy service trajectories. IEA energy balances have to be met and are not
 #' consistent with GCAM intensities and energy service trajectories.
 #' Therefore we have to adjust energy intensities.
 #'
 #' @param enIntensity energy intensity
 #' @importFrom rmndt magpie2dt
-
+#' @export
 
 toolIEAharmonization <- function(enIntensity) {
  fe <- te <- period <- isBunk <- flow <- . <- feIEA <- region <- subsectorL1 <- univocalName <-
@@ -22,8 +22,6 @@ toolIEAharmonization <- function(enIntensity) {
  IEAbal <- IEAbal[te != "dot"]  #delete fedie.dot #Q: what is fedie.dot?
  setnames(IEAbal, "value", "feIEA")
 
- # Year for hamonization is set to 2005 (important for functionality of REMIND)
- IEAbal <- IEAbal[period == 2005]
  # As freight and passenger are not seperated in IEA energy balances harmonize by "short-medium",
  # "MARBUNK" (eq. to shipping international) and "AVBUNK" (eq. to aviation international) and technology (te)
  IEAbal[, isBunk := ifelse(grepl("BUNK", flow), flow, "short-medium")]
@@ -71,27 +69,30 @@ toolIEAharmonization <- function(enIntensity) {
  enIntensity[, fe := sum(fe), by = c("region", "isBunk", "te", "period")]
 
  #Merge enery intensity and actual final energy with IEA data
- enIntensity <- merge.data.table(enIntensity, IEAbal, by = c("region", "isBunk", "te", "period"))
+ enIntensity <- merge.data.table(enIntensity, IEAbal, by = c("region", "isBunk", "te", "period"), all.x = TRUE)
+ # Year for hamonization is set to 2005 (important for functionality of REMIND)
+ harmFactor <- enIntensity[period == 2005]
  #For some modes and technologies the IEA fe value is zero (and or our value is zero) -> omitted in the harmonization
  #Note that e.g. NG busses in AUT do have a demand regarding to the IEA data, but in our data there is no demand
  #This leads to a small deviation from our final energy data vs IEA fe data after the harmonization process that
  # is checked and in the end and accepted if not too large
- enIntensity[, harmFactor := ifelse(feIEA == 0 | fe == 0, 0, feIEA / fe)]
+ harmFactor[, harmFactor := ifelse(feIEA == 0 | fe == 0, 0, feIEA / fe)]
  # Harmonization factor of 2005 is taken for all years (To do: test if harmonization in 2005, 2010 and 2015 would be
  # better)
- enIntensity[, harmFactor := harmFactor[period == 2005]]
+ harmFactor <- unique(harmFactor[, .(region, isBunk, te, harmFactor)])
+ enIntensity <- merge(enIntensity, harmFactor, by = c("region", "isBunk", "te"), all.x = TRUE)
  enIntensity[, value := value * harmFactor]
  #Check wether hamonization worked
  enIntensity[, check := (value / loadFactor) * enService * bn * MJtoEJ]
  enIntensity[, check := sum(check), by = c("region", "isBunk", "te", "period")][, diff := check - feIEA]
- if (sum(enIntensity$diff > 1e-3) > 0) {
+ if (sum(enIntensity[period == 2005, diff > 1e-3])) {
    stop("There is a problem regarding the Harmonization of the energy intensity data to match IEA energy balances
         final energy")
  }
 
- enIntensity <- enIntensity[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
+ enIntensity <- enIntensity[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
                                 "univocalName", "variable", "unit", "period", "value")]
- setkey(enIntensity,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, univocalName,
+ setkey(enIntensity,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName,
         variable, unit, period)
 
  return(enIntensity)
