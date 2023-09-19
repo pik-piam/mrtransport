@@ -17,16 +17,17 @@ toolAdjustValueOfTimeMultiplier <- function(dt, completeData) {
   dt <- merge.data.table(dt, PPPtoMER, by = "region", allow.cartesian = TRUE)
   dt[, value := value / PPPtoMER][, PPPtoMER := NULL]
 
-  #2: Map data on EDGE-T technologies (for handlability in the model)
-  completeData <- completeData[sector == "trn_pass"]
+  #2: Map data on EDGE-T structure (to rule out vehicle types that are not present in all countries)
+  completeData <- completeData[sector == "trn_pass"][, technology := NULL]
+  completeData <- unique(completeData)
   dt <- merge.data.table(dt, completeData, by = c("region", "sector", "subsectorL1", "subsectorL2",
                                                   "subsectorL3", "vehicleType", "univocalName", "period"),
                                                  all.y = TRUE, allow.cartesian = TRUE)
   dt[, check := NULL]
 
-  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
+  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
                "univocalName", "variable", "unit", "period", "value")]
-  setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName,
+  setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, univocalName,
          variable, unit, period)
 
   return(dt)

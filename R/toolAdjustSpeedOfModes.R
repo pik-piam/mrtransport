@@ -10,12 +10,13 @@ toolAdjustSpeedOfModes <- function(dt, completeData) {
   sector <- check <- value <- vehicleType <- region <- univocalName <- maxSpeed <- period <-
     subsectorL3 <- region <- subsectorL2 <- subsectorL1 <- unit <- variable <- technology <- NULL
 
-  #1: Map data on EDGE-T technologies (for handlability in the model)
-  completeData <- completeData[sector == "trn_pass"]
+  #1: Map data on EDGE-T structure to identify missing values
+  completeData <- completeData[sector == "trn_pass"][, technology := NULL]
+  completeData <- unique(completeData)
   dt <- merge.data.table(dt, completeData,
                          by = c("region", "sector", "subsectorL1", "subsectorL2",
                          "subsectorL3", "vehicleType", "univocalName", "period"),
-                         all.y = TRUE, allow.cartesian = TRUE)
+                         all.y = TRUE)
   dt[, check := NULL]
 
   #2: Add midsize car for missing regions
@@ -25,18 +26,18 @@ toolAdjustSpeedOfModes <- function(dt, completeData) {
   dt <- rbind(dt[!(is.na(value) & vehicleType == "Midsize Car")], mid)
 
   #3: Apply convergence in time to the fastest vehicle across regions
-  dt[, maxSpeed := max(value[period == 2100]), by = c("vehicleType", "technology")]
+  dt[, maxSpeed := max(value[period == 2100]), by = c("vehicleType")]
   dt[period >= 2020 & period <= 2100, value := value[period == 2020] * (2100 - period) / (2100 - 2020) + maxSpeed *
-       (period - 2020) / (2100 - 2020), by = c("vehicleType", "technology", "region")]
+       (period - 2020) / (2100 - 2020), by = c("vehicleType", "region")]
   dt[period >= 2100, value := maxSpeed]
   dt[, maxSpeed := NULL]
 
   #4: Speed correction to enhance influence of VOT for 2W (Robert's idea)
   dt[subsectorL3 == "trn_pass_road_LDV_2W", value := value * 0.75]
 
-  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
+  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
                "univocalName", "variable", "unit", "period", "value")]
-  setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName,
+  setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, univocalName,
          variable, unit, period)
 
   return(dt)

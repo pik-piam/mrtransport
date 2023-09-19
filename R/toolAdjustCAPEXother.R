@@ -10,7 +10,7 @@
 #' @importFrom rmndt magpie2dt
 #' @return a quitte object
 
-toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData) {
+toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER) {
   variable <- . <- value <- subsectorL1 <- subsectorL2 <- subsectorL3 <- vehicleType <- technology <-
     period <- region <- univocalName <- unit <- check <- sector <- NULL
 
@@ -107,6 +107,19 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData) {
 
   dt <- rbind(dt[!(is.na(value) & subsectorL3 == "trn_pass_road_LDV_2W")], missing2W)
   dt[, check := NULL]
+
+  #5: Lower the prices for LDW 2 Wheelers depending on the GDP to represent a 2nd hand vehicle market
+  minGDP <- 4000     ## minimum GDPcap after which the linear trend starts
+  maxGDP <- 30000    ## maximum GDPcap marking the level where no factor is implemented
+  lowerBound <- 0.3  ## maximum decrease to be applied to the original costs value
+
+  GDPpcMER[, factor := ifelse(gdppc < maxGDP & gdppc >  minGDP, (1 - lowerBound)/(maxGDP - minGDP) * (gdppc - minGDP) + lowerBound, 1)]
+  GDPpcMER[, factor := ifelse(gdppc <=   minGDP, lowerBound, factor)]
+  GDPpcMER[, factor := ifelse(gdppc >=  maxGDP, 1, factor)]
+
+  dt <- merge(dt, GDPpcMER, by = c("region", "period"))
+  dt[subsectorL3 == "trn_pass_road_LDV_2W", value := value * factor]
+  dt[, c("gdppc", "factor") := NULL]
 
   dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
                "technology", "univocalName", "variable", "unit", "period", "value")]

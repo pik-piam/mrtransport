@@ -7,7 +7,7 @@
 #' @importFrom rmndt approx_dt
 #' @importFrom madrat readSource calcOutput
 
-calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclocomp_linter
+calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRUE) { # nolint: cyclocomp_linter
 
   temporal <- spatial <- present <- period <- region <- sector <- subsectorL1 <-
     subsectorL2 <- subsectorL3 <- vehicleType <- technology <- univocalName <-
@@ -51,7 +51,7 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
     "energyIntensity" = {
       unit <- "MJ/vehkm"
       description <- "Energy intensity on technology level. Sources: TRACCS, PSI, UCD, GCAM"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
+      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
       # calc different source data
       enIntGCAM <- toolPrepareGCAM(readSource("GCAM", subtype), subtype)
@@ -178,7 +178,7 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
     "annualMileage" = {
       unit <- "vehkm/veh/yr"
       description <- "Annual mileage on technology level. Sources: TRACCS, UCD"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
+      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
       # calc different source data
       AMTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
@@ -307,7 +307,7 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       unit <- "(t|p)/veh"
       description <- "Load factor on technology level that states the tons/number of passengers in a vehicle.
                       Sources: TRACCS, GCAM"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
+      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
       # read different source data
       LFTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
@@ -348,13 +348,13 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
     },
     "CAPEXtrackedFleet" = {
       unit <- "US$2005/veh"
-      description <- "CAPEX (purchase costs) for vehicle types that feature fleet tracking (cars, trucks and busses).
+      description <- "CAPEX for vehicle types that feature fleet tracking (cars, trucks and busses).
                       Sources: UCD, PSI"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
+      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
       # read PSI CAPEX
       CAPEXPSI <- toolPreparePSI(readSource("PSI", "CAPEX"))
-      # read UCD CAPEX given in 2005$/vkt and 2005$/veh
+      # read UCD CAPEX given in US$2005/vkt and US$2005/veh
       CAPEXUCD <- toolPrepareUCD(readSource("UCD", "CAPEX"), "CAPEX")
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
       CAPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
@@ -377,14 +377,18 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       PSIcarsEUR <- data$CAPEXPSI[region %in% ISOcountriesMap[regionCode12 == "EUR"]$region]
       # PSI CAPEX for 4 Wheelers feature only purchase costs - take other capital costs from UCD for EUR regions
       CAPEXraw <- rbind(PSIcarsEUR, CAPEXUCD4W[!(region %in% ISOcountriesMap[regionCode12 == "EUR"]$region) |
-        (region %in% ISOcountriesMap[regionCode12 == "EUR"]$region & !variable == "Capital costs (purchase)")],
-         CAPEXcombinedUCD)
+                                                 (region %in% ISOcountriesMap[regionCode12 == "EUR"]$region & !variable == "Capital costs (purchase)")],
+                        CAPEXcombinedUCD)
 
-      CAPEX <- toolAdjustCAPEXtrackedFleet(CAPEXraw, ISOcountriesMap, years, completeDataSet)
+      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
+                                unit = "constant 2005 US$MER")[, years, paste0("gdppc_", SSPscen)]
+      GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
+      CAPEX <- toolAdjustCAPEXtrackedFleet(CAPEXraw, ISOcountriesMap, years, completeDataSet, GDPpcMER)
 
       # CAPEXtrackedFleet data only includes CAPEX data for LDV 4 Wheelers, Trucks and Busses
       completeDataSet <- completeDataSet[subsectorL1 == "trn_freight_road" | subsectorL3 == "trn_pass_road_LDV_4W" |
                                          subsectorL2 == "Bus"]
+      browser()
       # Check whether data is complete
       check <- merge.data.table(completeDataSet, CAPEX, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
@@ -394,9 +398,6 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       } else if (length(unique(check$unit)) > 1) {
         stop("Something went wrong in generating CAPEX input data for the tracked fleet.
              Data does not have the same unit.")
-      } else if (length(unique(check$variable)) > 1) {
-        stop("Something went wrong in generating CAPEX input data for the tracked fleet.
-             Data does not have the same variable type.")
       } else if (anyNA(CAPEX) == TRUE) {
         stop("CAPEX data for the tracked fleet includes NAs")
       }
@@ -407,7 +408,7 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       unit <- "US$2005/veh/yr"
       description <- "Non-fuel OPEX on technology level for vehicle types that feature fleet tracking
                      (cars, trucks, busses). Sources: UCD, PSI"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
+      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
       nonFuelOPEXUCD <- toolPrepareUCD(readSource("UCD", "nonFuelOPEX"), "nonFuelOPEX")
       nonFuelOPEXUCD <- nonFuelOPEXUCD[subsectorL3 == "trn_pass_road_LDV_4W"]
@@ -449,9 +450,9 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       unit <- "US$2005/vehkm"
       description <- "CAPEX (purchase costs) for vehicle types that do not feature fleet tracking
                       (all other than cars, trucks and busses). Sources: UCD"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
+      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
-      # read UCD CAPEX given in 2005$/vkt and 2005$/veh
+      # read UCD CAPEX given in US$2005/vkt and US$2005/veh
       CAPEXUCD <- toolPrepareUCD(readSource("UCD", "CAPEX"), "CAPEX")
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
       CAPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
@@ -485,7 +486,10 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       # merge.data.table data
       CAPEXraw <- rbind(CAPEXUCD, CAPEXcombinedUCD)
 
-      CAPEX <- toolAdjustCAPEXother(CAPEXraw, ISOcountriesMap, years, completeDataSet)
+      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
+                                unit = "constant 2005 US$MER")[, years, paste0("gdppc_", SSPscen)]
+      GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
+      CAPEX <- toolAdjustCAPEXother(CAPEXraw, ISOcountriesMap, years, completeDataSet, GDPpcMER)
 
       # CAPEXother only includes data for all other modes than LDV 4 Wheelers, Trucks and Busses
       # (except cycling and walking)
@@ -513,7 +517,7 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       unit <- "US$2005/vehkm"
       description <- "Non fuel OPEX on technology level for vehicle types that do not feature fleet tracking
                      (other than cars, trucks, busses). Sources: UCD, PSI"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
+      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
       nonFuelOPEXUCD <- toolPrepareUCD(readSource("UCD", "nonFuelOPEX"), "nonFuelOPEX")
       nonFuelOPEXUCD <- nonFuelOPEXUCD[!subsectorL3 == "trn_pass_road_LDV_4W"]
@@ -580,7 +584,7 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       description <- "Speed of traveling on vehicle type level (same for all technologies). Changes over time for
                       the motorized modes. Used to calculate the time value costs for passenger transport modes.
                       Sources: GCAM"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
+      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
       # read sources
       speedGCAM <- toolPrepareGCAM(readSource("GCAM", "speedMotorized"), "speedMotorized")
@@ -600,8 +604,11 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       speedOfModes <- toolAdjustSpeedOfModes(speedOfModesRaw, completeDataSet)
 
       # Check whether data is complete
-      # speed of modes is only featured for passenger transport (to calculatetime value costs)
-      completeDataSet <- completeDataSet[sector == "trn_pass"]
+      # speed of modes is only featured for passenger transport (to calculate time value costs)
+      completeDataSet <- completeDataSet[sector == "trn_pass"][, technology := NULL]
+      completeDataSet <- unique(completeDataSet)
+      setkey(completeDataSet, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType,
+             univocalName, period)
       check <- merge.data.table(completeDataSet, speedOfModes, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("Speed of modes input data is incomplete")
@@ -621,7 +628,7 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
       description <- "Cost associated with travel expressed as a multiplier of the wage rate.
                       Same for all regions and years. Used to calculate the time value costs for passenger
                       transport modes. Sources: GCAM"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, "gdp_SSP2"]
+      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
       # read sources
       VOTGCAM <- toolPrepareGCAM(readSource("GCAM", "valueOfTimeMultiplier"), "valueOfTimeMultiplier")
@@ -636,7 +643,10 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
 
       # Check whether data is complete
       # speed of modes is only featured for passenger transport (to calculate value of time)
-      completeDataSet <- completeDataSet[sector == "trn_pass"]
+      completeDataSet <- completeDataSet[sector == "trn_pass"][, technology := NULL]
+      completeDataSet <- unique(completeDataSet)
+      setkey(completeDataSet, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType,
+             univocalName, period)
       check <- merge.data.table(completeDataSet, VOT, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("Value of time multiplier input data is incomplete")
@@ -652,6 +662,60 @@ calcEdgeTransportSAinputs <- function(subtype, IEAharm = TRUE) { # nolint: cyclo
         stop("Value of time multiplier data includes NAs")
       }
       quitteobj <- VOT
+    },
+    "timeValueCosts" = {
+      unit <- "US$2005/pkm"
+      description <- "Time value costs for passenger transport modes.
+                      Sources: GCAM"
+      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
+
+      # Speed of modes [km/h]
+      speedOfModesMagpieobj <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE, subtype = "speedOfModes")
+      speedOfModes <- magpie2dt(speedOfModesMagpieobj, valcol = "speed")[, c("variable", "unit") := NULL]
+      setkey(speedOfModes, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType,
+             univocalName, period)
+      # Value of Time multiplier [-]
+      valueOfTimeMultiplierMagpieobj <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE, subtype = "valueOfTimeMultiplier")
+      valueOfTimeMultiplier <- magpie2dt(valueOfTimeMultiplierMagpieobj, valcol = "multiplier")[, c("variable", "unit") := NULL]
+      setkey(valueOfTimeMultiplier, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType,
+             univocalName, period)
+      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
+                                unit = "constant 2005 US$MER")[, years, paste0("gdppc_", SSPscen)]
+      GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
+      setkey(GDPpcMER, region, period)
+
+      timeValueCosts <- merge(speedOfModes,  valueOfTimeMultiplier)
+      timeValueCosts <- merge(timeValueCosts, GDPpcMER)
+      weeksPerYear = 50
+      hoursPerWeek = 40
+      timeValueCosts[, value := gdppc              ## [US$2005/person/year]
+               * multiplier                        ## [US$2005/person/year]
+               /(hoursPerWeek * weeksPerYear)/     ## [US$2005/h]
+                 speed]                            ## [US$2005/pkm]
+      timeValueCosts[, variable := "Time value costs"][, unit := "US$2005/pkm"]
+      timeValueCosts <- timeValueCosts[, c("region", "univocalName", "variable", "unit", "period", "value")]
+      setkey(timeValueCosts,  region, univocalName, variable, unit, period)
+
+      # Check whether data is complete
+      # speed of modes is only featured for passenger transport (to calculate value of time)
+      completeDataSet <- completeDataSet[sector == "trn_pass", c("region", "univocalName", "period")]
+      completeDataSet <- unique(completeDataSet)
+      setkey(completeDataSet, region, univocalName, period)
+      check <- merge.data.table(completeDataSet, timeValueCosts, all = TRUE)
+      if (nrow(check[is.na(value)]) > 0) {
+        stop("Time value costs input data is incomplete")
+      } else if (nrow(check[is.na(check)]) > 0) {
+        stop("Unnecessary data is provided for Time value costs")
+      } else if (length(unique(check$unit)) > 1) {
+        stop("Something went wrong in generating Time value costs input data.
+             Data does not have the same unit.")
+      } else if (length(unique(check$variable)) > 1) {
+        stop("Something went wrong in generating Time value costs input data.
+             Data does not have the same variable type.")
+      } else if (anyNA(timeValueCosts) == TRUE) {
+        stop("Time value costs data includes NAs")
+      }
+      quitteobj <- timeValueCosts
     }
   )
 
