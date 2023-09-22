@@ -388,7 +388,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # CAPEXtrackedFleet data only includes CAPEX data for LDV 4 Wheelers, Trucks and Busses
       completeDataSet <- completeDataSet[subsectorL1 == "trn_freight_road" | subsectorL3 == "trn_pass_road_LDV_4W" |
                                          subsectorL2 == "Bus"]
-      browser()
+
       # Check whether data is complete
       check <- merge.data.table(completeDataSet, CAPEX, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
@@ -719,10 +719,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
     }
   )
 
+  x <- as.magpie(as.data.frame(quitteobj))
+
   return(list(
-    x           = as.magpie(as.data.frame(quitteobj)),
+    x           = x,
     weight      = weight,
     unit        = unit,
-    description = description
+    description = description,
+    aggregationFunction = "toolAggregateVehicleTypes"
   ))
 }
