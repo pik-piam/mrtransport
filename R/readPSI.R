@@ -31,7 +31,7 @@ readPSI <- function(subtype = c("CAPEX", "energyIntensity")) {
       #automatic column type guessing fails due to additional text information in the 2nd row,
       # set value column as numeric
       dt[, value := as.numeric(value)]
-      dt[, variable := "CAPEX"][, unit := "2017EUR/veh"][, region := "GLO"]
+      dt[, variable := "Capital costs (purchase)"][, unit := "2017EUR/veh"][, region := "GLO"]
       # bring to quitte column order
       dt <- dt[, c("region", "technologyPSI", "vehicleTypePSI", "variable", "unit", "period", "value")]
       x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = "period")

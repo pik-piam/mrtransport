@@ -4,7 +4,14 @@
 \alias{toolAdjustCAPEXtrackedFleet}
 \title{Perform parameter specific adjustments on the input data}
 \usage{
-toolAdjustCAPEXtrackedFleet(dt, ISOcountries, yrs, completeData)
+toolAdjustCAPEXtrackedFleet(
+  dt,
+  ISOcountries,
+  yrs,
+  completeData,
+  GDPpcMER,
+  filter
+)
 }
 \arguments{
 \item{dt}{calculated raw data without adjustments}
@@ -13,7 +20,11 @@ toolAdjustCAPEXtrackedFleet(dt, ISOcountries, yrs, completeData)
 
 \item{yrs}{temporal resolution of EDGE-T model}
 
-\item{completeData}{complete EDGE-T decision tree}
+\item{completeData}{All combinations of region, period, univocalName and technology in EDGE-T decision tree}
+
+\item{GDPpcMER}{GDP per capita based on market exchange rate}
+
+\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated univocalNames}
 }
 \value{
 a quitte object

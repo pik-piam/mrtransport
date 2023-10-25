@@ -11,9 +11,9 @@
 #' @export
 
 toolPreparePSI <- function(x) {
-  subsectorL3 <- variable <- . <- subsectorL1 <- subsectorL2 <- technology <- period <- value <-
-    univocalName <- vehicleType <- unit <- region <- sector <- technology <- vehicleType <-
-    technologyPSI <- vehicleTypePSI <- NULL
+  variable <- .   <- technology <- period <- value <-
+    univocalName  <- unit <- region  <- vehicleTypePSI <-
+    technologyPSI <- PSI <- NULL
 
   mapfile <- system.file("extdata", "mappingPSItoEDGET.csv",
    package = "mrtransport", mustWork = TRUE)
@@ -22,13 +22,11 @@ toolPreparePSI <- function(x) {
   dt <- magpie2dt(x)
   dt[, vehicleTypePSI := gsub("_", ".", vehicleTypePSI)]
   dt <- merge.data.table(dt, mappingPSI, all.x = TRUE, by = c("technologyPSI", "vehicleTypePSI"))
-  dt <- dt[!sector == ""]
+  dt <- dt[!univocalName == ""]
   #Average the energy intensity for petrol and diesel ICEs and PHEVs
   dt <- dt[, .(value = mean(value)),
-           by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-                  "technology", "univocalName", "variable", "unit", "period")]
-  setkey(dt, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName,
-         variable, unit, period)
+           by = c("region", "period", "univocalName", "technology", "variable", "unit")]
+  setkey(dt, region, univocalName, technology, variable, unit, period)
 
   if (anyNA(dt) == TRUE) {
     stop("PSI data contains NAs")

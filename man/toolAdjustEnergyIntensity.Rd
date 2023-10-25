@@ -8,6 +8,7 @@ toolAdjustEnergyIntensity(
   dt,
   regionTRACCS,
   TrendsEnIntPSI,
+  filter,
   ariadneAdjustments = TRUE
 )
 }
@@ -17,6 +18,8 @@ toolAdjustEnergyIntensity(
 \item{regionTRACCS}{iso countries included in TRACCS database}
 
 \item{TrendsEnIntPSI}{Energy intensity trends from PSI}
+
+\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated univocalNames}
 
 \item{ariadneAdjustments}{optional parameter adjustements according to ARIADNE model intercomparison in 2022}
 }
