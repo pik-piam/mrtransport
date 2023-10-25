@@ -5,6 +5,7 @@
 #' @param dt calculated raw data without adjustments
 #' @param regionTRACCS iso countries included in TRACCS database
 #' @param TrendsEnIntPSI Energy intensity trends from PSI
+#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
 #' @param ariadneAdjustments optional parameter adjustements according to ARIADNE model intercomparison in 2022
 #'
 #' @return a quitte object
@@ -12,8 +13,8 @@
 #' @importFrom rmndt magpie2dt
 #' @import data.table
 
-toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, ariadneAdjustments = TRUE) {
- region <- technology <- period <- value <- subsectorL3 <- region <- subsectorL1 <- vehicleType <- TRACCS <-
+toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, ariadneAdjustments = TRUE) {
+ region <- technology <- period <- value  <- region   <- TRACCS <-
    enIntLargeCarSUV <- univocalName <- NULL
 
 #To complete dataset and ensure consistency and actuality a number of fixes are applied on the raw source data
@@ -21,29 +22,27 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, ariadneA
    #Calculate PSI factors for the energy intensity improvement compared to 2010
    TrendsEnIntPSI <- TrendsEnIntPSI[region %in% regionTRACCS & !(region == "ALA") &
                                     technology %in% c("Liquids", "NG") & period >= 2010]
-   TrendsEnIntPSI[, factor := value / value[period == 2010], by = c("region", "sector", "subsectorL1",
-                  "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit")]
+   TrendsEnIntPSI[, factor := value / value[period == 2010], by = c("region", "univocalName", "technology", "variable", "unit")]
    TrendsEnIntPSI[, value := NULL]
-   dt <- merge.data.table(dt, TrendsEnIntPSI, all.x = TRUE, by = c("region", "sector", "subsectorL1",
-         "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName", "variable", "unit", "period"))
+   dt <- merge.data.table(dt, TrendsEnIntPSI, all.x = TRUE, by = c("region", "period", "univocalName", "technology", "variable", "unit"))
    #Multiply constant extrapolated 2010 TRACCS values with calculated factor
    dt[, value := ifelse(!is.na(factor), value * factor, value)][, factor := NULL]
 
 #2: Adjustments made by Alois in consequence of the ARIADNE model intercomparison in 2022
    if (ariadneAdjustments) {
-     dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W" & technology == "Liquids",
+     dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W & technology == "Liquids",
          value := value * 2.4 / 2.85]
-     dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W" & technology == "BEV",
+     dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W & technology == "BEV",
          value := value * 0.77 / 0.94]
-     dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W" & technology == "FCEV",
+     dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W & technology == "FCEV",
          value := value * 1.41 / 1.75]
-     dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W" & technology == "Hybrid electric",
+     dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W & technology == "Hybrid electric",
          value := value * 1.86 / 1.3]
 
      ## we apply all constant from 2020 and adjust for DLR improvements (PSI improvements
      ## are calculated on sales only and are thus too ambitious)
-     dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W" & period >= 2020,
-         value := .SD[period == 2020]$value, by = c("vehicleType", "technology")]
+     dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W & period >= 2020,
+         value := .SD[period == 2020]$value, by = c("univocalName", "technology")]
 
      improvements <- fread("technology, period, factor
         Liquids, 2030, 0.94
@@ -53,20 +52,20 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, ariadneA
         FCEV, 2030, 0.83
         FCEV, 2045, 0.75")
 
-     dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W",
+     dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W,
          factor := improvements[.SD, factor, on = c("technology", "period")]]
-     dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W" & period <= 2020, factor := 1]
-     dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W",
-         factor := na.approx(factor, x = period, rule = 2), by = c("region", "vehicleType", "technology")]
-     dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W", value := value * factor]
+     dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W & period <= 2020, factor := 1]
+     dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W,
+         factor := na.approx(factor, x = period, rule = 2), by = c("region", "univocalName", "technology")]
+     dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W, value := value * factor]
      dt[, factor := NULL]
 
      ## the intensity deviation is likely coming from a deviation in LF and size shares
-     dt[region == "DEU" & subsectorL1 == "trn_freight_road" & technology == "Liquids",
+     dt[region == "DEU" & univocalName %in% filter$trn_freight_road & technology == "Liquids",
          value := value * 1.4 / 1.6]
-     dt[region == "DEU" & subsectorL1 == "trn_freight_road" & technology == "BEV",
+     dt[region == "DEU" & univocalName %in% filter$trn_freight_road & technology == "BEV",
          value := value * 2.94 / 2.3]
-     dt[region == "DEU" & subsectorL1 == "trn_freight_road" & technology == "FCEV",
+     dt[region == "DEU" & univocalName %in% filter$trn_freight_road & technology == "FCEV",
          value := value * 4.7 / 4.4]
     }
 
@@ -75,46 +74,37 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, ariadneA
    # based on "A review on potential use of hydrogen in aviation applications", Dincer, 2016:
    # the energy intensity of a hydrogen airplane is around 1MJ/pkm. The range of energy intensity of a
    # fossil-based airplane is here around 3-2 MJ/pkm-> a factor of 0.5 is assumed
-   dt <- rbind(dt, dt[subsectorL1 %in% c("Domestic Aviation")][, c("value", "technology") :=
+   dt <- rbind(dt, dt[univocalName == "Domestic Aviation"][, c("value", "technology") :=
                                                                  list(0.5 * value, "Hydrogen")])
 
 #b) Alternative technologies for Busses are not covered by our sources
    ## Buses are assumed to have the same energy intensity as 18 tons truck
-   alternativeBusTech <- dt[vehicleType == "Bus_tmp_vehicletype"]
-   alternativeBusTech <- unique(alternativeBusTech[, c("sector", "subsectorL1", "subsectorL2", "subsectorL3",
-                                                       "vehicleType", "univocalName", "variable", "unit")])
-   alternativeBusTechVal <- dt[vehicleType == "Truck (18t)" & technology %in% c("BEV", "FCEV")]
-   alternativeBusTechVal[, vehicleType := "Bus_tmp_vehicletype"]
-   alternativeBusTechVal <- alternativeBusTechVal[, c("region",  "vehicleType", "technology", "variable",
-                                                      "unit", "period", "value")]
-   alternativeBusTech <- merge.data.table(alternativeBusTech, alternativeBusTechVal,
-                                          by = c("vehicleType", "variable", "unit"))
+   alternativeBusTech <- dt[univocalName == "Truck (18t)" & technology %in% c("BEV", "FCEV")]
+   alternativeBusTech[, univocalName := "Bus"]
    dt <- rbind(dt, alternativeBusTech)
 
 #c) Some regions are missing electric motorcycles (>250CC)
-   BEVmot <- dt[vehicleType == "Motorcycle (>250cc)" & technology == "BEV"]
-   BEVmotAll <- dt[vehicleType == "Motorcycle (>250cc)"]
+   BEVmot <- dt[univocalName == "Motorcycle (>250cc)" & technology == "BEV"]
+   BEVmotAll <- dt[univocalName == "Motorcycle (>250cc)"]
    BEVmotAll <- unique(BEVmotAll[, c("technology", "value") := NULL])[, technology := "BEV"]
-   BEVmotAll <- merge.data.table(BEVmotAll, BEVmot, by = c("region", "period", "sector", "subsectorL1",
-                                                    "subsectorL2", "subsectorL3", "vehicleType", "technology",
-                                                    "univocalName", "variable", "unit"), all = TRUE)
+   BEVmotAll <- merge.data.table(BEVmotAll, BEVmot, by = c("region", "period", "univocalName", "technology",
+                                                     "variable", "unit"), all = TRUE)
    BEVmotAll[, TRACCS := ifelse(region %in% regionTRACCS, "TRACCS", "nonTRACCS")]
    #NAs (missing data) is filled by averages of other countries
    BEVmotAll <- BEVmotAll[, mean := lapply(.SD, mean, na.rm = TRUE), .SDcols = "value",
-                          by = c("period", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-                                 "technology", "TRACCS")]
+                          by = c("period", "univocalName", "technology", "TRACCS")]
    BEVmotAll[is.na(value), value := mean][, c("TRACCS", "mean") := NULL]
-   dt <- rbind(dt[!(vehicleType == "Motorcycle (>250cc)" & technology == "BEV")], BEVmotAll)
+   dt <- rbind(dt[!(univocalName == "Motorcycle (>250cc)" & technology == "BEV")], BEVmotAll)
 
 #d) Energy intensity for large cars is not provided by PSI, hence some nonTRACCS countries are missing
    # alternative technologies for Large cars
-   enIntLargeCar <- unique(dt[vehicleType == "Large Car and SUV",
-                              c("region", "period", "subsectorL3", "technology", "value")])
+   enIntLargeCar <- unique(dt[univocalName == "Large Car and SUV",
+                              c("region", "period", "technology", "value")])
    setnames(enIntLargeCar, "value", "enIntLargeCarSUV")
-   dt4W <- merge.data.table(dt[subsectorL3 == "trn_pass_road_LDV_4W"], enIntLargeCar,
-                            by = c("region", "period", "subsectorL3", "technology"), all.x = TRUE)
-   dt4W[is.na(value) & vehicleType == "Large Car", value := enIntLargeCarSUV * 0.9][, enIntLargeCarSUV := NULL]
-   dt <- rbind(dt[!subsectorL3 == "trn_pass_road_LDV_4W"], dt4W)
+   dt4W <- merge.data.table(dt[univocalName %in% filter$trn_pass_road_LDV_4W], enIntLargeCar,
+                            by = c("region", "period", "technology"), all.x = TRUE)
+   dt4W[is.na(value) & univocalName == "Large Car", value := enIntLargeCarSUV * 0.9][, enIntLargeCarSUV := NULL]
+   dt <- rbind(dt[!univocalName %in% filter$trn_pass_road_LDV_4W], dt4W)
 
 #e) Some non TRACCS countries ("ARE" "BHR" "IRN" "IRQ" "ISR" "JOR" "KWT" "LBN" "OMN" "PSE" "QAT" "SAU" "SYR" "YEM")
    # are missing data for Freight and Passenger Rail running on liquids. Average of other non TRACCS countries
@@ -127,7 +117,7 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, ariadneA
    dt[, TRACCS := ifelse(region %in% regionTRACCS, "TRACCS", "nonTRACCS")]
    dt[univocalName %in% c("Freight Rail", "Passenger Rail") & technology == "Liquids",
       mean := lapply(.SD, mean, na.rm = TRUE), .SDcols = "value",
-      by = c("period", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "TRACCS")]
+      by = c("period", "univocalName", "technology", "TRACCS")]
    dt[univocalName %in% c("Freight Rail", "Passenger Rail") & technology == "Liquids" & is.na(value), value := mean]
    dt[, c("TRACCS", "mean") := NULL]
 

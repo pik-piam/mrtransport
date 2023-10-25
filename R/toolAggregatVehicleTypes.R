@@ -4,13 +4,13 @@ toolAggregateVehicleTypes <- function(...) {
 
   # save NAs (= no values) in weightMask
   weightMask <- !is.na(args[["x"]])
-  getItems(weightMask, dim = "variable") <- NULL
-  getItems(weightMask, dim = "unit") <- NULL
 
   if (!is.null(args[["weight"]])) {
     # set weight to zero where no values are
-    args[["weight"]]  <- args[["weight"]] * weightMask
     getItems(args[["weight"]], dim = "variable") <- NULL
+    args[["weight"]]  <- args[["weight"]] * weightMask
+    getSets(args[["weight"]])[1] <- "region"
+    getSets(args[["weight"]])[2] <- "period"
   }
 
   # set NAs to zeros, so that they are considered for aggregation

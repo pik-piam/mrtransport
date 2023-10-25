@@ -5,19 +5,18 @@
 #' @param dt calculated raw data without adjustments
 #' @param ISOcountries list of iso countries
 #' @param yrs temporal resolution of EDGE-T model
-#' @param completeData complete EDGE-T decision tree
+#' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
+#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
 #' @importFrom rmndt magpie2dt
 #' @import data.table
 #' @return a quitte object
 
-toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData) {
-  value <- . <- region <- vehicleType <- univocalName <- check <- unit <- sector <- variable <-
-    subsectorL1 <- subsectorL3 <- subsectorL2 <- period <- technology <- NULL
+toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filter) {
+  value <- . <- region  <- univocalName <- check <- unit  <- variable <-
+    period <- technology <- NULL
 
   # 1: Aggregate different non fuel OPEX types
-  dt <- dt[, .(value = sum(value)), by = c("region", "sector", "subsectorL1", "subsectorL2",
-                                           "subsectorL3", "vehicleType", "technology", "univocalName", "unit",
-                                           "period")]
+  dt <- dt[, .(value = sum(value)), by = c("region", "period", "univocalName", "technology", "unit")]
   dt[, variable := "Non fuel OPEX"]
 
   # 2: Non fuel OPEX are given combined with CAPEX for shipping and rail. Apply shares
@@ -26,47 +25,47 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData) {
   # O&M 80% for low traffic lines
   # 50% for high traffic lines
   # -> 60% O&M -> CAPEX share = 40%
-  dt[subsectorL1 %in% c("Freight Rail", "Passenger Rail", "HSR"), value := value * (1 - 0.4)]
-  dt[subsectorL1 %in% c("Freight Rail", "Passenger Rail", "HSR"), variable := "Non fuel OPEX"]
+  dt[univocalName %in% c("Freight Rail", "Passenger Rail", "HSR"), value := value * (1 - 0.4)]
+  dt[univocalName %in% c("Freight Rail", "Passenger Rail", "HSR"), variable := "Non fuel OPEX"]
   # Ships
   # CCS ships doi:10.1016/j.egypro.2014.11.285
   # CAPEX ~ 30%
-  dt[subsectorL1 %in% c("Domestic Ship", "International Ship"), value := value * (1 - 0.3)]
-  dt[subsectorL1 %in% c("Domestic Ship", "International Ship"), variable := "Non fuel OPEX"]
+  dt[univocalName %in% c("Domestic Ship", "International Ship"), value := value * (1 - 0.3)]
+  dt[univocalName %in% c("Domestic Ship", "International Ship"), variable := "Non fuel OPEX"]
 
   #3: Add hydrogen airplanes
-  h2Air <- dt[vehicleType == "Domestic Aviation_tmp_vehicletype" & technology == "Liquids"][, technology := "Hydrogen"]
+  h2Air <- dt[univocalName == "Domestic Aviation" & technology == "Liquids"][, technology := "Hydrogen"]
   # following https://www.fch.europa.eu/sites/default/files/FCH%20Docs/20200507_Hydrogen%20Powered%20Aviation%20report_FINAL%20web%20%28ID%208706035%29.pdf # nolint: line_length_linter
   # maintenance costs are 50% higher than than a liquids fuelled airplane
-  h2Air[vehicleType == "Domestic Aviation_tmp_vehicletype" & period <= 2020,
+  h2Air[univocalName == "Domestic Aviation" & period <= 2020,
         value := 1.5 * value]
   # for hydrogen airplanes, in between 2020 and 2040 the cost follows a linear trend, and reaches
   # a value 30% higher than a liquids fuelled airplane
-  h2Air[vehicleType == "Domestic Aviation_tmp_vehicletype" & period >= 2020,
+  h2Air[univocalName == "Domestic Aviation" & period >= 2020,
         value := ifelse(period <= 2040, value[period == 2020] + (1.3 * value[period == 2100] - value[period == 2020])
                         * (period - 2020) / (2100 - 2020), 1.3 * value[period == 2100])]
   dt <- rbind(dt, h2Air)
 
   #4: Some two wheeler classes are missing and are replaced by other vehicle classes
   # Find missing values
-  completeData <- completeData[!(subsectorL1 %in% c("trn_freight_road", "Cycle", "Walk") |
-                                   subsectorL3 == "trn_pass_road_LDV_4W" | subsectorL2 == "Bus")]
+  completeData <- completeData[!(univocalName %in% c(filter$trn_freight_road, "Cycle", "Walk") |
+                                   univocalName %in% filter$trn_pass_road_LDV_4W | univocalName == "Bus")]
   dt <- merge.data.table(dt, completeData, all.y = TRUE)
 
-  missing50 <- dt[is.na(value) & vehicleType == "Motorcycle (50-250cc)"]
-  missing250 <- dt[is.na(value) & vehicleType == "Motorcycle (>250cc)"]
-  missingMoped <- dt[is.na(value) & vehicleType == "Moped"]
+  missing50 <- dt[is.na(value) & univocalName == "Motorcycle (50-250cc)"]
+  missing250 <- dt[is.na(value) & univocalName == "Motorcycle (>250cc)"]
+  missingMoped <- dt[is.na(value) & univocalName == "Moped"]
 
   # Get values of other vehicle types
-  twoW50 <- dt[!is.na(value) & vehicleType == "Motorcycle (50-250cc)"]
+  twoW50 <- dt[!is.na(value) & univocalName == "Motorcycle (50-250cc)"]
   twoW50 <- twoW50[, c("region", "technology", "period", "value")]
   setnames(twoW50, "value", "twoW50")
 
-  twoW250 <- dt[!is.na(value) & vehicleType == "Motorcycle (>250cc)"]
+  twoW250 <- dt[!is.na(value) & univocalName == "Motorcycle (>250cc)"]
   twoW250 <- twoW250[, c("region", "technology", "period", "value")]
   setnames(twoW250, "value", "twoW250")
 
-  twoWmoped <- dt[!is.na(value) & vehicleType == "Moped"]
+  twoWmoped <- dt[!is.na(value) & univocalName == "Moped"]
   twoWmoped <- twoWmoped[, c("region", "technology", "period", "value")]
   setnames(twoWmoped, "value", "twoWmoped")
 
@@ -84,7 +83,7 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData) {
   # only features mopeds and motorcycles (50-250cc) + 3W ICEs that are mapped on motorcycles (> 250cc).
   # We assign UMI to OAS
   # 1st approach: take mean value of OAS for UMI
-  # missingUMI <- dt[!is.na(value) & vehicleType == "Motorcycle (>250cc)"] # nolint: commented_code_linter
+  # missingUMI <- dt[!is.na(value) & univocalName == "Motorcycle (>250cc)"] # nolint: commented_code_linter
   # missingUMI <- merge.data.table(missingUMI, ISOcountries[, c("region", "regionCode21")], by = "region") # nolint: commented_code_linter
   # missingUMI <- missingUMI[regionCode21 == "OAS"] # nolint: commented_code_linter
   # missingUMI <- missingUMI[, .(value = mean(value)), by = c("sector", "subsectorL1", "subsectorL2", "subsectorL3", # nolint: commented_code_linter
@@ -94,9 +93,9 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData) {
   # 2nd approach: take prices of Tuvalu (TUV) for ICE + BEV from lower category (costs are somewhat similar)
   # (UMI is anyway really small and will add little to OAS overall)
   # filter out the 3W ICEs in dt to prevent duplicates
-  dt <- dt[!(region == "UMI" & vehicleType == "Motorcycle (>250cc)")]
-  missingUMI <- dt[region == "TUV" & vehicleType == "Motorcycle (50-250cc)"][, region := "UMI"]
-  missingUMI[, vehicleType := "Motorcycle (>250cc)"][, univocalName := "Motorcycle (>250cc)"]
+  dt <- dt[!(region == "UMI" & univocalName == "Motorcycle (>250cc)")]
+  missingUMI <- dt[region == "TUV" & univocalName == "Motorcycle (50-250cc)"][, region := "UMI"]
+  missingUMI[, univocalName := "Motorcycle (>250cc)"]
   missing250 <- rbind(missing250, missingUMI)
 
   missingMoped <- merge.data.table(missingMoped, twoW50, by = c("region", "technology", "period"), all.x = TRUE)
@@ -107,13 +106,8 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData) {
   missing2W <- rbind(missing50, missing250, missingMoped)
   missing2W[, unit := "US$2005/vehkm"][, variable := "Non fuel OPEX"]
 
-  dt <- rbind(dt[!(is.na(value) & subsectorL3 == "trn_pass_road_LDV_2W")], missing2W)
+  dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_pass_road_LDV_2W)], missing2W)
   dt[, check := NULL]
-
-  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
-               "univocalName", "variable", "unit", "period", "value")]
-  setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology,
-         univocalName, variable, unit, period)
 
   return(dt)
 

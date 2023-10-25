@@ -4,10 +4,12 @@
 \alias{calcEdgeTransportSAinputs}
 \title{Provide EDGE-Transport input parameters}
 \usage{
-calcEdgeTransportSAinputs(subtype, IEAharm = TRUE)
+calcEdgeTransportSAinputs(subtype, SSPscen = "SSP2EU", IEAharm = TRUE)
 }
 \arguments{
 \item{subtype}{one of the parameters required for EDGE-T SA}
+
+\item{SSPscen}{shared socioeconomic pathway}
 
 \item{IEAharm}{switch IEA harmonization of energy intensity on and off}
 }
