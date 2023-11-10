@@ -11,8 +11,8 @@
 #' @importFrom rmndt magpie2dt
 
 toolPrepareTRACCS <- function(x, subtype) {
-  subsectorL3 <- variable <- . <- subsectorL1 <- subsectorL2 <- technology <- period <- value <-
-    univocalName <- vehicleType <- unit <- region <- sector <- technology <- vehicleType <-
+  variable <- . <- technology <- period <- value <-
+    univocalName  <- unit <- region  <-
     TRACCS_category <- TRACCS_vehicle_type <- TRACCS_technology <- vehPop <- NULL
 
   mapfile <- system.file("extdata", "mappingTRACCStoEDGET.csv",
@@ -38,24 +38,20 @@ toolPrepareTRACCS <- function(x, subtype) {
   if (subtype %in% c("energyIntensity", "loadFactor", "annualMileage")) {
     dt <- merge.data.table(dt, weight, all.x = TRUE)
     dt <- merge.data.table(dt, mappingTRACCS, all.x = TRUE)
-    dt <- dt[!sector == ""]
+    dt <- dt[!univocalName == ""]
     dt <- unique(dt[, .(value = sum(value * vehPop) / sum(vehPop)),
-                    by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-                           "technology", "univocalName", "variable", "unit", "period")])
+                    by = c("region", "period", "univocalName", "technology", "variable", "unit")])
   } else if (subtype %in% c("roadFuelConsumption", "roadESdemand", "histESdemand", "railFeDemand", "fleetData")) {
     dt <- merge.data.table(dt, mappingTRACCS, all.x = TRUE)
-    dt <- dt[!sector == ""]
+    dt <- dt[!univocalName == ""]
     dt <- unique(dt[, .(value = sum(value)),
-                    c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3",
-                    "vehicleType", "technology", "univocalName", "variable", "unit", "period")])
+                    c("region", "univocalName", "period", "technology", "variable", "unit")])
   } else if (subtype == "fuelEnDensity") {
     #do nothing as fuel energy density cannot be mapped on EDGE-T structure
   }
 
-  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-               "technology", "univocalName", "variable", "unit", "period", "value")]
-  setkey(dt, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology,
-         univocalName, variable, unit, period)
+  dt <- dt[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
+  setkey(dt, region, period, univocalName,  technology, variable, unit)
   if (anyNA(dt) == TRUE) {
     stop("TRACCS data contains NAs")
   }

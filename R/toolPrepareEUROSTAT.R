@@ -11,8 +11,8 @@
 #' @export
 
 toolPrepareEUROSTAT <- function(x) {
-  region <- EUROSTATsector <- period <- sector <- subsectorL1 <- subsectorL2 <- subsectorL3 <-
-    vehicleType <- technology <- univocalName <- variable <- unit <- period <- NULL
+  region <- EUROSTATsector <- period     <-
+   technology <- univocalName <- variable <- unit <- period <- NULL
 
   mapfile <- system.file("extdata", "mappingEUROSTATtoEDGET.csv",
    package = "mrtransport", mustWork = TRUE)
@@ -23,10 +23,8 @@ toolPrepareEUROSTAT <- function(x) {
 
   dt <- merge.data.table(dt, mappingEUROSTAT, all.x = TRUE, allow.cartesian = TRUE)
 
-  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-               "technology", "univocalName", "variable", "unit", "period", "value")]
-  setkey(dt, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology,
-         univocalName, variable, unit, period)
+  dt <- dt[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
+  setkey(dt, region, period, univocalName, technology, variable, unit)
 
   if (anyNA(dt) == TRUE) {
     stop("EUROSTAT data contains NAs")

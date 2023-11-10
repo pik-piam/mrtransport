@@ -3,18 +3,19 @@
 #'
 #' @author Johanna Hoppe
 #' @param dt calculated raw data without adjustments
-#' @param completeData complete EDGE-T decision tree
+#' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
+#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
 #' @param ariadneAdjustments switch on and off adjustments according to ARIADNE model intercomparison in 2022
 #' @return a quitte object
 
-toolAdjustAnnualMileage <- function(dt, completeData, ariadneAdjustments = TRUE) {
- region <- subsectorL3 <- value <- univocalName <- check <- unit <- variable <- annualMileage <- NULL
+toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments = TRUE) {
+ region <- value <- univocalName <- check <- unit <- variable <- annualMileage <- NULL
 
 #1: Adjustments made by Alois in consequence of the ARIADNE model intercomparison in 2022
   if (ariadneAdjustments) {
     ## according to ViZ data from 2020 there has been a 10% reduction wrt 2010 values
     ## (from 14 kkm to 13.6 kkm per vehicle and year)
-    dt[region == "DEU" & subsectorL3 == "trn_pass_road_LDV_4W", value := value * 0.9]
+    dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W, value := value * 0.9]
   }
 
 #2: Assume missing data
@@ -34,9 +35,9 @@ toolAdjustAnnualMileage <- function(dt, completeData, ariadneAdjustments = TRUE)
   # update variable and unit for introduced NAs
   dt[, unit := "vehkm/veh/yr"][, variable := "Annual mileage"][, check := NULL]
   # Average first within regions over technologies -> e.g. BEV gets the same value as other technologies
-  dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("region", "period", "vehicleType")]
+  dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("region", "period", "univocalName")]
   # If there are still NAs, average over regions -> e.g. ICE in FRA gets the same value as ICE in DEU
-  dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("period", "vehicleType", "technology")]
+  dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("period", "univocalName", "technology")]
 
 
 #b) Annual Mileage for Trucks is missing completely - insert assumptions made by Alois in 2022 (probably from ARIADNE)

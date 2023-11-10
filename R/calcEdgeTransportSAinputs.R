@@ -2,6 +2,7 @@
 #' @author Johanna Hoppe
 #' @param subtype one of the parameters required for EDGE-T SA
 #' @param IEAharm switch IEA harmonization of energy intensity on and off
+#' @param SSPscen shared socioeconomic pathway
 #' @import data.table
 #' @import mrremind
 #' @importFrom rmndt approx_dt
@@ -9,9 +10,9 @@
 
 calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRUE) { # nolint: cyclocomp_linter
 
-  temporal <- spatial <- present <- period <- region <- sector <- subsectorL1 <-
-    subsectorL2 <- subsectorL3 <- vehicleType <- technology <- univocalName <-
-    altTech <- variable <- value <- regionCode12 <- NULL
+  temporal <- spatial <- present <- period <- region <-
+    subsectorL2   <- technology <- univocalName <- gdppc <- speed <-
+    altTech <- variable <- value <- regionCode12 <- multiplier <-NULL
 
   years <- data.table(temporal = "all", period = c(
     1990,
@@ -21,7 +22,8 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
   ))
   # decisionTree.csv contains all possible branches of the decision tree
   decisionTree <- fread(system.file("extdata/decisionTree.csv", package = "mrtransport", mustWork = TRUE))
-  decisionTree[, temporal := "all"][, spatial := "all"]
+  decisionOptions <- decisionTree[, c("univocalName", "technology")]
+  decisionOptions[, temporal := "all"][, spatial := "all"]
   # Not all countries feature the same branches of the decision tree - Some vehicleTypes and modes are not
   # available in certain countries
   # Here we create the full structure of the nested decision tree differentiated for all countries to make it testable
@@ -32,7 +34,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
   setnames(ISOcountriesMap, c("countryCode"), c("region"))
   ISOcountries <- ISOcountriesMap[, c("region")][, spatial := "all"]
 
-  completeDataSet <- merge.data.table(decisionTree, ISOcountries, by = "spatial", allow.cartesian = TRUE)
+  completeDataSet <- merge.data.table(decisionOptions, ISOcountries, by = "spatial", allow.cartesian = TRUE)
   completeDataSet[, spatial := NULL]
   mapCountrySpecificVehicleTypes <- fread(system.file("extdata/mapCountrySpecificVehicleTypes.csv",
     package = "mrtransport", mustWork = TRUE))
@@ -44,8 +46,17 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
   completeDataSet[, temporal := NULL]
   completeDataSet[, check := 1]
   years <- years[, c(period)]
-  setkey(completeDataSet, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType,
-    technology, univocalName, period)
+  setkey(completeDataSet, region, period, univocalName, technology)
+
+  # categories for filtering data
+  categories <- c("trn_pass_road_LDV_4W", "trn_pass_road_LDV_2W", "trn_freight_road", "trn_pass", "trn_freight")
+
+   findEntries <- function(category, dataTable){
+     test <- dataTable[, lapply(.SD, function(x) grepl(category, x))]
+     entries <- unique(decisionTree[rowSums(test) > 0]$univocalName)
+   }
+
+  filterEntries <- sapply(categories, findEntries, dataTable = decisionTree, USE.NAMES = TRUE)
 
   switch(subtype,
     "energyIntensity" = {
@@ -62,8 +73,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # Inter- and extrapolate all data to model input data years
       data <- list(enIntGCAM = enIntGCAM, enIntUCD = enIntUCD, enIntTRACCS = enIntTRACCS, enIntPSI = enIntPSI)
       data <- lapply(data, approx_dt, years, "period", "value",
-        c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
-          "univocalName", "variable", "unit"), extrapolate = TRUE)
+        c("region", "univocalName","technology", "variable", "unit"), extrapolate = TRUE)
 
       # merge.data.table data
       # TRACCS>PSI>GCAM
@@ -74,12 +84,12 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # 2: GCAM data
       # Used parts of the GCAM energy Intensity:
       # Conventional cars (Liquids, NG) in non-TRACCS countries
-      energyIntensityRawGCAMconventionalCarsnonTRACCS <- data$enIntGCAM[subsectorL3 == "trn_pass_road_LDV_4W" &
+      energyIntensityRawGCAMconventionalCarsnonTRACCS <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_4W &
                                                          technology %in% c("Liquids", "NG") &
                                                          !region %in% countriesTRACCS]
       # All other data for non-TRACCS countries except for Trucks
-      energyIntensityRawGCAMnonCarsnonTRACCS <- data$enIntGCAM[!subsectorL3 == "trn_pass_road_LDV_4W" &
-                                                               !subsectorL1 == "trn_freight_road" &
+      energyIntensityRawGCAMnonCarsnonTRACCS <- data$enIntGCAM[!univocalName %in% filterEntries$trn_pass_road_LDV_4W &
+                                                               !univocalName %in% filterEntries$trn_freight_road &
                                                                !region %in% countriesTRACCS]
       # Energy Intensity data for Freight Rail, Passenger Rail, HSR, Domestic Aviation, International Aviation,
       # Domestic Shipping, International Shipping is not provided by TRACCS. Hence GCAM data is used for all countries
@@ -89,15 +99,14 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                                                region %in% countriesTRACCS]
       # Alternative technologies for motorcycles are missing in the TRACCS database and are taken from GCAM also
       # for TRACCS countries
-      energyIntensityRawGCAMalt2WheelersTRACCSreg <- data$enIntGCAM[subsectorL3 == "trn_pass_road_LDV_2W" &
+      energyIntensityRawGCAMalt2WheelersTRACCSreg <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_2W &
                                                                     region %in% countriesTRACCS & technology == "BEV"]
 
       #3: PSI data
       # Used for Trucks in non-TRACCS countries
-      energyIntensityRawPSITrucks <- data$enIntPSI[vehicleType %in% c("Truck (0-3.5t)", "Truck (7.5t)", "Truck (18t)",
-                                                  "Truck (26t)", "Truck (40t)") & !region %in% countriesTRACCS]
+      energyIntensityRawPSITrucks <- data$enIntPSI[univocalName %in% filterEntries$trn_freight_road & !region %in% countriesTRACCS]
       # TRACCS data does not include NG Truck (7.5t), Truck (18t), Truck (26t), Truck (40t) -> data is taken from PSI
-      energyIntensityRawPSItrucksNGTRACCSreg <- data$enIntPSI[vehicleType %in% c("Truck (7.5t)", "Truck (18t)",
+      energyIntensityRawPSItrucksNGTRACCSreg <- data$enIntPSI[univocalName %in% c("Truck (7.5t)", "Truck (18t)",
                                                               "Truck (26t)", "Truck (40t)") &
                                                               technology == "NG" & region %in% countriesTRACCS]
       # Used for alternative Cars (BEV,FCEV,HEV) in TRACCS countries
@@ -108,28 +117,25 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       TRACCSVehTypes <- unique(TRACCSVehTypes[, c("value", "technology") := NULL])
       # Apply only on the vehicle types that are in general available from the PSI dataset
       # (2 Wheelers and Busses are not provided by PSI)
-      TRACCSVehTypes <- TRACCSVehTypes[vehicleType %in% unique(energyIntensityRawPSIalternativeTechTRACCSreg$vehicleType)] # nolint: line_length_linter
+      TRACCSVehTypes <- TRACCSVehTypes[univocalName %in% unique(energyIntensityRawPSIalternativeTechTRACCSreg$univocalName)] # nolint: line_length_linter
       energyIntensityRawPSIalternativeTechTRACCSreg <- merge.data.table(energyIntensityRawPSIalternativeTechTRACCSreg,
                                                                         TRACCSVehTypes, all.y = TRUE,
-                                                                        by = c("region", "sector", "subsectorL1",
-                                                                        "subsectorL2", "subsectorL3", "vehicleType",
-                                                                        "univocalName", "variable", "unit", "period"))
+                                                                        by = c("region", "univocalName", "variable", "unit", "period"))
       # Used for alternative Cars (BEV,FCEV,HEV) in non-TRACCS countries
       # For non TRACCS iso countries the available vehicle types differ.
       # Use the additional data on alternative Cars only for the existing vehicle types in GCAM
       energyIntensityRawPSIalternativeCarsnonTRACCS <- data$enIntPSI[technology %in% c("BEV", "FCEV", "Hybrid electric") & # nolint: line_length_linter
                                                                      !region %in% countriesTRACCS]
       # Create structure for GCAM vehicle types and alternative tech options
-      GCAMVehTypes <- energyIntensityRawGCAMconventionalCarsnonTRACCS[subsectorL3 == "trn_pass_road_LDV_4W" &
+      GCAMVehTypes <- energyIntensityRawGCAMconventionalCarsnonTRACCS[univocalName %in% filterEntries$trn_pass_road_LDV_4W &
                                                                       !region %in% countriesTRACCS]
       GCAMVehTypes <- unique(GCAMVehTypes[, c("value", "technology", "variable", "unit") := NULL])[, altTech := 1]
       AltTechOpt <- data.table(technology = c("BEV", "FCEV", "Hybrid electric"), altTech = c(1, 1, 1))
       GCAMVehTypes <- merge.data.table(GCAMVehTypes, AltTechOpt, by = "altTech", allow.cartesian = TRUE)
       GCAMVehTypes[, altTech := NULL]
       energyIntensityRawPSIalternativeCarsnonTRACCS <- merge.data.table(energyIntensityRawPSIalternativeCarsnonTRACCS,
-                                                       GCAMVehTypes, all.y = TRUE, by = c("region", "sector", "subsectorL1", # nolint: line_length_linter
-                                                       "subsectorL2", "subsectorL3", "vehicleType", "technology",
-                                                       "univocalName", "period"))
+                                                       GCAMVehTypes, all.y = TRUE, by = c("region", "period", "univocalName",
+                                                        "technology"))
       # Large Car is missing for some nonTRACCS regions, filled in toolAdjustEnergyIntensity
       # -> NAs are introduced for unit & variable
       energyIntensityRawPSIalternativeCarsnonTRACCS[, variable := "Energy intensity"][, unit := "MJ/vehkm"]
@@ -141,12 +147,9 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
         energyIntensityRawPSIalternativeTechTRACCSreg,
         energyIntensityRawPSIalternativeCarsnonTRACCS)
 
-      setkey(energyIntensityRaw, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology,
-             period, univocalName)
-
       # Include data adjustments: fill gaps and correct data if necessary based on projects, other sources and own
       # assumptions
-      energyIntensity <- toolAdjustEnergyIntensity(energyIntensityRaw, countriesTRACCS, data$enIntPSI)
+      energyIntensity <- toolAdjustEnergyIntensity(energyIntensityRaw, countriesTRACCS, data$enIntPSI, filterEntries)
       # Harmonize energy intensity data in order to match IEA final energy values
       if (IEAharm == TRUE) {
         energyIntensity <- mrtransport::toolIEAharmonization(energyIntensity)
@@ -156,6 +159,10 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       activeModes <- completeDataSet[univocalName %in% c("Cycle", "Walk")]
       activeModes[, unit := "MJ/vehkm"][, variable := "Energy intensity"][, value := 0][, check := NULL]
       energyIntensity <- rbind(energyIntensity, activeModes)
+
+      energyIntensity <- energyIntensity[, c("region", "period", "univocalName", "technology",
+                    "variable", "unit", "value")]
+      setkey(energyIntensity,  region, period, univocalName, technology, variable, unit)
 
       # Check whether data is complete
       check <- merge.data.table(completeDataSet, energyIntensity, all = TRUE)
@@ -187,7 +194,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # Inter- and extrapolate all data to model input data years
       data <- list(AMTRACCS = AMTRACCS, AMUCD = AMUCD)
       data <- lapply(data, approx_dt, years, "period", "value",
-        c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName",
+        c("region", "univocalName", "technology",
           "variable", "unit"), extrapolate = TRUE)
 
       # merge.data.table data
@@ -195,15 +202,18 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # EU data is used from TRACCS, rest is filled with UCD
       annualMileageRaw <- rbind(data$AMTRACCS, data$AMUCD[!(region %in% unique(data$AMTRACCS$region))])
 
-      setkey(annualMileageRaw, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, period,
-             univocalName, variable, unit)
+      setkey(annualMileageRaw, region, period, univocalName, technology, variable, unit)
 
-      annualMileage <- toolAdjustAnnualMileage(annualMileageRaw, completeDataSet)
+      annualMileage <- toolAdjustAnnualMileage(annualMileageRaw, completeDataSet, filterEntries)
 
       # Add annual mileage of zero for active modes
       activeModes <- completeDataSet[univocalName %in% c("Cycle", "Walk")]
       activeModes[, unit := "vehkm/veh/yr"][, variable := "Annual mileage"][, value := 0][, check := NULL]
       annualMileage <- rbind(annualMileage, activeModes)
+
+      annualMileage <- annualMileage[, c("region", "period", "univocalName", "technology",
+                                 "variable", "unit", "value")]
+      setkey(annualMileage, region, period, univocalName, technology, variable, unit)
 
       # Check whether data is complete
       check <- merge.data.table(completeDataSet, annualMileage, all = TRUE)
@@ -242,21 +252,19 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # The historical energy service demand is only used for years <= 2010, future years will be calculated by demand
       # regression in the model
       data <- lapply(data, approx_dt, years[years <= 2010], "period", "value",
-        c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
-          "univocalName", "variable", "unit"), extrapolate = TRUE)
+        c("region", "univocalName", "technology",
+           "variable", "unit"), extrapolate = TRUE)
 
       # Calc Energy Service demand based on FE data from EUROSTAT for bunkers
       setnames(enIntensity, "value", "enIntensity")
       setnames(loadFactor, "value", "loadFactor")
       esDemandEUROSTAT <- merge.data.table(data$feDemandEUROSTAT, enIntensity,
-                          by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3",
-                          "vehicleType", "technology", "period", "univocalName"))
-      esDemandEUROSTAT <- merge.data.table(esDemandEUROSTAT, loadFactor, by = c("region", "sector",
-                          "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "period",
-                          "univocalName"))
-      esDemandEUROSTAT[, value := (value / enIntensity) * loadFactor][, c("enIntensity", "loadFactor") := NULL]
-      esDemandEUROSTAT[sector %in% c("trn_pass", "trn_aviation_intl"), unit := "pkm/yr"]
-      esDemandEUROSTAT[sector %in% c("trn_freight", "trn_shipping_intl"), unit := "tkm/yr"]
+                          by = c("region", "univocalName", "technology", "period"))
+      esDemandEUROSTAT <- merge.data.table(esDemandEUROSTAT, loadFactor, by = c("region", "period", "univocalName", "technology"))
+      toBillion <- 1e-09
+      esDemandEUROSTAT[, value := (value / enIntensity) * loadFactor * toBillion][, c("enIntensity", "loadFactor") := NULL]
+      esDemandEUROSTAT[univocalName %in% c(filterEntries$trn_pass, "International Aviation"), unit := "billion pkm/yr"]
+      esDemandEUROSTAT[univocalName %in% c(filterEntries$trn_freight, "International Ship"), unit := "billion tkm/yr"]
       esDemandEUROSTAT[, variable := "Energy service demand"]
 
       # merge.data.table data
@@ -275,15 +283,19 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       missingModes <- data$esDemandGCAM[region %in% unique(data$esDemandTRACCS$region) &
         !univocalName %in% unique(data$esDemandTRACCS$univocalName) &
         !univocalName %in% c("International Aviation", "Domestic Aviation", "Domestic Ship", "International Ship") &
-        !subsectorL3 == "trn_pass_road_LDV_4W"]
+        !univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       esDemandRaw <- rbind(
         data$esDemandTRACCS, esDemandEUROSTAT, data$esDemandGCAM[!(region %in% unique(data$esDemandTRACCS$region))],
         missingBunkers, missingModes
       )
 
-      esDemand <- toolAdjustEsDemand(esDemandRaw, ISOcountriesMap, completeDataSet)
-      setkey(esDemand, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, period,
-             univocalName)
+      esDemand <- toolAdjustEsDemand(esDemandRaw, ISOcountriesMap, completeDataSet, filterEntries)
+
+      esDemand <- esDemand[, c("region", "period", "univocalName", "technology",
+                               "variable", "unit", "value")]
+      setkey(esDemand,  region, period, univocalName, technology,
+             variable, unit)
+
 
       # Check whether data is complete
       check <- merge.data.table(completeDataSet[period <= 2010], esDemand, all = TRUE)
@@ -316,20 +328,25 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # Inter- and extrapolate all data to model input data years
       data <- list(LFTRACCS = LFTRACCS, LFGCAM = LFGCAM)
       data <- lapply(data, approx_dt, years, "period", "value",
-        c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology", "univocalName",
-          "variable", "unit"), extrapolate = TRUE)
+                     c("region", "univocalName", "technology",
+                       "variable", "unit"), extrapolate = TRUE)
 
       # merge.data.table data
       # EUROSTAT>TRACCS>GCAM
       #- EU data is used from TRACCS, rest is filled with GCAM
       countriesTRACCS <- unique(data$LFTRACCS$region)
       loadFactorRaw <- rbind(data$LFTRACCS, data$LFGCAM[!(region %in% countriesTRACCS)])
-      loadFactor <- toolAdjustLoadFactor(loadFactorRaw, completeDataSet, countriesTRACCS)
+      loadFactor <- toolAdjustLoadFactor(loadFactorRaw, completeDataSet, countriesTRACCS, filterEntries)
 
       # Add load factor of zero for active modes
       activeModes <- completeDataSet[univocalName %in% c("Cycle", "Walk")]
       activeModes[, unit := "p/veh"][, variable := "Load factor"][, value := 0][, check := NULL]
       loadFactor <- rbind(loadFactor, activeModes)
+
+      loadFactor <- loadFactor[, c("region", "period", "univocalName", "technology",
+                                  "variable", "unit", "value")]
+      setkey(loadFactor, region, period, univocalName, technology,
+             variable, unit)
 
       # Check whether data is complete
       check <- merge.data.table(completeDataSet, loadFactor, all = TRUE)
@@ -362,15 +379,15 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # Inter- and extrapolate all data to model input data years
       data <- list(CAPEXPSI = CAPEXPSI, CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD)
       data <- lapply(data, approx_dt, years, "period", "value",
-        c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
-          "univocalName", "variable", "unit"), extrapolate = TRUE)
+                     c("region", "univocalName", "technology",
+                       "variable", "unit"), extrapolate = TRUE)
 
       # Use only for cars (trucks and busses are given combined with non fuel OPEX)
-      CAPEXUCD4W <- data$CAPEXUCD[subsectorL3 == "trn_pass_road_LDV_4W"]
+      CAPEXUCD4W <- data$CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_4W]
 
       # CAPEX for Busses and Trucks given combined with non-fuel OPEX in the UCD data
       CAPEXcombinedUCD <- data$CAPEXcombinedUCD
-      CAPEXcombinedUCD <- CAPEXcombinedUCD[subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus"]
+      CAPEXcombinedUCD <- CAPEXcombinedUCD[univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus"]
 
       # merge.data.table data
       # PSI vehicle purchase costs are used for LDV 4 Wheelers in EUR
@@ -383,14 +400,19 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
                                 unit = "constant 2005 US$MER")[, years, paste0("gdppc_", SSPscen)]
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
-      CAPEX <- toolAdjustCAPEXtrackedFleet(CAPEXraw, ISOcountriesMap, years, completeDataSet, GDPpcMER)
+      CAPEX <- toolAdjustCAPEXtrackedFleet(CAPEXraw, ISOcountriesMap, years, completeDataSet, GDPpcMER, filterEntries)
+
+      CAPEX <-  CAPEX[, c("region", "period", "univocalName", "technology",
+                          "variable", "unit", "value")]
+      setkey(CAPEX, region, period, univocalName, technology,
+             variable, unit)
 
       # CAPEXtrackedFleet data only includes CAPEX data for LDV 4 Wheelers, Trucks and Busses
-      completeDataSet <- completeDataSet[subsectorL1 == "trn_freight_road" | subsectorL3 == "trn_pass_road_LDV_4W" |
-                                         subsectorL2 == "Bus"]
-      browser()
+      completeDataCAPFleet <- completeDataSet[univocalName %in% filterEntries$trn_freight_road | univocalName %in% filterEntries$trn_pass_road_LDV_4W |
+                                         univocalName == "Bus"]
+
       # Check whether data is complete
-      check <- merge.data.table(completeDataSet, CAPEX, all = TRUE)
+      check <- merge.data.table(completeDataCAPFleet, CAPEX, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("CAPEX input data for vehicle types that feature fleet tracking is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
@@ -411,25 +433,31 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
       nonFuelOPEXUCD <- toolPrepareUCD(readSource("UCD", "nonFuelOPEX"), "nonFuelOPEX")
-      nonFuelOPEXUCD <- nonFuelOPEXUCD[subsectorL3 == "trn_pass_road_LDV_4W"]
+      nonFuelOPEXUCD <- nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # For trucks and busses UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
       nonFuelOPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
-      nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus"]
+      nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus"]
 
       # Inter- and extrapolate all data to model input data years
       data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD, nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD)
       data <- lapply(data, approx_dt, years, "period", "value",
-        c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
-          "univocalName", "variable", "unit"), extrapolate = TRUE)
+        c("region", "univocalName", "technology",
+           "variable", "unit"), extrapolate = TRUE)
 
       nonFuelOPEXraw <- rbind(data$nonFuelOPEXUCD, data$nonFuelOPEXcombinedUCD)
-      nonFuelOPEX <- toolAdjustNonFuelOPEXtrackedFleet(nonFuelOPEXraw, years, completeDataSet)
+      nonFuelOPEX <- toolAdjustNonFuelOPEXtrackedFleet(nonFuelOPEXraw, years, completeDataSet, filterEntries)
 
       # nonFuelOPEXtrackedFleet data only includes data for LDV 4 Wheelers, Trucks and Busses
-      completeDataSet <- completeDataSet[subsectorL1 == "trn_freight_road" | subsectorL3 == "trn_pass_road_LDV_4W" |
-                                         subsectorL2 == "Bus"]
+      completeDataOPFleet <- completeDataSet[univocalName %in% filterEntries$trn_freight_road | univocalName %in% filterEntries$trn_pass_road_LDV_4W |
+                                         univocalName == "Bus"]
+
+      nonFuelOPEX <- nonFuelOPEX[, c("region", "period", "univocalName", "technology",
+                                     "variable", "unit", "value")]
+      setkey(nonFuelOPEX, region, period, univocalName, technology,
+             variable, unit)
+
       # Check whether data is complete
-      check <- merge.data.table(completeDataSet, nonFuelOPEX, all = TRUE)
+      check <- merge.data.table(completeDataOPFleet, nonFuelOPEX, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("Non fuel OPEX input data for vehicle types that feature fleet tracking is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
@@ -460,28 +488,28 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # Inter- and extrapolate all data to model input data years
       data <- list(CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD)
       data <- lapply(data, approx_dt, years, "period", "value",
-        c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
-          "univocalName", "variable", "unit"), extrapolate = TRUE)
+        c("region", "univocalName", "technology",
+           "variable", "unit"), extrapolate = TRUE)
 
       # Includes aviation and two wheelers (used for all vehicle types other than 4 wheelers)
-      CAPEXUCD <- data$CAPEXUCD[!subsectorL3 == "trn_pass_road_LDV_4W"]
+      CAPEXUCD <- data$CAPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # Data for two wheelers is given in US$2005/veh and needs to be converted to US$2005/vehkm
       # with the help of annual mileage
       AMUCD2W <- toolPrepareUCD(readSource("UCD", "annualMileage"), "annualMileage")
-      AMUCD2W <- AMUCD2W[subsectorL3 == "trn_pass_road_LDV_2W"]
+      AMUCD2W <- AMUCD2W[univocalName %in% filterEntries$trn_pass_road_LDV_2W]
       AMUCD2W <- AMUCD2W[, c("region", "univocalName", "technology", "period", "value")]
       AMUCD2W <- approx_dt(AMUCD2W, years, "period", "value", c("region", "technology", "univocalName"),
                            extrapolate = TRUE)
       setnames(AMUCD2W, "value", "annualMileage")
       CAPEXUCD <- merge.data.table(CAPEXUCD, AMUCD2W, by = c("region", "univocalName", "technology", "period"),
                                    all.x = TRUE)
-      CAPEXUCD[subsectorL3 == "trn_pass_road_LDV_2W", value := value / annualMileage]
-      CAPEXUCD[subsectorL3 == "trn_pass_road_LDV_2W", unit := "US$2005/vehkm"][, annualMileage := NULL]
+      CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := value / annualMileage]
+      CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2005/vehkm"][, annualMileage := NULL]
 
       # CAPEX given combined with non-fuel OPEX in the UCD data for shipping and rail (all other than busses
       # and trucks)
       CAPEXcombinedUCD <- data$CAPEXcombinedUCD
-      CAPEXcombinedUCD <- CAPEXcombinedUCD[!(subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus")]
+      CAPEXcombinedUCD <- CAPEXcombinedUCD[!(univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus")]
 
       # merge.data.table data
       CAPEXraw <- rbind(CAPEXUCD, CAPEXcombinedUCD)
@@ -489,14 +517,18 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
                                 unit = "constant 2005 US$MER")[, years, paste0("gdppc_", SSPscen)]
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
-      CAPEX <- toolAdjustCAPEXother(CAPEXraw, ISOcountriesMap, years, completeDataSet, GDPpcMER)
+      CAPEX <- toolAdjustCAPEXother(CAPEXraw, ISOcountriesMap, years, completeDataSet, GDPpcMER, filterEntries)
+
+      CAPEX <- CAPEX[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
+      setkey(CAPEX,  region, period, univocalName, technology, variable, unit)
 
       # CAPEXother only includes data for all other modes than LDV 4 Wheelers, Trucks and Busses
       # (except cycling and walking)
-      completeDataSet <- completeDataSet[!(subsectorL1 %in% c("trn_freight_road", "Cycle", "Walk") |
-                                         subsectorL3 == "trn_pass_road_LDV_4W" | subsectorL2 == "Bus")]
+      completeDataCAP <- completeDataSet[!(univocalName %in% c(filterEntries$trn_freight_road, "Cycle", "Walk") |
+                                             univocalName %in% filterEntries$trn_pass_road_LDV_4W | univocalName == "Bus")]
+
       # Check whether data is complete
-      check <- merge.data.table(completeDataSet, CAPEX, all = TRUE)
+      check <- merge.data.table(completeDataCAP, CAPEX, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("CAPEX input data for vehicle types that do not feature fleet tracking is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
@@ -520,49 +552,49 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
       nonFuelOPEXUCD <- toolPrepareUCD(readSource("UCD", "nonFuelOPEX"), "nonFuelOPEX")
-      nonFuelOPEXUCD <- nonFuelOPEXUCD[!subsectorL3 == "trn_pass_road_LDV_4W"]
+      nonFuelOPEXUCD <- nonFuelOPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
       nonFuelOPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
-      nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!(subsectorL1 == "trn_freight_road" |
-                                                      subsectorL3 == "trn_pass_road_LDV_4W" | subsectorL2 == "Bus")]
+      nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!univocalName %in% c(filterEntries$trn_freight_road, filterEntries$trn_pass_road_LDV_4W, "Bus")]
 
       # Inter- and extrapolate all data to model input data years
       data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD, nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD)
       data <- lapply(data, approx_dt, years, "period", "value",
-        c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
-          "univocalName", "variable", "unit"), extrapolate = TRUE)
+        c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
 
       # Includes aviation and two wheelers (used for all vehicle types other than 4 wheelers)
-      nonFuelOPEXUCD <- data$nonFuelOPEXUCD[!subsectorL3 == "trn_pass_road_LDV_4W"]
+      nonFuelOPEXUCD <- data$nonFuelOPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # Data for two wheelers is given in US$2005/veh and needs to be converted to US$2005/vehkm
       # with the help of annual mileage
       AMUCD2W <- toolPrepareUCD(readSource("UCD", "annualMileage"), "annualMileage")
-      AMUCD2W <- AMUCD2W[subsectorL3 == "trn_pass_road_LDV_2W"]
+      AMUCD2W <- AMUCD2W[univocalName %in% filterEntries$trn_pass_road_LDV_2W]
       AMUCD2W <- AMUCD2W[, c("region", "univocalName", "technology", "period", "value")]
-      AMUCD2W <- approx_dt(AMUCD2W, years, "period", "value", c("region", "technology", "univocalName"),
+      AMUCD2W <- approx_dt(AMUCD2W, years, "period", "value", c("region", "univocalName", "technology"),
                            extrapolate = TRUE)
       setnames(AMUCD2W, "value", "annualMileage")
-      nonFuelOPEXUCD <- merge.data.table(nonFuelOPEXUCD, AMUCD2W, by = c("region", "univocalName", "technology",
-                                                                         "period"), all.x = TRUE)
-      nonFuelOPEXUCD[subsectorL3 == "trn_pass_road_LDV_2W", value := value / annualMileage]
-      nonFuelOPEXUCD[subsectorL3 == "trn_pass_road_LDV_2W", unit := "US$2005/vehkm"][, annualMileage := NULL]
+      nonFuelOPEXUCD <- merge.data.table(nonFuelOPEXUCD, AMUCD2W, by = c("region", "period", "univocalName", "technology"), all.x = TRUE)
+      nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := value / annualMileage]
+      nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2005/vehkm"][, annualMileage := NULL]
 
       # CAPEX given combined with non-fuel OPEX in the UCD data for shipping and rail
       # (all other than busses and trucks)
       nonFuelOPEXcombinedUCD <- data$nonFuelOPEXcombinedUCD
-      nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!(subsectorL1 == "trn_freight_road" | subsectorL2 == "Bus")]
+      nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!(univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus")]
 
       # merge.data.table data
       nonFuelOPEXraw <- rbind(nonFuelOPEXUCD, nonFuelOPEXcombinedUCD)
 
-      nonFuelOPEX <- toolAdjustNonFuelOPEXother(nonFuelOPEXraw, ISOcountriesMap, years, completeDataSet)
+      nonFuelOPEX <- toolAdjustNonFuelOPEXother(nonFuelOPEXraw, ISOcountriesMap, years, completeDataSet, filterEntries)
+
+      nonFuelOPEX <- nonFuelOPEX[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
+      setkey(nonFuelOPEX,  region, period, univocalName, technology, variable, unit)
 
       # nonFuelOPEXother only includes data for all other modes than LDV 4 Wheelers, Trucks and Busses
       # (except cycling and walking)
-      completeDataSet <- completeDataSet[!(subsectorL1 %in% c("trn_freight_road", "Cycle", "Walk") |
-                                         subsectorL3 == "trn_pass_road_LDV_4W" | subsectorL2 == "Bus")]
+      completeDataOP <- completeDataSet[!(univocalName %in% c(filterEntries$trn_freight_road, "Cycle", "Walk") |
+                                             univocalName %in% filterEntries$trn_pass_road_LDV_4W | univocalName == "Bus")]
       # Check whether data is complete
-      check <- merge.data.table(completeDataSet, nonFuelOPEX, all = TRUE)
+      check <- merge.data.table(completeDataOP, nonFuelOPEX, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("Non fuel OPEX input data for vehicle types that do not feature fleet tracking is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
@@ -597,19 +629,20 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       speedNonMotGCAM <- merge.data.table(speedNonMotGCAM, allYears, by = "all", allow.cartesian = TRUE)
       speedNonMotGCAM[, all := NULL]
       speedGCAM <- approx_dt(speedGCAM, years, "period", "value",
-        c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "univocalName",
-          "variable", "unit"), extrapolate = TRUE)
+        c("region", "univocalName", "variable", "unit"), extrapolate = TRUE)
       # merge.data.table data
-      speedOfModesRaw <- rbind(speedGCAM, speedNonMotGCAM)
-      speedOfModes <- toolAdjustSpeedOfModes(speedOfModesRaw, completeDataSet)
+      # speed of modes is only featured for passenger small-to-medium distance transport (to calculate time value costs).
+      speedOfModesRaw <- rbind(speedGCAM[univocalName %in% filterEntries$trn_pass], speedNonMotGCAM)
+      speedOfModes <- toolAdjustSpeedOfModes(speedOfModesRaw, completeDataSet, filterEntries)
+
+      speedOfModes <- speedOfModes[, c("region", "period", "univocalName", "technology",
+                                      "variable", "unit", "value")]
+      setkey(speedOfModes, region, period, univocalName, technology,
+             variable, unit)
 
       # Check whether data is complete
-      # speed of modes is only featured for passenger transport (to calculate time value costs)
-      completeDataSet <- completeDataSet[sector == "trn_pass"][, technology := NULL]
-      completeDataSet <- unique(completeDataSet)
-      setkey(completeDataSet, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType,
-             univocalName, period)
-      check <- merge.data.table(completeDataSet, speedOfModes, all = TRUE)
+      completeDataSpeed <- completeDataSet[univocalName %in% filterEntries$trn_pass]
+      check <- merge.data.table(completeDataSpeed, speedOfModes, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("Speed of modes input data is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
@@ -626,7 +659,8 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
     "valueOfTimeMultiplier" = {
       unit <- "-"
       description <- "Cost associated with travel expressed as a multiplier of the wage rate.
-                      Same for all regions and years. Used to calculate the time value costs for passenger
+                      Data is provided for different passenger transport modes and is equal for all regions and years.
+                      Used to calculate the time value costs for passenger
                       transport modes. Sources: GCAM"
       weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
 
@@ -639,15 +673,15 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       VOTGCAM[, all := "All"]
       VOTGCAM <- merge.data.table(VOTGCAM, allYears, by = "all", allow.cartesian = TRUE)[, all := NULL]
 
-      VOT <- toolAdjustValueOfTimeMultiplier(VOTGCAM, completeDataSet)
+      VOT <- toolAdjustValueOfTimeMultiplier(VOTGCAM, completeDataSet, filterEntries)
+
+      VOT <- VOT[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
+      setkey(VOT, region, period, univocalName, technology, variable, unit)
 
       # Check whether data is complete
       # speed of modes is only featured for passenger transport (to calculate value of time)
-      completeDataSet <- completeDataSet[sector == "trn_pass"][, technology := NULL]
-      completeDataSet <- unique(completeDataSet)
-      setkey(completeDataSet, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType,
-             univocalName, period)
-      check <- merge.data.table(completeDataSet, VOT, all = TRUE)
+      completeDataVOT <- completeDataSet[univocalName %in% filterEntries$trn_pass]
+      check <- merge.data.table(completeDataVOT, VOT, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("Value of time multiplier input data is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
@@ -672,13 +706,11 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # Speed of modes [km/h]
       speedOfModesMagpieobj <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE, subtype = "speedOfModes")
       speedOfModes <- magpie2dt(speedOfModesMagpieobj, valcol = "speed")[, c("variable", "unit") := NULL]
-      setkey(speedOfModes, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType,
-             univocalName, period)
+      setkey(speedOfModes, region, period, univocalName, technology)
       # Value of Time multiplier [-]
       valueOfTimeMultiplierMagpieobj <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE, subtype = "valueOfTimeMultiplier")
       valueOfTimeMultiplier <- magpie2dt(valueOfTimeMultiplierMagpieobj, valcol = "multiplier")[, c("variable", "unit") := NULL]
-      setkey(valueOfTimeMultiplier, region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType,
-             univocalName, period)
+      setkey(valueOfTimeMultiplier, region, period, univocalName, technology)
       GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
                                 unit = "constant 2005 US$MER")[, years, paste0("gdppc_", SSPscen)]
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
@@ -693,15 +725,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                /(hoursPerWeek * weeksPerYear)/     ## [US$2005/h]
                  speed]                            ## [US$2005/pkm]
       timeValueCosts[, variable := "Time value costs"][, unit := "US$2005/pkm"]
-      timeValueCosts <- timeValueCosts[, c("region", "univocalName", "variable", "unit", "period", "value")]
-      setkey(timeValueCosts,  region, univocalName, variable, unit, period)
+      timeValueCosts <- timeValueCosts[, c("region", "univocalName", "technology", "variable", "unit", "period", "value")]
+      setkey(timeValueCosts, region, period, univocalName, technology, variable, unit)
 
       # Check whether data is complete
       # speed of modes is only featured for passenger transport (to calculate value of time)
-      completeDataSet <- completeDataSet[sector == "trn_pass", c("region", "univocalName", "period")]
-      completeDataSet <- unique(completeDataSet)
-      setkey(completeDataSet, region, univocalName, period)
-      check <- merge.data.table(completeDataSet, timeValueCosts, all = TRUE)
+      completeDataTVC <- completeDataSet[univocalName %in% filterEntries$trn_pass]
+      check <- merge.data.table(completeDataTVC, timeValueCosts, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
         stop("Time value costs input data is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
@@ -719,10 +749,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
     }
   )
 
+  x <- as.magpie(as.data.frame(quitteobj))
+
   return(list(
-    x           = as.magpie(as.data.frame(quitteobj)),
+    x           = x,
     weight      = weight,
     unit        = unit,
-    description = description
+    description = description,
+    aggregationFunction = "toolAggregateVehicleTypes"
   ))
 }

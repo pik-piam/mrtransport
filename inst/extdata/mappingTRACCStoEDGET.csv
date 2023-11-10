@@ -1,63 +1,63 @@
-TRACCS_category;TRACCS_vehicle_type;TRACCS_technology;sector;subsectorL1;subsectorL2;subsectorL3;vehicleType;technology;univocalName
-Buses;Coaches;B30;trn_pass;trn_pass_road;Bus;Bus_tmp_subsector_L1;Bus_tmp_vehicletype;Liquids;Bus
-Buses;Urban;B30;trn_pass;trn_pass_road;Bus;Bus_tmp_subsector_L1;Bus_tmp_vehicletype;Liquids;Bus
-Buses;Coaches;Diesel;trn_pass;trn_pass_road;Bus;Bus_tmp_subsector_L1;Bus_tmp_vehicletype;Liquids;Bus
-Buses;Urban;Diesel;trn_pass;trn_pass_road;Bus;Bus_tmp_subsector_L1;Bus_tmp_vehicletype;Liquids;Bus
-Buses;Coaches;Gasoline;trn_pass;trn_pass_road;Bus;Bus_tmp_subsector_L1;Bus_tmp_vehicletype;Liquids;Bus
-Buses;Urban;Gasoline;trn_pass;trn_pass_road;Bus;Bus_tmp_subsector_L1;Bus_tmp_vehicletype;Liquids;Bus
-Buses;Coaches;CNG/Biogas;trn_pass;trn_pass_road;Bus;Bus_tmp_subsector_L1;Bus_tmp_vehicletype;NG;Bus
-Buses;Urban;CNG/Biogas;trn_pass;trn_pass_road;Bus;Bus_tmp_subsector_L1;Bus_tmp_vehicletype;NG;Bus
-Buses;Coaches;LPG;trn_pass;trn_pass_road;Bus;Bus_tmp_subsector_L1;Bus_tmp_vehicletype;NG;Bus
-Buses;Urban;LPG;trn_pass;trn_pass_road;Bus;Bus_tmp_subsector_L1;Bus_tmp_vehicletype;NG;Bus
-Passenger cars;Lower-Medium;Other;;;;;;;
-Passenger cars;Lower-Medium;Diesel;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;Liquids;Compact Car
-Passenger cars;Lower-Medium;Flexi-fuel;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;Liquids;Compact Car
-Passenger cars;Lower-Medium;Gasoline;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;Liquids;Compact Car
-Passenger cars;Lower-Medium;CNG;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;NG;Compact Car
-Passenger cars;Lower-Medium;LPG;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Compact Car;NG;Compact Car
-Passenger cars;Executive;Other;;;;;;;
-Passenger cars;Executive;Diesel;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Liquids;Large Car and SUV
-Passenger cars;Executive;Flexi-fuel;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Liquids;Large Car and SUV
-Passenger cars;Executive;Gasoline;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;Liquids;Large Car and SUV
-Passenger cars;Executive;CNG;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;NG;Large Car and SUV
-Passenger cars;Executive;LPG;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Large Car and SUV;NG;Large Car and SUV
-Passenger cars;Upper-Medium;Other;;;;;;;
-Passenger cars;Upper-Medium;Diesel;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;Liquids;Midsize Car
-Passenger cars;Upper-Medium;Flexi-fuel;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;Liquids;Midsize Car
-Passenger cars;Upper-Medium;Gasoline;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;Liquids;Midsize Car
-Passenger cars;Upper-Medium;CNG;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;NG;Midsize Car
-Passenger cars;Upper-Medium;LPG;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Midsize Car;NG;Midsize Car
-Mopeds;2-stroke;Gasoline;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_2W;Moped;Liquids;Moped
-Mopeds;4-stroke;Gasoline;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_2W;Moped;Liquids;Moped
-Motorcycles;2-stroke;Gasoline;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_2W;Motorcycle (50-250cc);Liquids;Motorcycle (50-250cc)
-Motorcycles;4-stroke;Gasoline;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_2W;Motorcycle (>250cc);Liquids;Motorcycle (>250cc)
-Passenger cars;Small;Other;;;;;;;
-Passenger cars;Small;Diesel;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;Liquids;Subcompact Car
-Passenger cars;Small;Flexi-fuel;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;Liquids;Subcompact Car
-Passenger cars;Small;Gasoline;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;Liquids;Subcompact Car
-Passenger cars;Small;CNG;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;NG;Subcompact Car
-Passenger cars;Small;LPG;trn_pass;trn_pass_road;trn_pass_road_LDV;trn_pass_road_LDV_4W;Subcompact Car;NG;Subcompact Car
-Light Commercial Veh_;N1;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (0-3.5t);Liquids;Truck (0-3.5t)
-Light Commercial Veh_;N1;Flexi-fuel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (0-3.5t);Liquids;Truck (0-3.5t)
-Light Commercial Veh_;N1;Gasoline;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (0-3.5t);Liquids;Truck (0-3.5t)
-Light Commercial Veh_;N1;CNG;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (0-3.5t);NG;Truck (0-3.5t)
-Light Commercial Veh_;N1;LPG;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (0-3.5t);NG;Truck (0-3.5t)
-Heavy Duty Trucks;Articulated 14 - 20 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (18t);Liquids;Truck (18t)
-Heavy Duty Trucks;Rigid 12 - 14 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (18t);Liquids;Truck (18t)
-Heavy Duty Trucks;Rigid 14 - 20 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (18t);Liquids;Truck (18t)
-Heavy Duty Trucks;Articulated 20 - 28 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (26t);Liquids;Truck (26t)
-Heavy Duty Trucks;Articulated 28 - 34 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (26t);Liquids;Truck (26t)
-Heavy Duty Trucks;Rigid 20 - 26 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (26t);Liquids;Truck (26t)
-Heavy Duty Trucks;Rigid 26 - 28 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (26t);Liquids;Truck (26t)
-Heavy Duty Trucks;Rigid 28 - 32 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (26t);Liquids;Truck (26t)
-Heavy Duty Trucks;Rigid >32 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (26t);Liquids;Truck (26t)
-Heavy Duty Trucks;Articulated 34 - 40 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (40t);Liquids;Truck (40t)
-Heavy Duty Trucks;Articulated 40 - 50 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (40t);Liquids;Truck (40t)
-Heavy Duty Trucks;Articulated 50 - 60 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (40t);Liquids;Truck (40t)
-Heavy Duty Trucks;Rigid 7,5 - 12 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (7.5t);Liquids;Truck (7.5t)
-Heavy Duty Trucks;Rigid <=7,5 t;Diesel;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (7.5t);Liquids;Truck (7.5t)
-Heavy Duty Trucks;>3,5 t;Gasoline;trn_freight;trn_freight_road;trn_freight_road_tmp_subsector_L2;trn_freight_road_tmp_subsector_L1;Truck (7.5t);Liquids;Truck (7.5t)
-Rail;Passenger;Diesel;trn_pass;Passenger Rail;Passenger Rail_tmp_subsector_L2;Passenger Rail_tmp_subsector_L1;Passenger Rail_tmp_vehicletype;Liquids;Passenger Rail
-Rail;Passenger;Electric;trn_pass;Passenger Rail;Passenger Rail_tmp_subsector_L2;Passenger Rail_tmp_subsector_L1;Passenger Rail_tmp_vehicletype;Electric;Passenger Rail
-Rail;Goods;Diesel;trn_freight;Freight Rail;Freight Rail_tmp_subsector_L2;Freight Rail_tmp_subsector_L1;Freight Rail_tmp_vehicletype;Liquids;Freight Rail
-Rail;Goods;Electric;trn_freight;Freight Rail;Freight Rail_tmp_subsector_L2;Freight Rail_tmp_subsector_L1;Freight Rail_tmp_vehicletype;Electric;Freight Rail
+TRACCS_category;TRACCS_vehicle_type;TRACCS_technology;univocalName;technology
+Buses;Coaches;B30;Bus;Liquids
+Buses;Urban;B30;Bus;Liquids
+Buses;Coaches;Diesel;Bus;Liquids
+Buses;Urban;Diesel;Bus;Liquids
+Buses;Coaches;Gasoline;Bus;Liquids
+Buses;Urban;Gasoline;Bus;Liquids
+Buses;Coaches;CNG/Biogas;Bus;NG
+Buses;Urban;CNG/Biogas;Bus;NG
+Buses;Coaches;LPG;Bus;NG
+Buses;Urban;LPG;Bus;NG
+Passenger cars;Lower-Medium;Other;;
+Passenger cars;Lower-Medium;Diesel;Compact Car;Liquids
+Passenger cars;Lower-Medium;Flexi-fuel;Compact Car;Liquids
+Passenger cars;Lower-Medium;Gasoline;Compact Car;Liquids
+Passenger cars;Lower-Medium;CNG;Compact Car;NG
+Passenger cars;Lower-Medium;LPG;Compact Car;NG
+Passenger cars;Executive;Other;;
+Passenger cars;Executive;Diesel;Large Car and SUV;Liquids
+Passenger cars;Executive;Flexi-fuel;Large Car and SUV;Liquids
+Passenger cars;Executive;Gasoline;Large Car and SUV;Liquids
+Passenger cars;Executive;CNG;Large Car and SUV;NG
+Passenger cars;Executive;LPG;Large Car and SUV;NG
+Passenger cars;Upper-Medium;Other;;
+Passenger cars;Upper-Medium;Diesel;Midsize Car;Liquids
+Passenger cars;Upper-Medium;Flexi-fuel;Midsize Car;Liquids
+Passenger cars;Upper-Medium;Gasoline;Midsize Car;Liquids
+Passenger cars;Upper-Medium;CNG;Midsize Car;NG
+Passenger cars;Upper-Medium;LPG;Midsize Car;NG
+Mopeds;2-stroke;Gasoline;Moped;Liquids
+Mopeds;4-stroke;Gasoline;Moped;Liquids
+Motorcycles;2-stroke;Gasoline;Motorcycle (50-250cc);Liquids
+Motorcycles;4-stroke;Gasoline;Motorcycle (>250cc);Liquids
+Passenger cars;Small;Other;;
+Passenger cars;Small;Diesel;Subcompact Car;Liquids
+Passenger cars;Small;Flexi-fuel;Subcompact Car;Liquids
+Passenger cars;Small;Gasoline;Subcompact Car;Liquids
+Passenger cars;Small;CNG;Subcompact Car;NG
+Passenger cars;Small;LPG;Subcompact Car;NG
+Light Commercial Veh_;N1;Diesel;Truck (0-3.5t);Liquids
+Light Commercial Veh_;N1;Flexi-fuel;Truck (0-3.5t);Liquids
+Light Commercial Veh_;N1;Gasoline;Truck (0-3.5t);Liquids
+Light Commercial Veh_;N1;CNG;Truck (0-3.5t);NG
+Light Commercial Veh_;N1;LPG;Truck (0-3.5t);NG
+Heavy Duty Trucks;Articulated 14 - 20 t;Diesel;Truck (18t);Liquids
+Heavy Duty Trucks;Rigid 12 - 14 t;Diesel;Truck (18t);Liquids
+Heavy Duty Trucks;Rigid 14 - 20 t;Diesel;Truck (18t);Liquids
+Heavy Duty Trucks;Articulated 20 - 28 t;Diesel;Truck (26t);Liquids
+Heavy Duty Trucks;Articulated 28 - 34 t;Diesel;Truck (26t);Liquids
+Heavy Duty Trucks;Rigid 20 - 26 t;Diesel;Truck (26t);Liquids
+Heavy Duty Trucks;Rigid 26 - 28 t;Diesel;Truck (26t);Liquids
+Heavy Duty Trucks;Rigid 28 - 32 t;Diesel;Truck (26t);Liquids
+Heavy Duty Trucks;Rigid >32 t;Diesel;Truck (26t);Liquids
+Heavy Duty Trucks;Articulated 34 - 40 t;Diesel;Truck (40t);Liquids
+Heavy Duty Trucks;Articulated 40 - 50 t;Diesel;Truck (40t);Liquids
+Heavy Duty Trucks;Articulated 50 - 60 t;Diesel;Truck (40t);Liquids
+Heavy Duty Trucks;Rigid 7,5 - 12 t;Diesel;Truck (7.5t);Liquids
+Heavy Duty Trucks;Rigid <=7,5 t;Diesel;Truck (7.5t);Liquids
+Heavy Duty Trucks;>3,5 t;Gasoline;Truck (7.5t);Liquids
+Rail;Passenger;Diesel;Passenger Rail;Liquids
+Rail;Passenger;Electric;Passenger Rail;Electric
+Rail;Goods;Diesel;Freight Rail;Liquids
+Rail;Goods;Electric;Freight Rail;Electric

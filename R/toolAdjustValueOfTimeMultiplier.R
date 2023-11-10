@@ -3,12 +3,13 @@
 #'
 #' @author Johanna Hoppe
 #' @param dt calculated raw data without adjustments
-#' @param completeData complete EDGE-T decision tree
+#' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
+#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
 #' @return a quitte object
 
-toolAdjustValueOfTimeMultiplier <- function(dt, completeData) {
-  check <- PPPtoMER <- value <- sector <- region <- subsectorL1 <- subsectorL2 <- subsectorL3 <-
-  vehicleType <- technology <- univocalName <- variable <- unit <- period <- NULL
+toolAdjustValueOfTimeMultiplier <- function(dt, completeData, filter) {
+  check <- PPPtoMER <- value  <- region <- technology <-
+    univocalName <- variable <- unit <- period <- NULL
 
   #1: Move from a market exchange rate (MER) based expression of the time value multiplier
   # to a purchase power parity (PPP) based one
@@ -18,17 +19,11 @@ toolAdjustValueOfTimeMultiplier <- function(dt, completeData) {
   dt[, value := value / PPPtoMER][, PPPtoMER := NULL]
 
   #2: Map data on EDGE-T structure (to rule out vehicle types that are not present in all countries)
-  completeData <- completeData[sector == "trn_pass"][, technology := NULL]
+  completeData <- completeData[univocalName %in% filter$trn_pass]
   completeData <- unique(completeData)
-  dt <- merge.data.table(dt, completeData, by = c("region", "sector", "subsectorL1", "subsectorL2",
-                                                  "subsectorL3", "vehicleType", "univocalName", "period"),
+  dt <- merge.data.table(dt, completeData, by = c("region", "univocalName", "period"),
                                                  all.y = TRUE, allow.cartesian = TRUE)
   dt[, check := NULL]
-
-  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-               "univocalName", "variable", "unit", "period", "value")]
-  setkey(dt,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, univocalName,
-         variable, unit, period)
 
   return(dt)
 }

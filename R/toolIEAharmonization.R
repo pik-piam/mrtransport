@@ -9,9 +9,9 @@
 #' @export
 
 toolIEAharmonization <- function(enIntensity) {
- fe <- te <- period <- isBunk <- flow <- . <- feIEA <- region <- subsectorL1 <- univocalName <-
-   vehicleType <- value <- enService <- harmFactor <- check <- technology <- sector <-
-      subsectorL2 <- subsectorL3 <- variable <- unit <- NULL
+ fe <- te <- period <- isBunk <- flow <- . <- feIEA <- region <- univocalName <-
+   value <- enService <- harmFactor <- check <- technology  <-
+     variable <- unit <- NULL
 
  # Load IEA energy balances data for harmonization [unit: EJ]
  IEAbalMag <- calcOutput(type = "IO", subtype = "IEA_output", aggregate = FALSE)
@@ -36,16 +36,14 @@ toolIEAharmonization <- function(enIntensity) {
  enServiceDemMag <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE,
                                subtype = "histESdemand")
  enServiceDem <- magpie2dt(enServiceDemMag)
- enServiceDem[subsectorL1 == "trn_freight_road", univocalName := gsub("_", ".", univocalName)]
- enServiceDem[subsectorL1 == "trn_freight_road", vehicleType := gsub("_", ".", vehicleType)]
+ enServiceDem[grepl("Truck.*", univocalName), univocalName := gsub("_", ".", univocalName)]
  enServiceDem <- enServiceDem[!univocalName %in% c("Cycle", "Walk")]
  setnames(enServiceDem, "value", "enService")
  enServiceDem <- enServiceDem[, c("region", "univocalName", "technology", "period", "enService")]
  loadFactorMag <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE,
                              subtype = "loadFactor")
  loadFactor <- magpie2dt(loadFactorMag)
- loadFactor[subsectorL1 == "trn_freight_road", univocalName := gsub("_", ".", univocalName)]
- loadFactor[subsectorL1 == "trn_freight_road", vehicleType := gsub("_", ".", vehicleType)]
+ loadFactor[grepl("Truck.*", univocalName), univocalName := gsub("_", ".", univocalName)]
  loadFactor <- loadFactor[!univocalName %in% c("Cycle", "Walk")]
  setnames(loadFactor, "value", "loadFactor")
  loadFactor <- loadFactor[, c("region", "univocalName", "technology", "period", "loadFactor")]
@@ -63,8 +61,8 @@ toolIEAharmonization <- function(enIntensity) {
  enIntensity[technology == "NG", te := "tdgat"]
  #all others are handled as liquids (including hybrid electric)
  enIntensity[is.na(te), te := "tdlit"]
- enIntensity[, isBunk := ifelse(sector == "trn_aviation_intl", "AVBUNK", NA)]
- enIntensity[, isBunk := ifelse(sector == "trn_shipping_intl", "MARBUNK", isBunk)]
+ enIntensity[, isBunk := ifelse(univocalName == "International Aviation", "AVBUNK", NA)]
+ enIntensity[, isBunk := ifelse(univocalName == "International Ship", "MARBUNK", isBunk)]
  enIntensity[, isBunk := ifelse(is.na(isBunk), "short-medium", isBunk)]
  enIntensity[, fe := sum(fe), by = c("region", "isBunk", "te", "period")]
 
@@ -89,11 +87,7 @@ toolIEAharmonization <- function(enIntensity) {
    stop("There is a problem regarding the Harmonization of the energy intensity data to match IEA energy balances
         final energy")
  }
-
- enIntensity <- enIntensity[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
-                                "univocalName", "variable", "unit", "period", "value")]
- setkey(enIntensity,  region, sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName,
-        variable, unit, period)
+ enIntensity <- enIntensity[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
 
  return(enIntensity)
 }

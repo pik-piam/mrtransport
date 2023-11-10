@@ -12,8 +12,8 @@
 #' @export
 
 toolPrepareUCD <- function(x, subtype) {
-  subsectorL3 <- variable <- . <- subsectorL1 <- subsectorL2 <- technology <- period <- value <-
-    univocalName <- vehicleType <- unit <- region <- sector <- technology <- vehicleType <-
+  variable <- .   <- technology <- period <- value <-
+    univocalName  <- unit <- region   <-
     UCD_sector <- size_class <- UCD_technology <- UCD_fuel <- fe <- size_class <- size.class <- NULL
 
   mapfile <- system.file("extdata", "mappingUCDtoEDGET.csv",
@@ -41,41 +41,35 @@ toolPrepareUCD <- function(x, subtype) {
   if (subtype %in% c("energyIntensity", "loadFactor", "CAPEX", "nonFuelOPEX", "CAPEXandNonFuelOPEX")) {
     dt <- merge.data.table(dt, weight, all.x = TRUE)
     dt <- merge.data.table(dt, mappingUCD, all.x = TRUE)
-    dt <- dt[!sector == ""]
+    dt <- dt[!univocalName == ""]
     dt <- unique(dt[, .(value = sum(value * fe) / sum(fe)),
-                    c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-                      "technology", "univocalName", "variable", "unit", "period")])
+                    c("region", "period", "univocalName", "technology", "variable", "unit")])
   } else if (subtype == "annualMileage") {
     #Annual mileage is not technology/fuel specific in UCD
     dt <- unique(dt[, c("UCD_technology", "UCD_fuel") := NULL])
     weight <- weight[, .(fe = sum(fe)), by = .(region, UCD_sector, mode, size_class)]
     dt <- merge.data.table(dt, weight, all.x = TRUE, allow.cartesian = TRUE)
     dt <- merge.data.table(dt, mappingUCD, all.x = TRUE, allow.cartesian = TRUE)
-    dt <- dt[!sector == ""]
+    dt <- dt[!univocalName == ""]
     dt <- unique(dt[, .(value = sum(value * fe) / sum(fe)),
-                    by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-                           "technology", "univocalName", "variable", "unit", "period")])
+                    by = c("region", "period", "univocalName", "technology", "variable", "unit")])
   } else if (subtype %in% c("feDemand", "nonMotorizedDemand")) {
     dt <- merge.data.table(dt, mappingUCD, all.x = TRUE)
-    dt <- dt[!sector == ""]
+    dt <- dt[!univocalName == ""]
     dt <- unique(dt[, .(value = sum(value)),
-                    by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-                           "technology", "univocalName", "variable", "unit", "period")])
+                    by = c("region", "period", "univocalName", "technology", "variable", "unit")])
   } else if (subtype == "speed") {
     # the mapping for speed differs. Only the size classes Heavy Bus, Light Bus, Moped, Motorcycle (50-250cc),
     # Motorcycle (>250cc) and Scooter are adressed seperately
     mappingUCD[!(size.class %in% c("Heavy Bus", "Light Bus", "Moped", "Motorcycle (50-250cc)",
                                    "Motorcycle (>250cc)", "Scooter")), size.class := "All"]
     dt <- merge.data.table(dt, mappingUCD, all.x = TRUE)
-    dt <- dt[!sector == ""]
+    dt <- dt[!univocalName == ""]
     dt <- unique(dt[, .(value = sum(value * fe) / sum(fe)),
-                    by = c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType",
-                           "technology", "univocalName", "variable", "unit", "period")])
+                    by = c("region", "period", "univocalName", "technology", "variable", "unit")])
   }
-  dt <- dt[, c("region", "sector", "subsectorL1", "subsectorL2", "subsectorL3", "vehicleType", "technology",
-               "univocalName", "variable", "unit", "period", "value")]
-  setkey(dt, region,  sector, subsectorL1, subsectorL2, subsectorL3, vehicleType, technology, univocalName,
-         variable, unit, period)
+  dt <- dt[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
+  setkey(dt, region, period, univocalName, technology, variable, unit)
 
   if (anyNA(dt) == TRUE) {
     stop("UCD data contains NAs")

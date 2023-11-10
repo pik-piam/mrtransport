@@ -4,7 +4,7 @@
 \alias{toolAdjustNonFuelOPEXother}
 \title{Perform parameter specific adjustments on the input data}
 \usage{
-toolAdjustNonFuelOPEXother(dt, ISOcountries, yrs, completeData)
+toolAdjustNonFuelOPEXother(dt, ISOcountries, yrs, completeData, filter)
 }
 \arguments{
 \item{dt}{calculated raw data without adjustments}
@@ -13,7 +13,9 @@ toolAdjustNonFuelOPEXother(dt, ISOcountries, yrs, completeData)
 
 \item{yrs}{temporal resolution of EDGE-T model}
 
-\item{completeData}{complete EDGE-T decision tree}
+\item{completeData}{All combinations of region, period, univocalName and technology in EDGE-T decision tree}
+
+\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated univocalNames}
 }
 \value{
 a quitte object
