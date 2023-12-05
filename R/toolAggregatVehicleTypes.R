@@ -1,3 +1,14 @@
+#' Aggregate vehicle types so that vehicle types that are only available in certain iso countries of a region
+#' are not lost and still appear in the aggregated region
+#'
+#' Map the source categories to the EDGE-T categories. Apply the full structure of the decision tree.
+#'
+#' @author Johanna Hoppe
+#' @return a magpie object
+#'
+#' @importFrom magclass getItems, getSets, args
+#' @export
+
 toolAggregateVehicleTypes <- function(...) {
 
   args <- list(...)
