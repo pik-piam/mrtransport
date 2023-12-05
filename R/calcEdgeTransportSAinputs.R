@@ -12,7 +12,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
   temporal <- spatial <- present <- period <- region <-
     subsectorL2   <- technology <- univocalName <- gdppc <- speed <-
-    altTech <- variable <- value <- regionCode12 <- multiplier <-NULL
+    altTech <- variable <- value <- regionCode12 <- multiplier <- NULL
 
   years <- data.table(temporal = "all", period = c(
     1990,
@@ -49,7 +49,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
   setkey(completeDataSet, region, period, univocalName, technology)
 
   # categories for filtering data
-  categories <- c("trn_pass_road_LDV_4W", "trn_pass_road_LDV_2W", "trn_freight_road", "trn_pass", "trn_freight")
+  categories <- c("trn_pass_road_LDV_4W", "trn_pass_road_LDV_2W", "trn_freight_road", "trn_pass", "trn_freight", "trn_pass_road")
 
    findEntries <- function(category, dataTable){
      test <- dataTable[, lapply(.SD, function(x) grepl(category, x))]
@@ -73,7 +73,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # Inter- and extrapolate all data to model input data years
       data <- list(enIntGCAM = enIntGCAM, enIntUCD = enIntUCD, enIntTRACCS = enIntTRACCS, enIntPSI = enIntPSI)
       data <- lapply(data, approx_dt, years, "period", "value",
-        c("region", "univocalName","technology", "variable", "unit"), extrapolate = TRUE)
+                     c("region", "univocalName","technology", "variable", "unit"), extrapolate = TRUE)
 
       # merge.data.table data
       # TRACCS>PSI>GCAM
@@ -324,7 +324,6 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # read different source data
       LFTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
       LFGCAM <- toolPrepareGCAM(readSource("GCAM", subtype), subtype)
-
       # Inter- and extrapolate all data to model input data years
       data <- list(LFTRACCS = LFTRACCS, LFGCAM = LFGCAM)
       data <- lapply(data, approx_dt, years, "period", "value",
@@ -335,7 +334,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # EUROSTAT>TRACCS>GCAM
       #- EU data is used from TRACCS, rest is filled with GCAM
       countriesTRACCS <- unique(data$LFTRACCS$region)
-      loadFactorRaw <- rbind(data$LFTRACCS, data$LFGCAM[!(region %in% countriesTRACCS)])
+      loadFactorRaw <- rbind(data$LFTRACCS, data$LFGCAM[!(region %in% countriesTRACCS & univocalName %in% c(filterEntries$trn_pass_road, filterEntries$trn_freight_road))])
       loadFactor <- toolAdjustLoadFactor(loadFactorRaw, completeDataSet, countriesTRACCS, filterEntries)
 
       # Add load factor of zero for active modes

@@ -1,3 +1,14 @@
+#' Aggregate vehicle types so that vehicle types that are only available in certain iso countries of a region
+#' are not lost and still appear in the aggregated region
+#'
+#'
+#' @author Johanna Hoppe
+#' @param ... magpie object to be aggregated
+#' @returns a magpie object
+#'
+#' @importFrom magclass getItems getSets
+#' @export
+
 toolAggregateVehicleTypes <- function(...) {
 
   args <- list(...)
