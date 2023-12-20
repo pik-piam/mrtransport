@@ -43,8 +43,8 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
 #b) Annual Mileage for Trucks is missing completely - insert assumptions made by Alois in 2022 (probably from ARIADNE)
   annualMileageTrucks <- fread(
     text = "univocalName, annualMileage
-              Truck (0-3.5t), 21500
-              Truck (7.5t), 34500
+              Truck (0-3_5t), 21500
+              Truck (7_5t), 34500
               Truck (18t), 53000
               Truck (26t), 74000
               Truck (40t), 136500")

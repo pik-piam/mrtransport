@@ -37,11 +37,11 @@ Passenger cars;Small;Flexi-fuel;Subcompact Car;Liquids
 Passenger cars;Small;Gasoline;Subcompact Car;Liquids
 Passenger cars;Small;CNG;Subcompact Car;NG
 Passenger cars;Small;LPG;Subcompact Car;NG
-Light Commercial Veh_;N1;Diesel;Truck (0-3.5t);Liquids
-Light Commercial Veh_;N1;Flexi-fuel;Truck (0-3.5t);Liquids
-Light Commercial Veh_;N1;Gasoline;Truck (0-3.5t);Liquids
-Light Commercial Veh_;N1;CNG;Truck (0-3.5t);NG
-Light Commercial Veh_;N1;LPG;Truck (0-3.5t);NG
+Light Commercial Veh_;N1;Diesel;Truck (0-3_5t);Liquids
+Light Commercial Veh_;N1;Flexi-fuel;Truck (0-3_5t);Liquids
+Light Commercial Veh_;N1;Gasoline;Truck (0-3_5t);Liquids
+Light Commercial Veh_;N1;CNG;Truck (0-3_5t);NG
+Light Commercial Veh_;N1;LPG;Truck (0-3_5t);NG
 Heavy Duty Trucks;Articulated 14 - 20 t;Diesel;Truck (18t);Liquids
 Heavy Duty Trucks;Rigid 12 - 14 t;Diesel;Truck (18t);Liquids
 Heavy Duty Trucks;Rigid 14 - 20 t;Diesel;Truck (18t);Liquids
@@ -54,9 +54,9 @@ Heavy Duty Trucks;Rigid >32 t;Diesel;Truck (26t);Liquids
 Heavy Duty Trucks;Articulated 34 - 40 t;Diesel;Truck (40t);Liquids
 Heavy Duty Trucks;Articulated 40 - 50 t;Diesel;Truck (40t);Liquids
 Heavy Duty Trucks;Articulated 50 - 60 t;Diesel;Truck (40t);Liquids
-Heavy Duty Trucks;Rigid 7,5 - 12 t;Diesel;Truck (7.5t);Liquids
-Heavy Duty Trucks;Rigid <=7,5 t;Diesel;Truck (7.5t);Liquids
-Heavy Duty Trucks;>3,5 t;Gasoline;Truck (7.5t);Liquids
+Heavy Duty Trucks;Rigid 7,5 - 12 t;Diesel;Truck (7_5t);Liquids
+Heavy Duty Trucks;Rigid <=7,5 t;Diesel;Truck (7_5t);Liquids
+Heavy Duty Trucks;>3,5 t;Gasoline;Truck (7_5t);Liquids
 Rail;Passenger;Diesel;Passenger Rail;Liquids
 Rail;Passenger;Electric;Passenger Rail;Electric
 Rail;Goods;Diesel;Freight Rail;Liquids

@@ -34,8 +34,8 @@ toolPrepareUCD <- function(x, subtype) {
   weight[is.na(fe), fe := 1]
 
   dt <- magpie2dt(x)
-  dt[, size_class := gsub("_", ".", size_class)]
-  weight[, size_class := gsub("_", ".", size_class)]
+  ###dt[, size_class := gsub("_", ".", size_class)]
+  ###weight[, size_class := gsub("_", ".", size_class)]
   setkey(dt, region, UCD_sector, mode, size_class, UCD_technology, UCD_fuel, period)
   setkey(weight, region, UCD_sector, mode, size_class, UCD_technology, UCD_fuel)
   if (subtype %in% c("energyIntensity", "loadFactor", "CAPEX", "nonFuelOPEX", "CAPEXandNonFuelOPEX")) {
