@@ -55,18 +55,18 @@ Van;ICEV-g;Van;NG
 Van;ICEV-p;Van;Liquids
 Van;PHEV-p;Van;Hybrid electric
 Van;PHEV-d;Van;Hybrid electric
-3.5t;BEV;Truck (0-3.5t);BEV
-3.5t;FCEV;Truck (0-3.5t);FCEV
-3.5t;HEV-d;;
-3.5t;ICEV-d;Truck (0-3.5t);Liquids
-3.5t;ICEV-g;Truck (0-3.5t);NG
-3.5t;PHEV-d;;
-7.5t;BEV;Truck (7.5t);BEV
-7.5t;FCEV;Truck (7.5t);FCEV
-7.5t;HEV-d;;
-7.5t;ICEV-d;Truck (7.5t);Liquids
-7.5t;ICEV-g;Truck (7.5t);NG
-7.5t;PHEV-d;;
+3_5t;BEV;Truck (0-3_5t);BEV
+3_5t;FCEV;Truck (0-3_5t);FCEV
+3_5t;HEV-d;;
+3_5t;ICEV-d;Truck (0-3_5t);Liquids
+3_5t;ICEV-g;Truck (0-3_5t);NG
+3_5t;PHEV-d;;
+7_5t;BEV;Truck (7_5t);BEV
+7_5t;FCEV;Truck (7_5t);FCEV
+7_5t;HEV-d;;
+7_5t;ICEV-d;Truck (7_5t);Liquids
+7_5t;ICEV-g;Truck (7_5t);NG
+7_5t;PHEV-d;;
 18t;BEV;Truck (18t);BEV
 18t;FCEV;Truck (18t);FCEV
 18t;HEV-d;;
@@ -104,8 +104,8 @@ Mini;PHEV;Mini Car;Hybrid electric
 SUV;PHEV;;
 Small;PHEV;Subcompact Car;Hybrid electric
 Van;PHEV;Van;Hybrid electric
-3.5t;PHEV;;
-7.5t;PHEV;;
+3_5t;PHEV;;
+7_5t;PHEV;;
 18t;PHEV;;
 26t;PHEV;;
 32t;PHEV;;

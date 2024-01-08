@@ -97,16 +97,19 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                                                "HSR", "Domestic Aviation", "International Aviation",
                                                                "Domestic Ship", "International Ship") &
                                                                region %in% countriesTRACCS]
-      # Alternative technologies for motorcycles are missing in the TRACCS database and are taken from GCAM also
-      # for TRACCS countries
-      energyIntensityRawGCAMalt2WheelersTRACCSreg <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_2W &
-                                                                    region %in% countriesTRACCS & technology == "BEV"]
+      # Alternative technologies for motorcycles are missing in the TRACCS database and are taken from GCAM.
+      # Furthermore, in TRACCS energy intensity for motorcycles and mopeds are only reported until 2010 and would be constant when interpolating later years. 
+      # Hence we use GCAM data for mopeds and motorcyclse adn there alternatives also for TRACCS countries
+      energyIntensityRawGCAM2WheelersTRACCSreg <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_2W &
+                                                                    region %in% countriesTRACCS]
+
 
       #3: PSI data
       # Used for Trucks in non-TRACCS countries
       energyIntensityRawPSITrucks <- data$enIntPSI[univocalName %in% filterEntries$trn_freight_road & !region %in% countriesTRACCS]
       # TRACCS data does not include NG Truck (7.5t), Truck (18t), Truck (26t), Truck (40t) -> data is taken from PSI
-      energyIntensityRawPSItrucksNGTRACCSreg <- data$enIntPSI[univocalName %in% c("Truck (7.5t)", "Truck (18t)",
+      # TRACCS data does not include NG Truck (7_5t), Truck (18t), Truck (26t), Truck (40t) -> data is taken from PSI
+      energyIntensityRawPSItrucksNGTRACCSreg <- data$enIntPSI[univocalName %in% c("Truck (7_5t)", "Truck (18t)",
                                                               "Truck (26t)", "Truck (40t)") &
                                                               technology == "NG" & region %in% countriesTRACCS]
       # Used for alternative Cars (BEV,FCEV,HEV) in TRACCS countries
@@ -142,7 +145,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       energyIntensityRaw <- rbind(
         data$enIntTRACCS, energyIntensityRawGCAMconventionalCarsnonTRACCS, energyIntensityRawGCAMmissingTRACCScat,
-        energyIntensityRawGCAMnonCarsnonTRACCS, energyIntensityRawGCAMalt2WheelersTRACCSreg,
+        energyIntensityRawGCAMnonCarsnonTRACCS, energyIntensityRawGCAM2WheelersTRACCSreg,
         energyIntensityRawPSITrucks, energyIntensityRawPSItrucksNGTRACCSreg,
         energyIntensityRawPSIalternativeTechTRACCSreg,
         energyIntensityRawPSIalternativeCarsnonTRACCS)
@@ -278,7 +281,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                           "Domestic Ship", "International Ship")]
       # GCAM is used for modes not provided by TRACCS for TRACCS regions. 4 Wheelers must be excluded as GCAM
       # uses different vehicle types and bunkers are used from EUROSTAT
-      # For some reason energy service demand for Truck(0-3.5t)/Light commercial vehicles is not reported by TRACCS
+      # For some reason energy service demand for Truck(0-3_5t)/Light commercial vehicles is not reported by TRACCS
       # -> also taken from GCAM
       missingModes <- data$esDemandGCAM[region %in% unique(data$esDemandTRACCS$region) &
         !univocalName %in% unique(data$esDemandTRACCS$univocalName) &
@@ -295,7 +298,6 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                "variable", "unit", "value")]
       setkey(esDemand,  region, period, univocalName, technology,
              variable, unit)
-
 
       # Check whether data is complete
       check <- merge.data.table(completeDataSet[period <= 2010], esDemand, all = TRUE)
