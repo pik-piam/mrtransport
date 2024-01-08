@@ -99,7 +99,6 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
                                          warnNA = FALSE, aggregate = FALSE))[, c("unit", "variable") := NULL]
   setnames(annualMileage, "value", "annualMileage")
   # magclass converts "." in vehicle types to "_" (e.g. Truck (0-3_5t))
-  ###annualMileage[grepl("Truck.*", univocalName), univocalName := gsub("_", ".", univocalName)]
   setkey(annualMileage, region, period, univocalName, technology)
 
   # UCD applied interest rate of 10% and uniform vehicle lifetime of 15 yrs

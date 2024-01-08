@@ -97,10 +97,12 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                                                "HSR", "Domestic Aviation", "International Aviation",
                                                                "Domestic Ship", "International Ship") &
                                                                region %in% countriesTRACCS]
-      # Alternative technologies for motorcycles are missing in the TRACCS database and are taken from GCAM also
-      # for TRACCS countries
-      energyIntensityRawGCAMalt2WheelersTRACCSreg <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_2W &
-                                                                    region %in% countriesTRACCS & technology == "BEV"]
+      # Alternative technologies for motorcycles are missing in the TRACCS database and are taken from GCAM.
+      # Furthermore, in TRACCS energy intensity for motorcycles and mopeds are only reported until 2010 and would be constant when interpolating later years. 
+      # Hence we use GCAM data for mopeds and motorcyclse adn there alternatives also for TRACCS countries
+      energyIntensityRawGCAM2WheelersTRACCSreg <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_2W &
+                                                                    region %in% countriesTRACCS]
+
 
       #3: PSI data
       # Used for Trucks in non-TRACCS countries
@@ -143,7 +145,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       energyIntensityRaw <- rbind(
         data$enIntTRACCS, energyIntensityRawGCAMconventionalCarsnonTRACCS, energyIntensityRawGCAMmissingTRACCScat,
-        energyIntensityRawGCAMnonCarsnonTRACCS, energyIntensityRawGCAMalt2WheelersTRACCSreg,
+        energyIntensityRawGCAMnonCarsnonTRACCS, energyIntensityRawGCAM2WheelersTRACCSreg,
         energyIntensityRawPSITrucks, energyIntensityRawPSItrucksNGTRACCSreg,
         energyIntensityRawPSIalternativeTechTRACCSreg,
         energyIntensityRawPSIalternativeCarsnonTRACCS)

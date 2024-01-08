@@ -43,7 +43,6 @@ toolIEAharmonization <- function(enIntensity) {
  loadFactorMag <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE,
                              subtype = "loadFactor")
  loadFactor <- magpie2dt(loadFactorMag)
- ###loadFactor[grepl("Truck.*", univocalName), univocalName := gsub("_", ".", univocalName)]
  loadFactor <- loadFactor[!univocalName %in% c("Cycle", "Walk")]
  setnames(loadFactor, "value", "loadFactor")
  loadFactor <- loadFactor[, c("region", "univocalName", "technology", "period", "loadFactor")]

@@ -20,7 +20,6 @@ toolPreparePSI <- function(x) {
   mappingPSI <- fread(mapfile, skip = 0)
   setkey(mappingPSI, technologyPSI, vehicleTypePSI)
   dt <- magpie2dt(x)
-  ###dt[, vehicleTypePSI := gsub("_", ".", vehicleTypePSI)]
   dt <- merge.data.table(dt, mappingPSI, all.x = TRUE, by = c("technologyPSI", "vehicleTypePSI"))
   dt <- dt[!univocalName == ""]
   #Average the energy intensity for petrol and diesel ICEs and PHEVs

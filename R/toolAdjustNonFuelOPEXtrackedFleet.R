@@ -67,7 +67,6 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
                                          warnNA = FALSE, aggregate = FALSE))[, c("unit", "variable") := NULL]
   setnames(annualMileage, "value", "annualMileage")
   #magclass converts "." in vehicle types to "_" (e.g. Truck (0-3_5t))
-  ###annualMileage[grepl("Truck.*", univocalName) , univocalName := gsub("_", ".", univocalName)]
   setkey(annualMileage, region, univocalName, technology, period)
 
   #Divide by Annual Mileage to get [unit = US$2005/veh/yr]
