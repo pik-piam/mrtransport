@@ -12,8 +12,8 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
  value <- region <- univocalName <- univocalName <- check <- unit  <- variable <- NULL
 
 #1: Correct unrealisitc data
-#a) 3.5t load factor as provided by GCAM is unrealistically high
-  dt[!(region %in% TRACCScountries) & univocalName == "Truck (0-3.5t)", value := 0.4]
+#a) 3_5t load factor as provided by GCAM is unrealistically high
+  dt[!(region %in% TRACCScountries) & univocalName == "Truck (0-3_5t)", value := 0.4]
 
 #b) 40t dt in TRACCS is too low, using KBA data (2019 dataset)
   # https://www.kba.de/DE/Statistik/Produktkatalog/produkte/Kraftverkehr/vd3_uebersicht.html?nn=3514348

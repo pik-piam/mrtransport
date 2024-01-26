@@ -1,54 +1,54 @@
 UCD_sector;mode;size_class;UCD_technology;UCD_fuel;univocalName;technology
-Freight;Truck;Truck (0-2t);Liquids;Liquids;Truck (0-3.5t);Liquids
-Freight;Truck;Truck (0-2t);NG;Natural Gas;Truck (0-3.5t);NG
-Freight;Truck;Truck (2-5t);Liquids;Liquids;Truck (0-3.5t);Liquids
-Freight;Truck;Truck (2-5t);NG;Natural Gas;Truck (0-3.5t);NG
-Freight;Truck;Truck (5-9t);Liquids;Liquids;Truck (7.5t);Liquids
-Freight;Truck;Truck (5-9t);NG;Natural Gas;Truck (7.5t);NG
+Freight;Truck;Truck (0-2t);Liquids;Liquids;Truck (0-3_5t);Liquids
+Freight;Truck;Truck (0-2t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (2-5t);Liquids;Liquids;Truck (0-3_5t);Liquids
+Freight;Truck;Truck (2-5t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (5-9t);Liquids;Liquids;Truck (7_5t);Liquids
+Freight;Truck;Truck (5-9t);NG;Natural Gas;Truck (7_5t);NG
 Freight;Truck;Truck (9-16t);Liquids;Liquids;Truck (18t);Liquids
 Freight;Truck;Truck (9-16t);NG;Natural Gas;Truck (18t);NG
-Freight;Truck;Truck (0-1t);Liquids;Liquids;Truck (0-3.5t);Liquids
-Freight;Truck;Truck (0-1t);NG;Natural Gas;Truck (0-3.5t);NG
-Freight;Truck;Truck (1-6t);Liquids;Liquids;Truck (7.5t);Liquids
-Freight;Truck;Truck (1-6t);NG;Natural Gas;Truck (7.5t);NG
+Freight;Truck;Truck (0-1t);Liquids;Liquids;Truck (0-3_5t);Liquids
+Freight;Truck;Truck (0-1t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (1-6t);Liquids;Liquids;Truck (7_5t);Liquids
+Freight;Truck;Truck (1-6t);NG;Natural Gas;Truck (7_5t);NG
 Freight;Truck;Truck (6-30t);Liquids;Liquids;Truck (18t);Liquids
 Freight;Truck;Truck (6-30t);NG;Natural Gas;Truck (18t);NG
-Freight;Truck;Truck (0-4.5t);Liquids;Liquids;Truck (0-3.5t);Liquids
-Freight;Truck;Truck (0-4.5t);NG;Natural Gas;Truck (0-3.5t);NG
-Freight;Truck;Truck (4.5-15t);Liquids;Liquids;Truck (7.5t);Liquids
-Freight;Truck;Truck (4.5-15t);NG;Natural Gas;Truck (7.5t);NG
+Freight;Truck;Truck (0-4_5t);Liquids;Liquids;Truck (0-3_5t);Liquids
+Freight;Truck;Truck (0-4_5t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (4_5-15t);Liquids;Liquids;Truck (7_5t);Liquids
+Freight;Truck;Truck (4_5-15t);NG;Natural Gas;Truck (7_5t);NG
 Freight;Truck;Truck (>15t);Liquids;Liquids;Truck (26t);Liquids
 Freight;Truck;Truck (>15t);NG;Natural Gas;Truck (26t);NG
 Passenger;Bus;Heavy Bus;Liquids;Liquids;Bus;Liquids
 Passenger;Bus;Heavy Bus;NG;Natural Gas;Bus;NG
 Passenger;Bus;Light Bus;Liquids;Liquids;Bus;Liquids
 Passenger;Bus;Light Bus;NG;Natural Gas;Bus;NG
-Freight;Truck;3W Rural;Liquids;Liquids;Truck (0-3.5t);Liquids
-Freight;Truck;3W Rural;NG;Natural Gas;Truck (0-3.5t);NG
-Freight;Truck;Truck (0-6t);Liquids;Liquids;Truck (0-3.5t);Liquids
-Freight;Truck;Truck (0-6t);NG;Natural Gas;Truck (0-3.5t);NG
-Freight;Truck;Truck (6-14t);Liquids;Liquids;Truck (7.5t);Liquids
-Freight;Truck;Truck (6-14t);NG;Natural Gas;Truck (7.5t);NG
+Freight;Truck;3W Rural;Liquids;Liquids;Truck (0-3_5t);Liquids
+Freight;Truck;3W Rural;NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (0-6t);Liquids;Liquids;Truck (0-3_5t);Liquids
+Freight;Truck;Truck (0-6t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (6-14t);Liquids;Liquids;Truck (7_5t);Liquids
+Freight;Truck;Truck (6-14t);NG;Natural Gas;Truck (7_5t);NG
 Freight;Truck;Truck (>14t);Liquids;Liquids;Truck (18t);Liquids
 Freight;Truck;Truck (>14t);NG;Natural Gas;Truck (18t);NG
-Freight;Truck;Truck (0-3.5t);Liquids;Liquids;Truck (0-3.5t);Liquids
-Freight;Truck;Truck (0-3.5t);NG;Natural Gas;Truck (0-3.5t);NG
+Freight;Truck;Truck (0-3_5t);Liquids;Liquids;Truck (0-3_5t);Liquids
+Freight;Truck;Truck (0-3_5t);NG;Natural Gas;Truck (0-3_5t);NG
 Freight;Truck;Truck (16-32t);Liquids;Liquids;Truck (26t);Liquids
 Freight;Truck;Truck (16-32t);NG;Natural Gas;Truck (26t);NG
-Freight;Truck;Truck (3.5-16t);Liquids;Liquids;Truck (7.5t);Liquids
-Freight;Truck;Truck (3.5-16t);NG;Natural Gas;Truck (7.5t);NG
+Freight;Truck;Truck (3_5-16t);Liquids;Liquids;Truck (7_5t);Liquids
+Freight;Truck;Truck (3_5-16t);NG;Natural Gas;Truck (7_5t);NG
 Freight;Truck;Truck (>32t);Liquids;Liquids;Truck (40t);Liquids
 Freight;Truck;Truck (>32t);NG;Natural Gas;Truck (40t);NG
 Freight;Truck;Truck;Liquids;Liquids;;
 Freight;Truck;Truck;NG;Natural Gas;;
-Freight;Truck;Truck (6-15t);Liquids;Liquids;Truck (7.5t);Liquids
-Freight;Truck;Truck (6-15t);NG;Natural Gas;Truck (7.5t);NG
-Freight;Truck;Truck (0-2.7t);Liquids;Liquids;Truck (0-3.5t);Liquids
-Freight;Truck;Truck (0-2.7t);NG;Natural Gas;Truck (0-3.5t);NG
-Freight;Truck;Truck (2.7-4.5t);Liquids;Liquids;Truck (0-3.5t);Liquids
-Freight;Truck;Truck (2.7-4.5t);NG;Natural Gas;Truck (0-3.5t);NG
-Freight;Truck;Truck (4.5-12t);Liquids;Liquids;Truck (7.5t);Liquids
-Freight;Truck;Truck (4.5-12t);NG;Natural Gas;Truck (7.5t);NG
+Freight;Truck;Truck (6-15t);Liquids;Liquids;Truck (7_5t);Liquids
+Freight;Truck;Truck (6-15t);NG;Natural Gas;Truck (7_5t);NG
+Freight;Truck;Truck (0-2_7t);Liquids;Liquids;Truck (0-3_5t);Liquids
+Freight;Truck;Truck (0-2_7t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (2_7-4_5t);Liquids;Liquids;Truck (0-3_5t);Liquids
+Freight;Truck;Truck (2_7-4_5t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (4_5-12t);Liquids;Liquids;Truck (7_5t);Liquids
+Freight;Truck;Truck (4_5-12t);NG;Natural Gas;Truck (7_5t);NG
 Freight;Truck;Truck (>12t);Liquids;Liquids;Truck (18t);Liquids
 Freight;Truck;Truck (>12t);NG;Natural Gas;Truck (18t);NG
 Freight;Rail;All;Coal;Coal;;
