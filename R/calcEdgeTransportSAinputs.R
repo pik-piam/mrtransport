@@ -14,12 +14,57 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
     subsectorL2   <- technology <- univocalName <- gdppc <- speed <-
     altTech <- variable <- value <- regionCode12 <- multiplier <-NULL
 
-  years <- data.table(temporal = "all", period = c(
+  # these are the loq-resolution years
+  # years <- data.table(temporal = "all", period = c(
+  #   1990,
+  #   seq(2005, 2060, by = 5),
+  #   seq(2070, 2110, by = 10),
+  #   2130, 2150
+  # ))
+  # 
+  lowResYears <- data.table(temporal = "all", period = c(
     1990,
     seq(2005, 2060, by = 5),
     seq(2070, 2110, by = 10),
     2130, 2150
   ))
+  
+  years <- data.table(temporal = "all", period = c(
+    1990,
+    seq(2005, 2100, by = 1),
+    2110, 2130, 2150
+  ))
+  
+  # lowResUnivocalNames <- c("Cycle",
+  #                          "Domestic Aviation",
+  #                          "Domestic Ship",
+  #                          "Freight Rail",
+  #                          "HSR",
+  #                          "International Aviation",
+  #                          "International Ship",
+  #                          "Moped",
+  #                          "Motorcycle (50-250cc)",
+  #                          "Motorcycle (>250cc)",
+  #                          "Passenger Rail",
+  #                          "Walk"
+  #                          )
+  # 
+  # highResUnivocalNames <- c("Bus", 
+  #                           "Compact Car", 
+  #                           "Large Car",
+  #                           "Large Car and SUV",
+  #                           "Midsize Car",
+  #                           "Mini Car",
+  #                           "Subcompact Car",
+  #                           "Truck (0-3.5t)",
+  #                           "Truck (18t)",
+  #                           "Truck (26t)",
+  #                           "Truck (40t)",
+  #                           "Truck (7.5t)",
+  #                           "Van"
+  #                           )
+  
+  
   # decisionTree.csv contains all possible branches of the decision tree
   decisionTree <- fread(system.file("extdata/decisionTree.csv", package = "mrtransport", mustWork = TRUE))
   decisionOptions <- decisionTree[, c("univocalName", "technology")]
@@ -42,10 +87,22 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
   completeDataSet <- merge.data.table(completeDataSet, mapCountrySpecificVehicleTypes,
     by = c("region", "univocalName"), all = TRUE)
   completeDataSet <- completeDataSet[present == 1][, present := NULL]
+  
   completeDataSet <- merge.data.table(completeDataSet, years, by = "temporal", allow.cartesian = TRUE)
+  
+  # this line is new
+  years <- years[, c(period)]
+  lowResYears <- lowResYears[, c(period)]
+  #highResYears <- highResYears[, c(period)]
+  
+  # completeDataSet <- completeDataSet[(univocalName %in% highResUnivocalNames 
+  #                                     & period %in% highResYears) 
+  #                                    | (univocalName %in% lowResUnivocalNames
+  #                                     & period %in% lowResYears)]
+  
   completeDataSet[, temporal := NULL]
   completeDataSet[, check := 1]
-  years <- years[, c(period)]
+  
   setkey(completeDataSet, region, period, univocalName, technology)
 
   # categories for filtering data
@@ -62,7 +119,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
     "energyIntensity" = {
       unit <- "MJ/vehkm"
       description <- "Energy intensity on technology level. Sources: TRACCS, PSI, UCD, GCAM"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(years)
 
       # calc different source data
       enIntGCAM <- toolPrepareGCAM(readSource("GCAM", subtype), subtype)
@@ -72,6 +129,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       # Inter- and extrapolate all data to model input data years
       data <- list(enIntGCAM = enIntGCAM, enIntUCD = enIntUCD, enIntTRACCS = enIntTRACCS, enIntPSI = enIntPSI)
+      #DONE changed the below
       data <- lapply(data, approx_dt, years, "period", "value",
         c("region", "univocalName","technology", "variable", "unit"), extrapolate = TRUE)
 
@@ -162,8 +220,15 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       energyIntensity <- energyIntensity[, c("region", "period", "univocalName", "technology",
                     "variable", "unit", "value")]
+      # energyIntensity <- energyIntensity[(univocalName %in% highResUnivocalNames 
+      #                                     & period %in% highResYears) 
+      #                                    | (univocalName %in% lowResUnivocalNames
+      #                                       & period %in% lowResYears)]
+      
+      browser()
+      
       setkey(energyIntensity,  region, period, univocalName, technology, variable, unit)
-
+        
       # Check whether data is complete
       check <- merge.data.table(completeDataSet, energyIntensity, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
@@ -181,11 +246,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       }
 
       quitteobj <- energyIntensity
+      
+      browser()
     },
     "annualMileage" = {
       unit <- "vehkm/veh/yr"
       description <- "Annual mileage on technology level. Sources: TRACCS, UCD"
-      weight <- calcOutput("GDP", aggregate = FALSE)[, years, paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(years)
 
       # calc different source data
       AMTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
@@ -213,6 +280,10 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       annualMileage <- annualMileage[, c("region", "period", "univocalName", "technology",
                                  "variable", "unit", "value")]
+      # annualMileage <- annualMileage[(univocalName %in% highResUnivocalNames 
+      #                                     & period %in% highResYears) 
+      #                                    | (univocalName %in% lowResUnivocalNames
+      #                                       & period %in% lowResYears)]
       setkey(annualMileage, region, period, univocalName, technology, variable, unit)
 
       # Check whether data is complete
@@ -678,6 +749,8 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       VOT <- VOT[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
       setkey(VOT, region, period, univocalName, technology, variable, unit)
 
+      browser()
+      
       # Check whether data is complete
       # speed of modes is only featured for passenger transport (to calculate value of time)
       completeDataVOT <- completeDataSet[univocalName %in% filterEntries$trn_pass]
@@ -746,7 +819,116 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
         stop("Time value costs data includes NAs")
       }
       quitteobj <- timeValueCosts
-    }
+    },
+    "PurchasePriceSubsidies" = {
+      unit <- "US$2005/veh"
+      description <- "Subsidies for individuals purchasing alternative technology LDVs. 
+                      If untilPrice is not NA, then the subsidies only apply if the purchase price (CAPEX)
+                      is smaller than or equal to the untilPrice."
+      weight <- NULL
+                      
+      data <- toolPreparePurchasePriceSubsidies(readSource("TransportPurchasePriceSubsidies"))
+      data <- dcast(data, region + univocalName + technology + unit + period ~ variable, value.var = "value")
+      
+      # get historial CAPEX data
+      CAPEXtrackedFleetMagpieobj <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE, subtype = "CAPEXtrackedFleet")
+      CAPEXtrackedFleet <- magpie2dt(CAPEXtrackedFleetMagpieobj)
+      CAPEXtrackedFleet <- CAPEXtrackedFleet["variable" == "Capital costs (purchase)", c("unit") := NULL]
+      setnames(CAPEXtrackedFleet, "value", "capex")
+      
+      # approximate CAPEX to obtain 2021-2023 data
+      CAPEXapprox <- approx_dt(CAPEXtrackedFleet, 1990:2150, "period", "capex", idxcols = c("region", "univocalName", "technology", "variable"))
+      CAPEXapprox[, unit := NULL]
+      CAPEXapprox <- CAPEXapprox[variable == "Capital costs (purchase)"][, variable := NULL]
+      
+      # merge subsidies with CAPEX data to obtain purchase price and calculate subsidies
+      data <- merge(data, CAPEXapprox, all.y = TRUE, by = intersect(names(data), names(CAPEXapprox)))
+      test <- data[region == "AUT" & period == "2022"]
+      data$unit <- "US$2005/veh"
+      
+      # calculate subsidies based on purchase price and untilPrice values
+      data$value <- mapply(function(period, price, subsidy, untilPrice, subsidy2, untilPrice2){ 
+                      if (is.na(subsidy)) {
+                        0
+                      } else if (is.na(untilPrice)) {
+                        subsidy
+                      } else if (price <= untilPrice){
+                        subsidy
+                      } else if(is.na(subsidy2)) {
+                        0
+                      } else if (is.na(untilPrice2)) {
+                        subsidy2
+                      } else if (price <= untilPrice2) {
+                        subsidy2
+                      } else if (price > untilPrice2) {
+                        0
+                      } else {
+                        stop("Error is untilPrice check.")
+                      }},
+                      period = data$period, 
+                      price = data$capex, 
+                      subsidy = data$purchasePriceSubsidy,
+                      untilPrice = data$untilPrice,
+                      subsidy2 = data$purchasePriceSubsidy2,
+                      untilPrice2 = data$untilPrice2
+                      )
+      
+      # drop unnecessary data
+      data[, c("untilPrice", "untilPrice2", "purchasePriceSubsidy", "purchasePriceSubsidy2", "capex") := NULL]
+      data[, value := - value]
+      
+      # defining custom years by including 2020 to 2023. Then restrict data to these years
+      yearsVec <- unique(union(years, c(2020, 2021, 2022, 2023)))
+      data <- data[period%in%yearsVec]
+      
+      # merge with complete data set
+      completeDataLDV <- completeDataSet[univocalName %in% filterEntries$trn_pass_road_LDV_4W]
+      check1 <- merge.data.table(completeDataLDV, data, all = TRUE)
+      
+      if (nrow(check1[is.na(value)]) > 0) {
+        stop("Purchase price subsidies input data is incomplete")
+      } else if (nrow(check1[is.na(check) & !(period%in%yearsVec)]) > 0) { #customised to include all in yearsVec
+        stop("Unnecessary data is provided for Purchase price subsidies")
+      } else if (length(unique(check1$unit)) > 1) {
+        stop("Something went wrong in generating Purchase price subsidies input data.
+             Data does not have the same unit.")
+      } else if (length(unique(check1$variable)) > 1) {
+        stop("Something went wrong in generating Purchase price subsidies input data.
+             Data does not have the same variable type.")
+      } else if (anyNA(data) == TRUE) {
+        stop("Purchase price subsidies data includes NAs")
+      }
+      
+      quitteobj <- data
+      
+      # JOHANNAS CODE SNIPPET
+      # toolLoadmrremindData <- function(decisionTree, yrs) {
+      # 
+      #   subsidies <- magpie2dt(readSource(type = "TransportSubsidies"))
+      #   setnames(subsidies, "variable", "technology")
+      #   #average between legal and private entities
+      #   subsidies <- subsidies[, .(value = mean(value)), by = c("region", "period", "technology")]
+      #   subsidies[, value := - value] # count subsidies negative
+      #   completeSub <- unique(subsidies[, c("region", "technology")])[, temporal := "all"]
+      #   temporal <- data.table(period = yrs)[, temporal := "all"]
+      #   completeSub <- merge(completeSub, temporal, by = "temporal", allow.cartesian = TRUE)[, temporal := NULL]
+      #   subsidies <- merge(subsidies, completeSub, all.y = TRUE, by = c("region", "technology", "period"))
+      # 
+      #   ## year where complete phase-out incentives occurs
+      #   yearOut = 2030
+      #   ## attribute first (to the countries that have them) the same incentives value until the phase out year
+      #   subsidies[, value := ifelse(period >= 2020 & period <= yearOut, value[period == 2020], 0),
+      #             by = c("region", "technology")]
+      # 
+      #   # map on decision tree, apply only on 4 wheelers
+      #   subsidies <- merge(unique(decisionTree[subsectorL3 == "trn_pass_road_LDV_4W", c("region", "univocalName", "technology")]), subsidies, by = c("region", "technology"), all.x = TRUE, allow.cartesian = TRUE)
+      #   subsidies <- subsidies[!is.na(value)][, variable := "Subsidy"][, unit := "US$2005/veh"]
+      #   #Q: How to include phase out of the incentives? Is that needed at all?
+      # 
+      #   return(list(
+      #     subsidies = subsidies
+      #   ))
+      }
   )
 
   x <- as.magpie(as.data.frame(quitteobj))
