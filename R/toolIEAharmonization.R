@@ -36,14 +36,13 @@ toolIEAharmonization <- function(enIntensity) {
  enServiceDemMag <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE,
                                subtype = "histESdemand")
  enServiceDem <- magpie2dt(enServiceDemMag)
- enServiceDem[grepl("Truck.*", univocalName), univocalName := gsub("_", ".", univocalName)]
+ ##enServiceDem[grepl("Truck.*", univocalName), univocalName := gsub("_", ".", univocalName)]
  enServiceDem <- enServiceDem[!univocalName %in% c("Cycle", "Walk")]
  setnames(enServiceDem, "value", "enService")
  enServiceDem <- enServiceDem[, c("region", "univocalName", "technology", "period", "enService")]
  loadFactorMag <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE,
                              subtype = "loadFactor")
  loadFactor <- magpie2dt(loadFactorMag)
- loadFactor[grepl("Truck.*", univocalName), univocalName := gsub("_", ".", univocalName)]
  loadFactor <- loadFactor[!univocalName %in% c("Cycle", "Walk")]
  setnames(loadFactor, "value", "loadFactor")
  loadFactor <- loadFactor[, c("region", "univocalName", "technology", "period", "loadFactor")]

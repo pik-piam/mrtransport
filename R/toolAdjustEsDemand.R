@@ -48,8 +48,8 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter) {
   dt[regionCode21 == "MEA" & univocalName == "Bus", value := value / 2]
 
   #5: Adjust GER Truck size shares according to KBA data (calculated from stocks via AM and LF)
-  dt[region == "DEU" & univocalName == "Truck (0-3.5t)", value := value * 2]
-  dt[region == "DEU" & univocalName == "Truck (7.5t)", value := value * 0.25]
+  dt[region == "DEU" & univocalName == "Truck (0-3_5t)", value := value * 2]
+  dt[region == "DEU" & univocalName == "Truck (7_5t)", value := value * 0.25]
   dt[region == "DEU" & univocalName == "Truck (18t)", value := value * 0.65]
   dt[region == "DEU" & univocalName == "Truck (40t)", value := value * 1.4]
 

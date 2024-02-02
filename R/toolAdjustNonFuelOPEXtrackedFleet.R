@@ -66,8 +66,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   annualMileage <-  magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",
                                          warnNA = FALSE, aggregate = FALSE))[, c("unit", "variable") := NULL]
   setnames(annualMileage, "value", "annualMileage")
-  #magclass converts "." in vehicle types to "_" (e.g. Truck (0-3.5t))
-  annualMileage[grepl("Truck.*", univocalName) , univocalName := gsub("_", ".", univocalName)]
+  #magclass converts "." in vehicle types to "_" (e.g. Truck (0-3_5t))
   setkey(annualMileage, region, univocalName, technology, period)
 
   #Divide by Annual Mileage to get [unit = US$2005/veh/yr]
@@ -87,7 +86,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   # Replacing the missing values with values from other countries in the same region does not work at the moment,
   # 2nd approach: Replace with other vehicle types in the same country
   # Find NAs
-  # KOR does not feature truck (0-3.5t) and truck (7.5t) in the UCD database
+  # KOR does not feature truck (0-3_5t) and truck (7_5t) in the UCD database
   # NEU, EUR and REF do not feature truck (18t) in the UCD database
   missing18t <- dt[is.na(value) & univocalName == "Truck (18t)"]
   # OAS, SSA and MEA do not feature truck (26t) in the UCD database
@@ -99,7 +98,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   truck26t <- dt[!is.na(value) & univocalName == "Truck (26t)"]
   truck26t <- truck26t[, c("region", "technology", "period", "value")]
   setnames(truck26t, "value", "truck26t")
-  truck7t <- dt[!is.na(value) & univocalName == "Truck (7.5t)"]
+  truck7t <- dt[!is.na(value) & univocalName == "Truck (7_5t)"]
   truck7t <- truck7t[, c("region", "technology", "period", "value")]
   setnames(truck7t, "value", "truck7t")
   truck18t <- dt[!is.na(value) & univocalName == "Truck (18t)"]
@@ -120,7 +119,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   missing40t <- merge.data.table(missing40t, truck7t, by = c("region", "technology", "period"), all.x = TRUE)
   missing40t[, value := truck26t][, truck26t := NULL]
   missing40t[is.na(value), value := truck18t][, truck18t := NULL]
-  # JPN gets 7.5t assigned -> this should be fixed
+  # JPN gets 7_5t assigned -> this should be fixed
   missing40t[is.na(value), value := truck7t][, truck7t := NULL]
 
   missingTrucks <- rbind(missing18t, missing26t, missing40t)
