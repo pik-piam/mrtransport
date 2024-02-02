@@ -29,7 +29,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   LDV4WEUR[period == 2040 & technology %in% c("Hybrid electric", "BEV"), value := 0.8 * value]
   LDV4WEUR[period == 2040 & technology %in% c("FCEV"), value := 0.8 * value]
   # in 2100, purchase price for BEVs is 0.8 * purchase price, for Hybrid electric is 0.7, for FCEVs is 0.9
-  decr <- data.table(technology = c("BEV", "Hybrid electric", "FCEV", "Liquids", "NG"),
+  decr <- data.table(technology = c("BEV", "Hybrid electric", "FCEV", "Liquids", "Gases"),
                      factor = c(0.8, 0.7, 0.9, 1, 1))
   LDV4WEUR <- merge.data.table(LDV4WEUR, decr, by = "technology")
   LDV4WEUR[variable == "Capital costs (purchase)"& period == 2100, value := value[technology == "Liquids"] * factor, by = c("region", "univocalName")]
@@ -83,14 +83,14 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   # BEV busses: veh + batt. = 25% of TCO
   dt[univocalName == "Bus" & technology %in% c("BEV", "FCEV"), value := value * 0.25]
   #3b: diesel busses: 15% of TCO
-  dt[univocalName == "Bus" & technology %in% c("Liquids", "NG"), value := value * 0.15]
+  dt[univocalName == "Bus" & technology %in% c("Liquids", "Gases"), value := value * 0.15]
   dt[univocalName == "Bus", variable := "Capital costs (total)"]
   #3c: Trucks
   # https://theicct.org/sites/default/files/publications/TCO-BETs-Europe-white-paper-v4-nov21.pdf
   # p. 11: retail price = 150k for diesel, 500 - 200k for BEV
   # p. 22: TCO 550 for diesel, TCO = 850 - 500k for BEV
   # CAPEX share diesel = 27%, 60-40% for BEV -> 50%
-  dt[univocalName %in% filter$trn_freight_road & technology %in% c("Liquids", "NG"), value := value * 0.3]
+  dt[univocalName %in% filter$trn_freight_road & technology %in% c("Liquids", "Gases"), value := value * 0.3]
   dt[univocalName %in% filter$trn_freight_road & technology %in% c("BEV", "FCEV"), value := value * 0.5]
   dt[univocalName %in% filter$trn_freight_road, variable := "Capital costs (total)"]
   # Values given in US$2005/vehkm need to be transferred to US$2005/veh with the help of annual mileage

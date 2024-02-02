@@ -58,7 +58,7 @@ toolIEAharmonization <- function(enIntensity) {
  enIntensity[, fe := (value / loadFactor) * enService * bn * MJtoEJ]
  #Apply IEA categories
  enIntensity[technology %in% c("BEV", "Electric"), te := "tdelt"]
- enIntensity[technology == "NG", te := "tdgat"]
+ enIntensity[technology == "Gases", te := "tdgat"]
  #all others are handled as liquids (including hybrid electric)
  enIntensity[is.na(te), te := "tdlit"]
  enIntensity[, isBunk := ifelse(univocalName == "International Aviation", "AVBUNK", NA)]

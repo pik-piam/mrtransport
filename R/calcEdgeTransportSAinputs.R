@@ -85,7 +85,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # Used parts of the GCAM energy Intensity:
       # Conventional cars (Liquids, NG) in non-TRACCS countries
       energyIntensityRawGCAMconventionalCarsnonTRACCS <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_4W &
-                                                         technology %in% c("Liquids", "NG") &
+                                                         technology %in% c("Liquids", "Gases") &
                                                          !region %in% countriesTRACCS]
       # All other data for non-TRACCS countries except for Trucks
       energyIntensityRawGCAMnonCarsnonTRACCS <- data$enIntGCAM[!univocalName %in% filterEntries$trn_pass_road_LDV_4W &
@@ -108,7 +108,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # TRACCS data does not include NG Truck (7.5t), Truck (18t), Truck (26t), Truck (40t) -> data is taken from PSI
       energyIntensityRawPSItrucksNGTRACCSreg <- data$enIntPSI[univocalName %in% c("Truck (7.5t)", "Truck (18t)",
                                                               "Truck (26t)", "Truck (40t)") &
-                                                              technology == "NG" & region %in% countriesTRACCS]
+                                                              technology == "Gases" & region %in% countriesTRACCS]
       # Used for alternative Cars (BEV,FCEV,HEV) in TRACCS countries
       energyIntensityRawPSIalternativeTechTRACCSreg <- data$enIntPSI[technology %in% c("BEV", "FCEV", "Hybrid electric")
                                                                      & region %in% countriesTRACCS]

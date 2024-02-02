@@ -21,7 +21,7 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
 #1: PSI trends in energyitensity are applied to TRACCS car and trucks data [TRACCS data only available until 2010]
    #Calculate PSI factors for the energy intensity improvement compared to 2010
    TrendsEnIntPSI <- TrendsEnIntPSI[region %in% regionTRACCS & !(region == "ALA") &
-                                    technology %in% c("Liquids", "NG") & period >= 2010]
+                                    technology %in% c("Liquids", "Gases") & period >= 2010]
    TrendsEnIntPSI[, factor := value / value[period == 2010], by = c("region", "univocalName", "technology", "variable", "unit")]
    TrendsEnIntPSI[, value := NULL]
    dt <- merge.data.table(dt, TrendsEnIntPSI, all.x = TRUE, by = c("region", "period", "univocalName", "technology", "variable", "unit"))

@@ -15,7 +15,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
     univocalName <- unit <- region <- sector <- check <- NULL
 
   # 1: Aggregate different non Fuel OPEX types
-  dt[univocalName %in% filter$trn_pass_road_LDV_4W, variable := "Non fuel OPEX"]
+  dt[univocalName %in% filter$trn_pass_road_LDV_4W, variable := "Operating costs (total non-fuel)"]
   dt <- dt[, .(value = sum(value)), by = c("region", "univocalName", "technology",
                                            "variable", "unit", "period")]
 
@@ -52,16 +52,16 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   # BEV busses: veh + batt. = CAPEX 25% of TCO
   dt[univocalName == "Bus" & technology %in% c("BEV", "FCEV"), value := value * (1 - 0.25)]
   # diesel busses: CAPEX 15% of TCO
-  dt[univocalName == "Bus" & technology %in% c("Liquids", "NG"), value := value * (1 - 0.15)]
-  dt[univocalName == "Bus", variable := "Non fuel OPEX"]
+  dt[univocalName == "Bus" & technology %in% c("Liquids", "Gases"), value := value * (1 - 0.15)]
+  dt[univocalName == "Bus", variable := "Operating costs (total non-fuel)"]
   # 2b: Trucks
   # https://theicct.org/sites/default/files/publications/TCO-BETs-Europe-white-paper-v4-nov21.pdf
   # p. 11: retail price = 150k for diesel, 500 - 200k for BEV
   # p. 22: TCO 550 for diesel, TCO = 850 - 500k for BEV
   # CAPEX share diesel = 27%, 60-40% for BEV -> 50%
-  dt[univocalName %in% filter$trn_freight_road & technology %in% c("Liquids", "NG"), value := value * (1 - 0.3)]
+  dt[univocalName %in% filter$trn_freight_road & technology %in% c("Liquids", "Gases"), value := value * (1 - 0.3)]
   dt[univocalName %in% filter$trn_freight_road & technology %in% c("BEV", "FCEV"), value := value * (1 - 0.5)]
-  dt[univocalName %in% filter$trn_freight_road, variable := "Non fuel OPEX"]
+  dt[univocalName %in% filter$trn_freight_road, variable := "Operating costs (total non-fuel)"]
   #Values given in US$2005/vehkm need to be transferred to US$2005/veh/yr with the help of annual mileage
   annualMileage <-  magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",
                                          warnNA = FALSE, aggregate = FALSE))[, c("unit", "variable") := NULL]
@@ -125,7 +125,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
 
   missingTrucks <- rbind(missing18t, missing26t, missing40t)
   # Korea (KOR) is missing all truck types and gets assigned the values of Taiwan (TWN)
-  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Non fuel OPEX"][, unit := "US$2005/veh/yr"]
+  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Operating costs (total non-fuel)"][, unit := "US$2005/veh/yr"]
 
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_freight_road)], missingTrucks)
   trucksKOR <- dt[region == "TWN" & univocalName %in% filter$trn_freight_road][, region := "KOR"]
@@ -188,7 +188,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   missingLar[, value := SUV][, SUV := NULL]
 
   missing4W <- rbind(missingVan, missingMini, missingMid, missingSub, missingCom, missingLar)
-  missing4W[is.na(variable), variable := "Non fuel OPEX"]
+  missing4W[is.na(variable), variable := "Operating costs (total non-fuel)"]
   missing4W[is.na(unit), unit := "US$2005/veh/yr"]
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_pass_road_LDV_4W)], missing4W)
 
