@@ -78,7 +78,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # merge.data.table data
       # TRACCS>PSI>GCAM
       # 1: TRACCS data
-      # Used parts of TRACCS energy Intensity: TRACCS data is used completely
+      # Used parts of TRACCS energy Intensity: TRACCS data is used completely except for two wheelers
       countriesTRACCS <- unique(data$enIntTRACCS$region)
 
       # 2: GCAM data
@@ -98,8 +98,8 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                                                "Domestic Ship", "International Ship") &
                                                                region %in% countriesTRACCS]
       # Alternative technologies for motorcycles are missing in the TRACCS database and are taken from GCAM.
-      # Furthermore, in TRACCS energy intensity for motorcycles and mopeds are only reported until 2010 and would be constant when interpolating later years. 
-      # Hence we use GCAM data for mopeds and motorcyclse adn there alternatives also for TRACCS countries
+      # Furthermore, in TRACCS energy intensity for motorcycles and mopeds are only reported until 2010 and would be constant when interpolating later years.
+      # Hence we use GCAM data for mopeds and motorcyclse and their alternatives also for TRACCS countries
       energyIntensityRawGCAM2WheelersTRACCSreg <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_2W &
                                                                     region %in% countriesTRACCS]
 
@@ -144,8 +144,8 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       energyIntensityRawPSIalternativeCarsnonTRACCS[, variable := "Energy intensity"][, unit := "MJ/vehkm"]
 
       energyIntensityRaw <- rbind(
-        data$enIntTRACCS, energyIntensityRawGCAMconventionalCarsnonTRACCS, energyIntensityRawGCAMmissingTRACCScat,
-        energyIntensityRawGCAMnonCarsnonTRACCS, energyIntensityRawGCAM2WheelersTRACCSreg,
+        data$enIntTRACCS[!univocalName %in% filterEntries$trn_pass_road_LDV_2W], energyIntensityRawGCAM2WheelersTRACCSreg, energyIntensityRawGCAMconventionalCarsnonTRACCS, energyIntensityRawGCAMmissingTRACCScat,
+        energyIntensityRawGCAMnonCarsnonTRACCS,
         energyIntensityRawPSITrucks, energyIntensityRawPSItrucksNGTRACCSreg,
         energyIntensityRawPSIalternativeTechTRACCSreg,
         energyIntensityRawPSIalternativeCarsnonTRACCS)

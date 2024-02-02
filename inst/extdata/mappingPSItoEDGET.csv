@@ -59,13 +59,13 @@ Van;PHEV-d;Van;Hybrid electric
 3_5t;FCEV;Truck (0-3_5t);FCEV
 3_5t;HEV-d;;
 3_5t;ICEV-d;Truck (0-3_5t);Liquids
-3_5t;ICEV-g;Truck (0-3_5t);NG
+3_5t;ICEV-g;Truck (0-3_5t);Gases
 3_5t;PHEV-d;;
 7_5t;BEV;Truck (7_5t);BEV
 7_5t;FCEV;Truck (7_5t);FCEV
 7_5t;HEV-d;;
 7_5t;ICEV-d;Truck (7_5t);Liquids
-7_5t;ICEV-g;Truck (7_5t);NG
+7_5t;ICEV-g;Truck (7_5t);Gases
 7_5t;PHEV-d;;
 18t;BEV;Truck (18t);BEV
 18t;FCEV;Truck (18t);FCEV
