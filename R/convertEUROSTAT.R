@@ -16,10 +16,12 @@
 convertEUROSTAT <- function(x, subtype) {
   getItems(x, dim = 1) <- toolCountry2isocode(getItems(x, dim = 1), mapping = c("EL" = "GRC")) # nolint: object_usage_linter
   getSets(x)["d1.1"] <- "region"                                                               # nolint: object_usage_linter
-  #Convert Mtoe to MJ
-  MtoeToMJ <- 41868000000
-  x <- x * MtoeToMJ
-  getItems(x, dim = "unit") <- "MJ"                                                            # nolint: object_usage_linter
+  #Convert Mtoe to MJ#
+  if (subtype == "esDemand") {
+    MtoeToMJ <- 41868000000
+    x <- x * MtoeToMJ
+    getItems(x, dim = "unit") <- "MJ"                                                            # nolint: object_usage_linter
+  } 
   x <- suppressMessages(toolCountryFill(x, fill = NA))                                         # nolint: object_usage_linter
   return(x)
 }

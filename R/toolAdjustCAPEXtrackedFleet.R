@@ -7,15 +7,16 @@
 #' @param yrs temporal resolution of EDGE-T model
 #' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
 #' @param GDPpcMER GDP per capita based on market exchange rate
-#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
+#' @param filter list of filters for specific branches in the upper decision tree,
+#'               containing all associated univocalNames
 #' @importFrom rmndt magpie2dt
 #' @importFrom data.table data.table merge.data.table
 #' @return a quitte object
 
 toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, filter) {
- variable <- . <- value <- region <- regionCode12 <- period <-
-   technology <- univocalName <- markup <- univocalName <-
-     sector <- unit <- check <- gdppc <- NULL
+  variable <- value <- region <- regionCode12 <- period <-
+    technology <- univocalName <- markup <- univocalName <-
+    unit <- check <- gdppc <- NULL
 
   # 1: LDV 4 Wheeler adjustments
   # 1a: Delete Capital costs other, as it is unclear what it represents
@@ -32,7 +33,8 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   decr <- data.table(technology = c("BEV", "Hybrid electric", "FCEV", "Liquids", "NG"),
                      factor = c(0.8, 0.7, 0.9, 1, 1))
   LDV4WEUR <- merge.data.table(LDV4WEUR, decr, by = "technology")
-  LDV4WEUR[variable == "Capital costs (purchase)"& period == 2100, value := value[technology == "Liquids"] * factor, by = c("region", "univocalName")]
+  LDV4WEUR[variable == "Capital costs (purchase)" & period == 2100, value := value[technology == "Liquids"]
+           * factor, by = c("region", "univocalName")]
   LDV4WEUR[, factor := NULL]
   # add "Large Car"and "Light Truck and SUV" taking the same values as for "Large Car and SUV"
   LDV4WEUR <- rbind(LDV4WEUR,
@@ -48,7 +50,8 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   LDV4WnonEUR <- copy(dt[univocalName %in% filter$trn_pass_road_LDV_4W &
                            !region %in% ISOcountries[regionCode12 == "EUR"]$region])
   LDV4WnonEUR <- merge.data.table(LDV4WnonEUR, markup, by = c("univocalName", "technology", "period"), all.x = TRUE)
-  LDV4WnonEUR[variable == "Capital costs (purchase)" & technology %in% c("BEV", "Hybrid electric", "FCEV"), value := value * markup][, markup := NULL]
+  LDV4WnonEUR[variable == "Capital costs (purchase)" & technology %in% c("BEV", "Hybrid electric", "FCEV"),
+              value := value * markup][, markup := NULL]
   dt <- rbind(dt[!univocalName %in% filter$trn_pass_road_LDV_4W], LDV4WEUR, LDV4WnonEUR)
 
   #2: Alternative trucks and busses
@@ -117,7 +120,8 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus",  unit := "US$2005/veh"]
 
   #4: Missing vehicle types in certain countries
-  completeData <- completeData[univocalName %in% filter$trn_freight_road | univocalName %in% filter$trn_pass_road_LDV_4W |
+  completeData <- completeData[univocalName %in% filter$trn_freight_road |
+                                 univocalName %in% filter$trn_pass_road_LDV_4W |
                                  univocalName == "Bus"]
   dt <- merge.data.table(dt, completeData, all.y = TRUE)
 
@@ -217,7 +221,8 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   setnames(mini, "value", "mini")
 
   # Assign values of other vehicle types (step by step)
-  missingVan <- merge.data.table(missingVan, SUV, by = c("region", "technology", "period"), all.x = TRUE, allow.cartesian = TRUE)
+  missingVan <- merge.data.table(missingVan, SUV, by = c("region", "technology", "period"),
+                                 all.x = TRUE, allow.cartesian = TRUE)
   missingVan[, value := SUV][, SUV := NULL]
 
   missingMini1 <- merge.data.table(missingMini, sub, by = c("region", "technology", "period"), all.x = TRUE)
@@ -267,7 +272,8 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   maxGDP <- 30000    ## maximum GDPcap marking the level where no factor is implemented
   lowerBound <- 0.3  ## maximum decrease to be applied to the original costs value
 
-  GDPpcMER[, factor := ifelse(gdppc < maxGDP & gdppc >  minGDP, (1 - lowerBound)/(maxGDP - minGDP) * (gdppc - minGDP) + lowerBound, 1)]
+  GDPpcMER[, factor := ifelse(gdppc < maxGDP & gdppc >  minGDP,
+                              (1 - lowerBound) / (maxGDP - minGDP) * (gdppc - minGDP) + lowerBound, 1)]
   GDPpcMER[, factor := ifelse(gdppc <=   minGDP, lowerBound, factor)]
   GDPpcMER[, factor := ifelse(gdppc >=  maxGDP, 1, factor)]
 
@@ -275,5 +281,5 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   dt[univocalName %in% filter$trn_pass_road_LDV_4W, value := value * factor]
   dt[, c("gdppc", "factor") := NULL]
 
-return(dt)
+  return(dt)
 }

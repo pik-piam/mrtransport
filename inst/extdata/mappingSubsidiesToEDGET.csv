@@ -1,0 +1,19 @@
+subsidiesVehicleType;subsidiesTechnology;univocalName;technology
+Car;BEV;Mini Car;BEV
+Car;FCEV;Mini Car;FCEV
+Car;PHEV;Mini Car;Hybrid electric
+Car;BEV;Subcompact Car;BEV
+Car;FCEV;Subcompact Car;FCEV
+Car;PHEV;Subcompact Car;Hybrid electric
+Car;BEV;Compact Car;BEV
+Car;FCEV;Compact Car;FCEV
+Car;PHEV;Compact Car;Hybrid electric
+Car;BEV;Midsize Car;BEV
+Car;FCEV;Midsize Car;FCEV
+Car;PHEV;Midsize Car;Hybrid electric
+Car;BEV;Large Car;BEV
+Car;FCEV;Large Car;FCEV
+Car;PHEV;Large Car;Hybrid electric
+Car;BEV;Large Car and SUV;BEV
+Car;FCEV;Large Car and SUV;FCEV
+Car;PHEV;Large Car and SUV;Hybrid electric
