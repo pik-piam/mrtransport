@@ -4,7 +4,7 @@
 \alias{readEUROSTAT}
 \title{Read UCD road transportation data.}
 \usage{
-readEUROSTAT(subtype = c("feDemand"))
+readEUROSTAT(subtype = c("feDemand", "LDVfleet"))
 }
 \arguments{
 \item{subtype}{One of the possible subtypes, see default argument.}

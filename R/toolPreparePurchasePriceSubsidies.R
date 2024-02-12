@@ -9,26 +9,22 @@
 #' @import data.table
 #' @importFrom rmndt magpie2dt
 #' @export
-#' 
+#'
 
 toolPreparePurchasePriceSubsidies <- function(x) {
-  
-  region <- subsidiesVehicleType <- subsidiesTechnology <- period <- univocalName <- 
-    technology <- variable <- unit <- value <- untilPrice <- NULL
-  
+
+  region <- subsidiesVehicleType <- subsidiesTechnology <- unit <- NULL
+
   mapfile <- system.file("extdata", "mappingSubsidiesToEDGET.csv",
                          package = "mrtransport", mustWork = TRUE)
   mappingSubsidies <- fread(mapfile, skip = 0)
-  setkey(mappingSubsidies, subsidesVehicleType, subsidiesTechnology)
+  setkey(mappingSubsidies, subsidiesVehicleType, subsidiesTechnology)
   dt <- magpie2dt(x)
   setkey(dt, region, subsidiesVehicleType, subsidiesTechnology)
-  
+
   dt <- merge.data.table(dt, mappingSubsidies, all.x = TRUE, allow.cartesian = TRUE)
   dt[, unit := "US$2005"]
   dt <- dt[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
-  
-  # TODO: check if value column contains any NAs
-  # TODO: completeDataset filtern nach LDvs, merge data to complete dataset (mapping csv nicht nötig)
-  
+
   return(dt)
 }

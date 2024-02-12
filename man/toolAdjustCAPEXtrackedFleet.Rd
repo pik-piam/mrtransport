@@ -24,7 +24,8 @@ toolAdjustCAPEXtrackedFleet(
 
 \item{GDPpcMER}{GDP per capita based on market exchange rate}
 
-\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated univocalNames}
+\item{filter}{list of filters for specific branches in the upper decision tree,
+containing all associated univocalNames}
 }
 \value{
 a quitte object
