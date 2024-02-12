@@ -10,9 +10,11 @@
 
 calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRUE) { # nolint: cyclocomp_linter
 
-  temporal <- spatial <- present <- period <- region <-
-    technology <- univocalName <- gdppc <- speed <-
-    altTech <- variable <- value <- regionCode12 <- multiplier <- time_interpolate <- NULL
+  temporal <- spatial <- present <- period <- region <- technology <-
+    univocalName <- gdppc <- speed <- altTech <- variable <- value <-
+    regionCode12 <- multiplier <- time_interpolate <- setNames <-
+    capex <- untilPrice <- untilPrice2 <- purchasePriceSubsidy <-
+    purchasePriceSubsidy2 <- NULL
 
   lowResYears <- data.table(temporal = "all", period = c(
     1990,
@@ -948,9 +950,9 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
         # 1. if the subsidy is an na value
         # 2. if the price exceeds the max price for the first subsidy and there is not second subsidy
         # 3. if the price exceeds the max price for the second subsidy
-        ret[is.na(subsidy)] = 0
-        ret[!is.na(untilPrice) & price > untilPrice & is.na(subsidy2)] = 0
-        ret[!is.na(untilPrice2) & price > untilPrice2] = 0
+        ret[is.na(subsidy)] <- 0
+        ret[!is.na(untilPrice) & price > untilPrice & is.na(subsidy2)] <- 0
+        ret[!is.na(untilPrice2) & price > untilPrice2] <- 0
 
         # case where the first/higher subsidy is paid
         # 1. if there is no price max on the first (and hence only) subsidy
@@ -961,12 +963,12 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
         return(ret)
       }
 
-      browser()
-
-      data[, value := calculateSubsidies(period, capex, purchasePriceSubsidy, untilPrice, purchasePriceSubsidy2, untilPrice2)]
+      data[, value := calculateSubsidies(period, capex, purchasePriceSubsidy, untilPrice, purchasePriceSubsidy2,
+                                         untilPrice2)]
 
       # drop unnecessary data
-      data[, c("untilPrice", "untilPrice2", "purchasePriceSubsidy", "purchasePriceSubsidy2", "capex") := NULL]
+      data[, c("untilPrice", "untilPrice2", "purchasePriceSubsidy",
+               "purchasePriceSubsidy2", "capex") := NULL]
       data[, value := - value]
 
       data <- data[(univocalName %in% highResUnivocalNames
