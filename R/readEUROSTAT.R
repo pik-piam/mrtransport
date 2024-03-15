@@ -13,6 +13,7 @@
 #' @import data.table
 #' @importFrom magclass as.magpie
 #' @importFrom readxl read_excel
+
 readEUROSTAT <- function(subtype = c("feDemand", "LDVfleet")) {
   EUROSTATsector <- variable <- region <- NULL
 
@@ -42,7 +43,47 @@ readEUROSTAT <- function(subtype = c("feDemand", "LDVfleet")) {
       x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = "period")
       return(x)
     },
+    "LDVfleetTotal" = {
+      dt <- suppressMessages(data.table(read_excel(path
+                                  = file.path("LDV fleet",
+                                              "road_eqs_carpda_spreadsheet.xlsx"), #nolint: line_length_linter
+                                  sheet = "Sheet 1", "A9:R52")))
+      names(dt)[1] <- "region"
+      dt <- dt[-1, ]
+      dt <- dt[-1, ]
+      dt <- dt[, c("region", "2013", "2014", "2015", "2016",
+                           "2017", "2018", "2019", "2020", "2021")]
+      # fill in NAs
+      dt[dt == ":"] <- NA
+
+      dt[, "2013" := as.numeric(dt$"2013")/1000000]
+      dt[, "2014" := as.numeric(dt$"2014")/1000000]
+      dt[, "2015" := as.numeric(dt$"2015")/1000000]
+      dt[, "2016" := as.numeric(dt$"2016")/1000000]
+      dt[, "2017" := as.numeric(dt$"2017")/1000000]
+      dt[, "2018" := as.numeric(dt$"2018")/1000000]
+      dt[, "2019" := as.numeric(dt$"2019")/1000000]
+      dt[, "2020" := as.numeric(dt$"2020")/1000000]
+      dt[, "2021" := as.numeric(dt$"2021")/1000000]
+
+      dt <-
+        dt[region !=
+                 "Kosovo (under United Nations Security Council Resolution 1244/99)"]
+
+      dt <- melt(dt, id.vars = c("region"), variable.name = "period")
+      dt$EUROSTATvehicleType <- "LDV-4Wheeler"
+      dt$unit <- "Mio veh"
+
+      dt[, variable := "LDV Fleet"]
+
+      dt[]
+
+      dt <- dt[, c("region", "EUROSTATvehicleType", "variable", "unit", "period",  "value")]
+      x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = "period")
+      return(x)
+    },
     "LDVfleet" = {
+      # ATTENTION WHEN USING THIS: ENERGY TYPES ARE NOT DISJOINT
       dt <- do.call("rbind", lapply(2:18,
                                     function(x) {
                                       output <-
@@ -52,6 +93,7 @@ readEUROSTAT <- function(subtype = c("feDemand", "LDVfleet")) {
                                                                                sheet = paste("Sheet", toString(x),
                                                                                              sep = " "),
                                                                                "A9:R52")))
+
                                       # load technology name per sheet
                                       tech <-
                                         (suppressMessages(read_excel(path
@@ -64,22 +106,34 @@ readEUROSTAT <- function(subtype = c("feDemand", "LDVfleet")) {
                                       output <- output[-1, ]
                                       output <- output[, c("region", "2013", "2014", "2015", "2016",
                                                            "2017", "2018", "2019", "2020", "2021")]
+                                      # fill in NAs
+                                      output[output == ":"] <- NA
+
+                                      output[, "2013" := as.numeric(output$"2013")/1000000]
+                                      output[, "2014" := as.numeric(output$"2014")/1000000]
+                                      output[, "2015" := as.numeric(output$"2015")/1000000]
+                                      output[, "2016" := as.numeric(output$"2016")/1000000]
+                                      output[, "2017" := as.numeric(output$"2017")/1000000]
+                                      output[, "2018" := as.numeric(output$"2018")/1000000]
+                                      output[, "2019" := as.numeric(output$"2019")/1000000]
+                                      output[, "2020" := as.numeric(output$"2020")/1000000]
+                                      output[, "2021" := as.numeric(output$"2021")/1000000]
 
                                       # We drop Cosovo
                                       output <-
                                         output[region !=
                                                "Kosovo (under United Nations Security Council Resolution 1244/99)"]
 
-                                      # fill in NAs
-                                      output[output == ":"] <- NA
-
                                       output <- melt(output, id.vars = c("region"), variable.name = "period")
                                       output$EUROSTATtechnology <- tech
                                       output$EUROSTATvehicleType <- "LDV-4Wheeler"
-                                      output$unit <- "veh"
+                                      output$unit <- "Mio veh"
                                       return(output)
                                     }))
       dt[, variable := "LDV Fleet"]
+
+      dt[]
+
       dt <- dt[, c("region", "EUROSTATvehicleType", "EUROSTATtechnology", "variable", "unit", "period",  "value")]
       x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = "period")
       return(x)

@@ -20,8 +20,13 @@ convertEUROSTAT <- function(x, subtype) {
   if (subtype == "esDemand") {
     MtoeToMJ <- 41868000000
     x <- x * MtoeToMJ
-    getItems(x, dim = "unit") <- "MJ"                                                            # nolint: object_usage_linter
-  } 
-  x <- suppressMessages(toolCountryFill(x, fill = NA))                                         # nolint: object_usage_linter
+    getItems(x, dim = "unit") <- "MJ"
+  }
+  if (subtype == "LDVfleet") {
+    x <- suppressMessages(toolCountryFill(x, fill = 0)) # nolint: object_usage_linter
+  } else {
+    x <- suppressMessages(toolCountryFill(x, fill = NA))  # nolint: object_usage_linter
+  }
+
   return(x)
 }
