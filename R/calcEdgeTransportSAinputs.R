@@ -268,7 +268,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       esDemandEUROSTAT[, value := (value / enIntensity) * loadFactor * toBillion][, c("enIntensity", "loadFactor") := NULL]
       esDemandEUROSTAT[univocalName %in% c(filterEntries$trn_pass, "International Aviation"), unit := "billion pkm/yr"]
       esDemandEUROSTAT[univocalName %in% c(filterEntries$trn_freight, "International Ship"), unit := "billion tkm/yr"]
-      esDemandEUROSTAT[, variable := "Energy service demand"]
+      esDemandEUROSTAT[, variable := "ES"]
 
       # merge.data.table data
       # TRACCS data is used completely

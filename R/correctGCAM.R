@@ -30,7 +30,7 @@ correctGCAM <- function(x, subtype) {
                   by = c("region", "sector", "subsector", "technology")]
       ## Electric trains do not exist in certain countries and need to be listed as zero demand
       miss <- CJ(region = dt$region, period = dt$period, sector = "trn_freight", unit = "million ton-km",
-                 variable = "Energy service demand", subsector = "Freight Rail", technology = "Electric",
+                 variable = "ES", subsector = "Freight Rail", technology = "Electric",
                  unique = TRUE)
       frTrain <- dt[miss, on = c("region", "period", "sector", "subsector", "technology", "variable", "unit")]
       frTrain[is.na(value), value := 0]

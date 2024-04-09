@@ -44,7 +44,7 @@ readGCAM <- function(subtype = c(
       dt <- fread("tech_output.csv", skip = 1, sep = ";", header = TRUE) %>%
         melt(measure.vars = 6:26, variable.name = "period")
       dt[, scenario := NULL]
-      dt[, variable := "Energy service demand"]
+      dt[, variable := "ES"]
       setnames(dt, "Units", "unit")
       dt <- dt[, c("region", "sector", "subsector", "technology", "variable", "unit", "period", "value")]
       x <- as.magpie(as.data.frame(dt), temporal = "period", spatial = "region")

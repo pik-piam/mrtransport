@@ -58,24 +58,27 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   FCEV <- dt[(univocalName %in% filter$trn_freight_road | univocalName == "Bus") & technology == "Liquids"]
   FCEV[, technology := "FCEV"]
   altCost <- rbind(BEV, FCEV)
+  # Operating subsidies are kept as they are in liquids
+  altCostCAPEXnonFuelOPEX <- altCost[variable == "CAPEX and non-fuel OPEX"]
+
   targetYearEarly <- 2035  ## target year for electric trucks and electric and FCEV buses
   targetYearLate <- 2150  ## target year for FCEV trucks
 
   # cost of electric truck is 60% more than a as conventional truck today
-  altCost[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "BEV", value := 1.6 * value]
+  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "BEV", value := 1.6 * value]
   # cost of a FCEV truck is 80% more than a as conventional truck today
-  altCost[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "FCEV", value :=  1.8 * value]
+  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "FCEV", value :=  1.8 * value]
   # cost of electric and H2 buses is 40% more of a conventional bus today
-  altCost[univocalName == "Bus" & period <= 2020, value := 1.4 * value]
+  altCostCAPEXnonFuelOPEX[univocalName == "Bus" & period <= 2020, value := 1.4 * value]
 
-  altCost <- altCost[period <= 2020 | (univocalName == "Bus" & period >= targetYearEarly) |
+  altCostCAPEXnonFuelOPEX <- altCostCAPEXnonFuelOPEX[period <= 2020 | (univocalName == "Bus" & period >= targetYearEarly) |
                        (univocalName %in% filter$trn_freight_road & technology == "BEV" & period >= targetYearEarly) |
                        (univocalName %in% filter$trn_freight_road & technology == "FCEV" & period >= targetYearLate)]
   # follow linear trends until target years/cost parity with ICE cost -> after the target years we assume no
   # further cost decline. This is somehow odd and should be checked
-  altCost <- approx_dt(altCost, yrs, "period", "value",
+  altCostCAPEXnonFuelOPEX <- approx_dt(altCostCAPEXnonFuelOPEX, yrs, "period", "value",
                        c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
-  dt <- rbind(altCost, dt)
+  dt <- rbind(altCostCAPEXnonFuelOPEX, altCost[!variable == "CAPEX and non-fuel OPEX"], dt)
 
   #3: CAPEX are given combined with non fuel OPEX for trucks and busses: Apply assumptions on CAPEX share
   #3a: Busses
@@ -93,6 +96,9 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   dt[univocalName %in% filter$trn_freight_road & technology %in% c("Liquids", "Gases"), value := value * 0.3]
   dt[univocalName %in% filter$trn_freight_road & technology %in% c("BEV", "FCEV"), value := value * 0.5]
   dt[univocalName %in% filter$trn_freight_road, variable := "Capital costs (total)"]
+  #Sum part of the CAPEX and non Fuel OPEX and the operating subsidies that is now attributed to the CAPEX
+  dt <- dt[, .(value = sum(value)), by = c("region", "univocalName", "technology",
+                                           "variable", "unit", "period")]
   # Values given in US$2005/vehkm need to be transferred to US$2005/veh with the help of annual mileage
   # and annuity factor
   annualMileage <-  magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",
