@@ -7,7 +7,8 @@
 #' @param yrs temporal resolution of EDGE-T model
 #' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
 #' @param GDPpcMER GDP per capita based on market exchange rate
-#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
+#' @param filter list of filters for specific branches in the upper decision tree,
+#'               containing all associated univocalNames
 #' @import data.table
 #' @importFrom rmndt magpie2dt
 #' @return a quitte object
@@ -50,7 +51,7 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   #4: Some two wheeler classes are missing and are replaced by other vehicle classes
   # Find missing values
   completeData <- completeData[!(univocalName %in% c(filter$trn_freight_road, "Cycle", "Walk") |
-                               univocalName %in% filter$trn_pass_road_LDV_4W | univocalName == "Bus")]
+                                   univocalName %in% filter$trn_pass_road_LDV_4W | univocalName == "Bus")]
   dt <- merge.data.table(dt, completeData, all.y = TRUE)
 
   missing50 <- dt[is.na(value) & univocalName == "Motorcycle (50-250cc)"]
@@ -114,7 +115,8 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   maxGDP <- 30000    ## maximum GDPcap marking the level where no factor is implemented
   lowerBound <- 0.3  ## maximum decrease to be applied to the original costs value
 
-  GDPpcMER[, factor := ifelse(gdppc < maxGDP & gdppc >  minGDP, (1 - lowerBound)/(maxGDP - minGDP) * (gdppc - minGDP) + lowerBound, 1)]
+  GDPpcMER[, factor := ifelse(gdppc < maxGDP & gdppc >  minGDP, (1 - lowerBound) /
+                                (maxGDP - minGDP) * (gdppc - minGDP) + lowerBound, 1)]
   GDPpcMER[, factor := ifelse(gdppc <=   minGDP, lowerBound, factor)]
   GDPpcMER[, factor := ifelse(gdppc >=  maxGDP, 1, factor)]
 
