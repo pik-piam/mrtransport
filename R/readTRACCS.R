@@ -179,7 +179,7 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
         }))
       return(data[
         , .(country_name, TRACCS_category, TRACCS_vehicle_type,
-          TRACCS_technology, variable = "Energy service demand", unit = "vehkm/yr", period, value)] %>%
+          TRACCS_technology, variable = "ES", unit = "vehkm/yr", period, value)] %>%
         as.magpie(spatial = "country_name", temporal = "period"))
     },
     "histESdemand" = {
@@ -221,7 +221,7 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
           })))
       return(data[
         , .(country_name, TRACCS_category, TRACCS_vehicle_type,
-          TRACCS_technology, variable = "Energy service demand", unit, period, value)] %>%
+          TRACCS_technology, variable = "ES", unit, period, value)] %>%
         as.magpie(spatial = "country_name", temporal = "period"))
     },
     "railFeDemand" = {

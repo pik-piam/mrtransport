@@ -1,56 +1,56 @@
 UCD_sector;mode;size_class;UCD_technology;UCD_fuel;univocalName;technology
 Freight;Truck;Truck (0-2t);Liquids;Liquids;Truck (0-3_5t);Liquids
-Freight;Truck;Truck (0-2t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (0-2t);NG;Natural Gas;Truck (0-3_5t);Gases
 Freight;Truck;Truck (2-5t);Liquids;Liquids;Truck (0-3_5t);Liquids
-Freight;Truck;Truck (2-5t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (2-5t);NG;Natural Gas;Truck (0-3_5t);Gases
 Freight;Truck;Truck (5-9t);Liquids;Liquids;Truck (7_5t);Liquids
-Freight;Truck;Truck (5-9t);NG;Natural Gas;Truck (7_5t);NG
+Freight;Truck;Truck (5-9t);NG;Natural Gas;Truck (7_5t);Gases
 Freight;Truck;Truck (9-16t);Liquids;Liquids;Truck (18t);Liquids
-Freight;Truck;Truck (9-16t);NG;Natural Gas;Truck (18t);NG
+Freight;Truck;Truck (9-16t);NG;Natural Gas;Truck (18t);Gases
 Freight;Truck;Truck (0-1t);Liquids;Liquids;Truck (0-3_5t);Liquids
-Freight;Truck;Truck (0-1t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (0-1t);NG;Natural Gas;Truck (0-3_5t);Gases
 Freight;Truck;Truck (1-6t);Liquids;Liquids;Truck (7_5t);Liquids
-Freight;Truck;Truck (1-6t);NG;Natural Gas;Truck (7_5t);NG
+Freight;Truck;Truck (1-6t);NG;Natural Gas;Truck (7_5t);Gases
 Freight;Truck;Truck (6-30t);Liquids;Liquids;Truck (18t);Liquids
-Freight;Truck;Truck (6-30t);NG;Natural Gas;Truck (18t);NG
+Freight;Truck;Truck (6-30t);NG;Natural Gas;Truck (18t);Gases
 Freight;Truck;Truck (0-4_5t);Liquids;Liquids;Truck (0-3_5t);Liquids
-Freight;Truck;Truck (0-4_5t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (0-4_5t);NG;Natural Gas;Truck (0-3_5t);Gases
 Freight;Truck;Truck (4_5-15t);Liquids;Liquids;Truck (7_5t);Liquids
-Freight;Truck;Truck (4_5-15t);NG;Natural Gas;Truck (7_5t);NG
+Freight;Truck;Truck (4_5-15t);NG;Natural Gas;Truck (7_5t);Gases
 Freight;Truck;Truck (>15t);Liquids;Liquids;Truck (26t);Liquids
-Freight;Truck;Truck (>15t);NG;Natural Gas;Truck (26t);NG
+Freight;Truck;Truck (>15t);NG;Natural Gas;Truck (26t);Gases
 Passenger;Bus;Heavy Bus;Liquids;Liquids;Bus;Liquids
-Passenger;Bus;Heavy Bus;NG;Natural Gas;Bus;NG
+Passenger;Bus;Heavy Bus;NG;Natural Gas;Bus;Gases
 Passenger;Bus;Light Bus;Liquids;Liquids;Bus;Liquids
-Passenger;Bus;Light Bus;NG;Natural Gas;Bus;NG
+Passenger;Bus;Light Bus;NG;Natural Gas;Bus;Gases
 Freight;Truck;3W Rural;Liquids;Liquids;Truck (0-3_5t);Liquids
-Freight;Truck;3W Rural;NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;3W Rural;NG;Natural Gas;Truck (0-3_5t);Gases
 Freight;Truck;Truck (0-6t);Liquids;Liquids;Truck (0-3_5t);Liquids
-Freight;Truck;Truck (0-6t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (0-6t);NG;Natural Gas;Truck (0-3_5t);Gases
 Freight;Truck;Truck (6-14t);Liquids;Liquids;Truck (7_5t);Liquids
-Freight;Truck;Truck (6-14t);NG;Natural Gas;Truck (7_5t);NG
+Freight;Truck;Truck (6-14t);NG;Natural Gas;Truck (7_5t);Gases
 Freight;Truck;Truck (>14t);Liquids;Liquids;Truck (18t);Liquids
-Freight;Truck;Truck (>14t);NG;Natural Gas;Truck (18t);NG
+Freight;Truck;Truck (>14t);NG;Natural Gas;Truck (18t);Gases
 Freight;Truck;Truck (0-3_5t);Liquids;Liquids;Truck (0-3_5t);Liquids
-Freight;Truck;Truck (0-3_5t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (0-3_5t);NG;Natural Gas;Truck (0-3_5t);Gases
 Freight;Truck;Truck (16-32t);Liquids;Liquids;Truck (26t);Liquids
-Freight;Truck;Truck (16-32t);NG;Natural Gas;Truck (26t);NG
+Freight;Truck;Truck (16-32t);NG;Natural Gas;Truck (26t);Gases
 Freight;Truck;Truck (3_5-16t);Liquids;Liquids;Truck (7_5t);Liquids
-Freight;Truck;Truck (3_5-16t);NG;Natural Gas;Truck (7_5t);NG
+Freight;Truck;Truck (3_5-16t);NG;Natural Gas;Truck (7_5t);Gases
 Freight;Truck;Truck (>32t);Liquids;Liquids;Truck (40t);Liquids
-Freight;Truck;Truck (>32t);NG;Natural Gas;Truck (40t);NG
+Freight;Truck;Truck (>32t);NG;Natural Gas;Truck (40t);Gases
 Freight;Truck;Truck;Liquids;Liquids;;
 Freight;Truck;Truck;NG;Natural Gas;;
 Freight;Truck;Truck (6-15t);Liquids;Liquids;Truck (7_5t);Liquids
-Freight;Truck;Truck (6-15t);NG;Natural Gas;Truck (7_5t);NG
+Freight;Truck;Truck (6-15t);NG;Natural Gas;Truck (7_5t);Gases
 Freight;Truck;Truck (0-2_7t);Liquids;Liquids;Truck (0-3_5t);Liquids
-Freight;Truck;Truck (0-2_7t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (0-2_7t);NG;Natural Gas;Truck (0-3_5t);Gases
 Freight;Truck;Truck (2_7-4_5t);Liquids;Liquids;Truck (0-3_5t);Liquids
-Freight;Truck;Truck (2_7-4_5t);NG;Natural Gas;Truck (0-3_5t);NG
+Freight;Truck;Truck (2_7-4_5t);NG;Natural Gas;Truck (0-3_5t);Gases
 Freight;Truck;Truck (4_5-12t);Liquids;Liquids;Truck (7_5t);Liquids
-Freight;Truck;Truck (4_5-12t);NG;Natural Gas;Truck (7_5t);NG
+Freight;Truck;Truck (4_5-12t);NG;Natural Gas;Truck (7_5t);Gases
 Freight;Truck;Truck (>12t);Liquids;Liquids;Truck (18t);Liquids
-Freight;Truck;Truck (>12t);NG;Natural Gas;Truck (18t);NG
+Freight;Truck;Truck (>12t);NG;Natural Gas;Truck (18t);Gases
 Freight;Rail;All;Coal;Coal;;
 Freight;Rail;All;Electric;Electricity;Freight Rail;Electric
 Freight;Rail;All;Liquids;Liquids;Freight Rail;Liquids
@@ -61,50 +61,50 @@ Freight;Ship International;All;Liquids;Liquids;International Ship;Liquids
 Passenger;LDV_2W;Motorcycle (50-250cc);BEV;Electricity;Motorcycle (50-250cc);BEV
 Passenger;LDV_4W;Mini Car;Liquids;Liquids;Mini Car;Liquids
 Passenger;LDV_4W;Mini Car;Hybrid Liquids;Liquids;Mini Car;Hybrid electric
-Passenger;LDV_4W;Mini Car;NG;Natural Gas;Mini Car;NG
+Passenger;LDV_4W;Mini Car;NG;Natural Gas;Mini Car;Gases
 Passenger;LDV_4W;Mini Car;BEV;Electricity;Mini Car;BEV
 Passenger;LDV_4W;Mini Car;FCEV;Hydrogen;Mini Car;FCEV
 Passenger;LDV_4W;Subcompact Car;Liquids;Liquids;Subcompact Car;Liquids
 Passenger;LDV_4W;Subcompact Car;Hybrid Liquids;Liquids;Subcompact Car;Hybrid electric
-Passenger;LDV_4W;Subcompact Car;NG;Natural Gas;Subcompact Car;NG
+Passenger;LDV_4W;Subcompact Car;NG;Natural Gas;Subcompact Car;Gases
 Passenger;LDV_4W;Subcompact Car;BEV;Electricity;Subcompact Car;BEV
 Passenger;LDV_4W;Subcompact Car;FCEV;Hydrogen;Subcompact Car;FCEV
 Passenger;LDV_4W;Compact Car;Liquids;Liquids;Compact Car;Liquids
 Passenger;LDV_4W;Compact Car;Hybrid Liquids;Liquids;Compact Car;Hybrid electric
-Passenger;LDV_4W;Compact Car;NG;Natural Gas;Compact Car;NG
+Passenger;LDV_4W;Compact Car;NG;Natural Gas;Compact Car;Gases
 Passenger;LDV_4W;Compact Car;BEV;Electricity;Compact Car;BEV
 Passenger;LDV_4W;Compact Car;FCEV;Hydrogen;Compact Car;FCEV
 Passenger;LDV_4W;Multipurpose Vehicle;Liquids;Liquids;Large Car and SUV;Liquids
 Passenger;LDV_4W;Multipurpose Vehicle;Hybrid Liquids;Liquids;Large Car and SUV;Hybrid electric
-Passenger;LDV_4W;Multipurpose Vehicle;NG;Natural Gas;Large Car and SUV;NG
+Passenger;LDV_4W;Multipurpose Vehicle;NG;Natural Gas;Large Car and SUV;Gases
 Passenger;LDV_4W;Multipurpose Vehicle;BEV;Electricity;Large Car and SUV;BEV
 Passenger;LDV_4W;Multipurpose Vehicle;FCEV;Hydrogen;Large Car and SUV;FCEV
 Passenger;LDV_2W;Motorcycle (>250cc);Liquids;Liquids;Motorcycle (>250cc);Liquids
 Passenger;LDV_2W;Motorcycle (>250cc);BEV;Electricity;Motorcycle (>250cc);BEV
 Passenger;LDV_4W;Midsize Car;Liquids;Liquids;Midsize Car;Liquids
 Passenger;LDV_4W;Midsize Car;Hybrid Liquids;Liquids;Midsize Car;Hybrid electric
-Passenger;LDV_4W;Midsize Car;NG;Natural Gas;Midsize Car;NG
+Passenger;LDV_4W;Midsize Car;NG;Natural Gas;Midsize Car;Gases
 Passenger;LDV_4W;Midsize Car;BEV;Electricity;Midsize Car;BEV
 Passenger;LDV_4W;Midsize Car;FCEV;Hydrogen;Midsize Car;FCEV
 Passenger;LDV_4W;Large Car;Liquids;Liquids;Large Car;Liquids
 Passenger;LDV_4W;Large Car;Hybrid Liquids;Liquids;Large Car;Hybrid electric
-Passenger;LDV_4W;Large Car;NG;Natural Gas;Large Car;NG
+Passenger;LDV_4W;Large Car;NG;Natural Gas;Large Car;Gases
 Passenger;LDV_4W;Large Car;BEV;Electricity;Large Car;BEV
 Passenger;LDV_4W;Large Car;FCEV;Hydrogen;Large Car;FCEV
 Passenger;LDV_4W;Light Truck and SUV;Liquids;Liquids;Large Car and SUV;Liquids
 Passenger;LDV_4W;Light Truck and SUV;Hybrid Liquids;Liquids;Large Car and SUV;Hybrid electric
-Passenger;LDV_4W;Light Truck and SUV;NG;Natural Gas;Large Car and SUV;NG
+Passenger;LDV_4W;Light Truck and SUV;NG;Natural Gas;Large Car and SUV;Gases
 Passenger;LDV_4W;Light Truck and SUV;BEV;Electricity;Large Car and SUV;BEV
 Passenger;LDV_4W;Light Truck and SUV;FCEV;Hydrogen;Large Car and SUV;FCEV
 Passenger;LDV_4W;Van;Liquids;Liquids;Van;Liquids
 Passenger;LDV_4W;Van;Hybrid Liquids;Liquids;Van;Hybrid electric
-Passenger;LDV_4W;Van;NG;Natural Gas;Van;NG
+Passenger;LDV_4W;Van;NG;Natural Gas;Van;Gases
 Passenger;LDV_4W;Van;BEV;Electricity;Van;BEV
 Passenger;LDV_4W;Van;FCEV;Hydrogen;Van;FCEV
 Passenger;LDV_2W;Motorcycle (50-250cc);Liquids;Liquids;Motorcycle (50-250cc);Liquids
 Passenger;LDV_4W;Large Car and SUV;Liquids;Liquids;Large Car and SUV;Liquids
 Passenger;LDV_4W;Large Car and SUV;Hybrid Liquids;Liquids;Large Car and SUV;Hybrid electric
-Passenger;LDV_4W;Large Car and SUV;NG;Natural Gas;Large Car and SUV;NG
+Passenger;LDV_4W;Large Car and SUV;NG;Natural Gas;Large Car and SUV;Gases
 Passenger;LDV_4W;Large Car and SUV;BEV;Electricity;Large Car and SUV;BEV
 Passenger;LDV_4W;Large Car and SUV;FCEV;Hydrogen;Large Car and SUV;FCEV
 Passenger;LDV_2W;Moped;Liquids;Liquids;Moped;Liquids
@@ -118,7 +118,7 @@ Passenger;LDV_3W;Three-Wheeler;NG;NG;;
 Passenger;Air Domestic;All;Liquids;Liquids;Domestic Aviation;Liquids
 Passenger;Air International ;All;Liquids;Liquids;International Aviation;Liquids
 Passenger;Bus;All;Liquids;Liquids;Bus;Liquids
-Passenger;Bus;All;NG;Natural Gas;Bus;NG
+Passenger;Bus;All;NG;Natural Gas;Bus;Gases
 Passenger;HSR;All;Electric;Electricity;HSR;Electric
 Passenger;Rail;All;Electric;Electricity;Passenger Rail;Electric
 Passenger;Rail;All;Liquids;Liquids;Passenger Rail;Liquids

@@ -45,7 +45,7 @@ readUCD <- function(subtype = c(
     },
     "nonMotorizedDemand" = {
       dt <- UCD[variable == "service output"]
-      dt[, variable := "Energy service demand"]
+      dt[, variable := "ES"]
       dt[, unit := "bn pkm/yr"]
     },
     "speed" = {
@@ -64,12 +64,12 @@ readUCD <- function(subtype = c(
       #Either non fuel OPEX are reported in detail or as totals (never in detail + totals)
       dt <- UCD[variable %in% c("non-fuel OPEX", "Operating costs (maintenance)",
                                 "Operating costs (registration and insurance)",
-                                "Operating costs (tolls)", "Operating costs (total non-fuel)")]
+                                "Operating costs (tolls)", "Operating costs (total non-fuel)", "Operating subsidy")]
       dt[unit == "2005$/vkt", unit := "US$2005/vehkm"]
       dt[unit == "2005$/veh/yr", unit := "US$2005/veh/yr"]
     },
     "CAPEXandNonFuelOPEX" = {
-      dt <- UCD[variable == "CAPEX and non-fuel OPEX"]
+      dt <- UCD[variable %in% c("CAPEX and non-fuel OPEX", "Operating subsidy")]
       dt[unit == "2005$/vkt", unit := "US$2005/vehkm"]
     },
     "OperatingSubsidies" = {

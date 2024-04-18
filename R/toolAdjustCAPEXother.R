@@ -19,7 +19,7 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
 
   #1: Aggregate different CAPEX types
   dt <- dt[, .(value = sum(value)), by = c("region",  "period", "univocalName", "technology",  "unit")]
-  dt[, variable := "CAPEX"]
+  dt[, variable := "Capital costs (total)"]
 
   #2: CAPEX are given combined with non fuel OPEX for shipping and rail. Apply shares
   # Trains
@@ -28,12 +28,12 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   # 50% for high traffic lines
   # -> 60% O&M -> CAPEX share = 40%
   dt[univocalName %in% c("Freight Rail", "Passenger Rail", "HSR"), value := value * 0.4]
-  dt[univocalName %in% c("Freight Rail", "Passenger Rail", "HSR"), variable := "CAPEX"]
+  dt[univocalName %in% c("Freight Rail", "Passenger Rail", "HSR"), variable := "Capital costs (total)"]
   # Ships
   # CCS ships doi:10.1016/j.egypro.2014.11.285
   # CAPEX ~ 30%
   dt[univocalName %in% c("Domestic Ship", "International Ship"), value := value * 0.3]
-  dt[univocalName %in% c("Domestic Ship", "International Ship"), variable := "CAPEX"]
+  dt[univocalName %in% c("Domestic Ship", "International Ship"), variable := "Capital costs (total)"]
 
   #3: Add hydrogen airplanes
   h2Air <- dt[univocalName == "Domestic Aviation" & technology == "Liquids"][, technology := "Hydrogen"]
@@ -105,7 +105,7 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   missingMoped[is.na(value), value := twoW250][, twoW250 := NULL]
 
   missing2W <- rbind(missing50, missing250, missingMoped)
-  missing2W[, unit := "US$2005/vehkm"][, variable := "CAPEX"]
+  missing2W[, unit := "US$2005/vehkm"][, variable := "Capital costs (total)"]
 
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_pass_road_LDV_2W)], missing2W)
   dt[, check := NULL]

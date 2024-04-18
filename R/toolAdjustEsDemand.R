@@ -17,7 +17,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter) {
   # completeData does not contain unit so it needs to be added
   dt[univocalName %in% c(filter$trn_pass, "International Aviation"), unit := "billion pkm/yr"]
   dt[univocalName %in% c(filter$trn_freight, "International Ship"), unit := "billion tkm/yr"]
-  dt[is.na(value), variable := "Energy service demand"]
+  dt[is.na(value), variable := "ES"]
   dt <- merge.data.table(dt, mapIso2region, by = "region", all.x = TRUE, allow.cartesian = TRUE)
 
   # 1: Some Truck types, Rail, alternative technologies and active modes are lacking energy service demand data

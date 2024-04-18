@@ -5,28 +5,28 @@ Buses;Coaches;Diesel;Bus;Liquids
 Buses;Urban;Diesel;Bus;Liquids
 Buses;Coaches;Gasoline;Bus;Liquids
 Buses;Urban;Gasoline;Bus;Liquids
-Buses;Coaches;CNG/Biogas;Bus;NG
-Buses;Urban;CNG/Biogas;Bus;NG
-Buses;Coaches;LPG;Bus;NG
-Buses;Urban;LPG;Bus;NG
+Buses;Coaches;CNG/Biogas;Bus;Gases
+Buses;Urban;CNG/Biogas;Bus;Gases
+Buses;Coaches;LPG;Bus;Gases
+Buses;Urban;LPG;Bus;Gases
 Passenger cars;Lower-Medium;Other;;
 Passenger cars;Lower-Medium;Diesel;Compact Car;Liquids
 Passenger cars;Lower-Medium;Flexi-fuel;Compact Car;Liquids
 Passenger cars;Lower-Medium;Gasoline;Compact Car;Liquids
-Passenger cars;Lower-Medium;CNG;Compact Car;NG
-Passenger cars;Lower-Medium;LPG;Compact Car;NG
+Passenger cars;Lower-Medium;CNG;Compact Car;Gases
+Passenger cars;Lower-Medium;LPG;Compact Car;Gases
 Passenger cars;Executive;Other;;
 Passenger cars;Executive;Diesel;Large Car and SUV;Liquids
 Passenger cars;Executive;Flexi-fuel;Large Car and SUV;Liquids
 Passenger cars;Executive;Gasoline;Large Car and SUV;Liquids
-Passenger cars;Executive;CNG;Large Car and SUV;NG
-Passenger cars;Executive;LPG;Large Car and SUV;NG
+Passenger cars;Executive;CNG;Large Car and SUV;Gases
+Passenger cars;Executive;LPG;Large Car and SUV;Gases
 Passenger cars;Upper-Medium;Other;;
 Passenger cars;Upper-Medium;Diesel;Midsize Car;Liquids
 Passenger cars;Upper-Medium;Flexi-fuel;Midsize Car;Liquids
 Passenger cars;Upper-Medium;Gasoline;Midsize Car;Liquids
-Passenger cars;Upper-Medium;CNG;Midsize Car;NG
-Passenger cars;Upper-Medium;LPG;Midsize Car;NG
+Passenger cars;Upper-Medium;CNG;Midsize Car;Gases
+Passenger cars;Upper-Medium;LPG;Midsize Car;Gases
 Mopeds;2-stroke;Gasoline;Moped;Liquids
 Mopeds;4-stroke;Gasoline;Moped;Liquids
 Motorcycles;2-stroke;Gasoline;Motorcycle (50-250cc);Liquids
@@ -35,13 +35,13 @@ Passenger cars;Small;Other;;
 Passenger cars;Small;Diesel;Subcompact Car;Liquids
 Passenger cars;Small;Flexi-fuel;Subcompact Car;Liquids
 Passenger cars;Small;Gasoline;Subcompact Car;Liquids
-Passenger cars;Small;CNG;Subcompact Car;NG
-Passenger cars;Small;LPG;Subcompact Car;NG
+Passenger cars;Small;CNG;Subcompact Car;Gases
+Passenger cars;Small;LPG;Subcompact Car;Gases
 Light Commercial Veh_;N1;Diesel;Truck (0-3_5t);Liquids
 Light Commercial Veh_;N1;Flexi-fuel;Truck (0-3_5t);Liquids
 Light Commercial Veh_;N1;Gasoline;Truck (0-3_5t);Liquids
-Light Commercial Veh_;N1;CNG;Truck (0-3_5t);NG
-Light Commercial Veh_;N1;LPG;Truck (0-3_5t);NG
+Light Commercial Veh_;N1;CNG;Truck (0-3_5t);Gases
+Light Commercial Veh_;N1;LPG;Truck (0-3_5t);Gases
 Heavy Duty Trucks;Articulated 14 - 20 t;Diesel;Truck (18t);Liquids
 Heavy Duty Trucks;Rigid 12 - 14 t;Diesel;Truck (18t);Liquids
 Heavy Duty Trucks;Rigid 14 - 20 t;Diesel;Truck (18t);Liquids

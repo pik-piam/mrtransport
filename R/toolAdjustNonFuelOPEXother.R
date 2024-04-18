@@ -17,7 +17,7 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filt
 
   # 1: Aggregate different non fuel OPEX types
   dt <- dt[, .(value = sum(value)), by = c("region", "period", "univocalName", "technology", "unit")]
-  dt[, variable := "Non fuel OPEX"]
+  dt[, variable := "Operating costs (total non-fuel)"]
 
   # 2: Non fuel OPEX are given combined with CAPEX for shipping and rail. Apply shares
   # Trains
@@ -26,12 +26,12 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filt
   # 50% for high traffic lines
   # -> 60% O&M -> CAPEX share = 40%
   dt[univocalName %in% c("Freight Rail", "Passenger Rail", "HSR"), value := value * (1 - 0.4)]
-  dt[univocalName %in% c("Freight Rail", "Passenger Rail", "HSR"), variable := "Non fuel OPEX"]
+  dt[univocalName %in% c("Freight Rail", "Passenger Rail", "HSR"), variable := "Operating costs (total non-fuel)"]
   # Ships
   # CCS ships doi:10.1016/j.egypro.2014.11.285
   # CAPEX ~ 30%
   dt[univocalName %in% c("Domestic Ship", "International Ship"), value := value * (1 - 0.3)]
-  dt[univocalName %in% c("Domestic Ship", "International Ship"), variable := "Non fuel OPEX"]
+  dt[univocalName %in% c("Domestic Ship", "International Ship"), variable := "Operating costs (total non-fuel)"]
 
   #3: Add hydrogen airplanes
   h2Air <- dt[univocalName == "Domestic Aviation" & technology == "Liquids"][, technology := "Hydrogen"]
@@ -104,7 +104,7 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filt
   missingMoped[is.na(value), value := twoW250][, twoW250 := NULL]
 
   missing2W <- rbind(missing50, missing250, missingMoped)
-  missing2W[, unit := "US$2005/vehkm"][, variable := "Non fuel OPEX"]
+  missing2W[, unit := "US$2005/vehkm"][, variable := "Operating costs (total non-fuel)"]
 
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_pass_road_LDV_2W)], missing2W)
   dt[, check := NULL]

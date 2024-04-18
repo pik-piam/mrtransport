@@ -15,11 +15,9 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
     univocalName <- unit <- region <- sector <- check <- NULL
 
   # 1: Aggregate different non Fuel OPEX types
-  dt[univocalName %in% filter$trn_pass_road_LDV_4W, variable := "Non fuel OPEX"]
+  dt[univocalName %in% filter$trn_pass_road_LDV_4W, variable := "Operating costs (total non-fuel)"]
   dt <- dt[, .(value = sum(value)), by = c("region", "univocalName", "technology",
                                            "variable", "unit", "period")]
-
-
   # 1: Alternative trucks and busses
   # Data for alternative trucks and busses is missing
   BEV <- dt[(univocalName %in% filter$trn_freight_road | univocalName == "Bus") & technology == "Liquids"]
@@ -27,24 +25,26 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   FCEV <- dt[(univocalName %in% filter$trn_freight_road | univocalName == "Bus") & technology == "Liquids"]
   FCEV[, technology := "FCEV"]
   altCost <- rbind(BEV, FCEV)
+  # Operating subsidies are kept as they are in liquids
+  altCostCAPEXnonFuelOPEX <- altCost[variable == "CAPEX and non-fuel OPEX"]
   targetYearEarly <- 2035  # target year for electric trucks and electric and FCEV buses
   targetYearLate <- 2150  # target year for FCEV trucks
 
   # cost of electric truck is 60% more than a as conventional truck today
-  altCost[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "BEV", value := 1.6 * value]
+  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "BEV", value := 1.6 * value]
   # cost of a FCEV truck is 80% more than a as conventional truck today
-  altCost[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "FCEV", value :=  1.8 * value]
+  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "FCEV", value :=  1.8 * value]
   # cost of electric and H2 buses is 40% more of a conventional bus today
-  altCost[univocalName == "Bus" & period <= 2020, value := 1.4 * value]
+  altCostCAPEXnonFuelOPEX[univocalName == "Bus" & period <= 2020, value := 1.4 * value]
 
-  altCost <- altCost[period <= 2020 | (univocalName == "Bus" & period >= targetYearEarly) |
+  altCostCAPEXnonFuelOPEX <- altCostCAPEXnonFuelOPEX[period <= 2020 | (univocalName == "Bus" & period >= targetYearEarly) |
                        (univocalName %in% filter$trn_freight_road & technology == "BEV" & period >= targetYearEarly) |
                        (univocalName %in% filter$trn_freight_road & technology == "FCEV" & period >= targetYearLate)]
   # follow linear trends until target years/cost parity with ICE cost -> after the target years we assume no
   # further cost decline. This is somehow odd and should be checked
-  altCost <- approx_dt(altCost, yrs, "period", "value",
+  altCostCAPEXnonFuelOPEX <- approx_dt(altCostCAPEXnonFuelOPEX, yrs, "period", "value",
                        c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
-  dt <- rbind(altCost, dt)
+  dt <- rbind(altCostCAPEXnonFuelOPEX, altCost[!variable == "CAPEX and non-fuel OPEX"], dt)
 
   # 2: Non fuel OPEX are given combined with CAPEX for trucks and busses: Apply assumptions on CAPEX share
   # 2a: Busses
@@ -52,16 +52,18 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   # BEV busses: veh + batt. = CAPEX 25% of TCO
   dt[univocalName == "Bus" & technology %in% c("BEV", "FCEV"), value := value * (1 - 0.25)]
   # diesel busses: CAPEX 15% of TCO
-  dt[univocalName == "Bus" & technology %in% c("Liquids", "NG"), value := value * (1 - 0.15)]
-  dt[univocalName == "Bus", variable := "Non fuel OPEX"]
+  dt[univocalName == "Bus" & technology %in% c("Liquids", "Gases"), value := value * (1 - 0.15)]
+  dt[univocalName == "Bus", variable := "Operating costs (total non-fuel)"]
+
+
   # 2b: Trucks
   # https://theicct.org/sites/default/files/publications/TCO-BETs-Europe-white-paper-v4-nov21.pdf
   # p. 11: retail price = 150k for diesel, 500 - 200k for BEV
   # p. 22: TCO 550 for diesel, TCO = 850 - 500k for BEV
   # CAPEX share diesel = 27%, 60-40% for BEV -> 50%
-  dt[univocalName %in% filter$trn_freight_road & technology %in% c("Liquids", "NG"), value := value * (1 - 0.3)]
+  dt[univocalName %in% filter$trn_freight_road & technology %in% c("Liquids", "Gases"), value := value * (1 - 0.3)]
   dt[univocalName %in% filter$trn_freight_road & technology %in% c("BEV", "FCEV"), value := value * (1 - 0.5)]
-  dt[univocalName %in% filter$trn_freight_road, variable := "Non fuel OPEX"]
+  dt[univocalName %in% filter$trn_freight_road, variable := "Operating costs (total non-fuel)"]
   #Values given in US$2005/vehkm need to be transferred to US$2005/veh/yr with the help of annual mileage
   annualMileage <-  magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",
                                          warnNA = FALSE, aggregate = FALSE))[, c("unit", "variable") := NULL]
@@ -74,6 +76,8 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", value := value * annualMileage]
   dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", unit := "US$2005/veh/yr"]
   dt[, annualMileage := NULL]
+  dt <- dt[, .(value = sum(value)), by = c("region", "univocalName", "technology",
+                                           "variable", "unit", "period")]
 
   #3: Missing vehicle types in certain countries
   completeData <- completeData[univocalName %in% filter$trn_freight_road | univocalName %in% filter$trn_pass_road_LDV_4W |
@@ -124,7 +128,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
 
   missingTrucks <- rbind(missing18t, missing26t, missing40t)
   # Korea (KOR) is missing all truck types and gets assigned the values of Taiwan (TWN)
-  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Non fuel OPEX"][, unit := "US$2005/veh/yr"]
+  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Operating costs (total non-fuel)"][, unit := "US$2005/veh/yr"]
 
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_freight_road)], missingTrucks)
   trucksKOR <- dt[region == "TWN" & univocalName %in% filter$trn_freight_road][, region := "KOR"]
@@ -187,7 +191,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   missingLar[, value := SUV][, SUV := NULL]
 
   missing4W <- rbind(missingVan, missingMini, missingMid, missingSub, missingCom, missingLar)
-  missing4W[is.na(variable), variable := "Non fuel OPEX"]
+  missing4W[is.na(variable), variable := "Operating costs (total non-fuel)"]
   missing4W[is.na(unit), unit := "US$2005/veh/yr"]
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_pass_road_LDV_4W)], missing4W)
 

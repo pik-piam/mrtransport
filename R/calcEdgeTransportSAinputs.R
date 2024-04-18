@@ -129,16 +129,15 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # merge.data.table data
       # TRACCS>PSI>GCAM
       # 1: TRACCS data
-      # Used parts of TRACCS energy Intensity: TRACCS data is used completely
+      # Used parts of TRACCS energy Intensity: TRACCS data is used completely except for two wheelers
       countriesTRACCS <- unique(data$enIntTRACCS$region)
 
       # 2: GCAM data
       # Used parts of the GCAM energy Intensity:
       # Conventional cars (Liquids, NG) in non-TRACCS countries
-      energyIntensityRawGCAMconventionalCarsnonTRACCS <- data$enIntGCAM[univocalName
-                                                                        %in% filterEntries$trn_pass_road_LDV_4W
-                                                                        & technology %in% c("Liquids", "NG") &
-                                                                          !region %in% countriesTRACCS]
+      energyIntensityRawGCAMconventionalCarsnonTRACCS <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_4W &
+                                                         technology %in% c("Liquids", "Gases") &
+                                                         !region %in% countriesTRACCS]
       # All other data for non-TRACCS countries except for Trucks
       energyIntensityRawGCAMnonCarsnonTRACCS <- data$enIntGCAM[!univocalName %in% filterEntries$trn_pass_road_LDV_4W &
                                                                  !univocalName %in% filterEntries$trn_freight_road &
@@ -166,8 +165,8 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # TRACCS data does not include NG Truck (7.5t), Truck (18t), Truck (26t), Truck (40t) -> data is taken from PSI
       # TRACCS data does not include NG Truck (7_5t), Truck (18t), Truck (26t), Truck (40t) -> data is taken from PSI
       energyIntensityRawPSItrucksNGTRACCSreg <- data$enIntPSI[univocalName %in% c("Truck (7_5t)", "Truck (18t)",
-                                                                                  "Truck (26t)", "Truck (40t)") &
-                                                                technology == "NG" & region %in% countriesTRACCS]
+                                                              "Truck (26t)", "Truck (40t)") &
+                                                              technology == "Gases" & region %in% countriesTRACCS]
       # Used for alternative Cars (BEV,FCEV,HEV) in TRACCS countries
       energyIntensityRawPSIalternativeTechTRACCSreg <- data$enIntPSI[technology %in% c("BEV", "FCEV", "Hybrid electric")
                                                                      & region %in% countriesTRACCS]
@@ -348,7 +347,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                                                                       "loadFactor") := NULL]
       esDemandEUROSTAT[univocalName %in% c(filterEntries$trn_pass, "International Aviation"), unit := "billion pkm/yr"]
       esDemandEUROSTAT[univocalName %in% c(filterEntries$trn_freight, "International Ship"), unit := "billion tkm/yr"]
-      esDemandEUROSTAT[, variable := "Energy service demand"]
+      esDemandEUROSTAT[, variable := "ES"]
 
       # merge.data.table data
       # TRACCS data is used completely
@@ -1002,20 +1001,9 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       weight <- NULL
 
       data <- readSource("EUROSTAT", "LDVfleet")
-
-      #data <- toolPrepareEUROSTAT(data)
-
-      browser()
-
       data <- magpie2dt(data)
-
-      #data[, sum := sum(value), by = c("region")]
-
-      #data[sum == 0, value := NA][, sum := NULL]
-
       quitteobj <- data
 
-      #test2 <- as.data.frame(quitteobj)
     }
   )
 
