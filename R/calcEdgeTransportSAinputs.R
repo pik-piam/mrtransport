@@ -1001,20 +1001,9 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       weight <- NULL
 
       data <- readSource("EUROSTAT", "LDVfleet")
-
-      #data <- toolPrepareEUROSTAT(data)
-
-      browser()
-
       data <- magpie2dt(data)
-
-      #data[, sum := sum(value), by = c("region")]
-
-      #data[sum == 0, value := NA][, sum := NULL]
-
       quitteobj <- data
 
-      #test2 <- as.data.frame(quitteobj)
     }
   )
 
