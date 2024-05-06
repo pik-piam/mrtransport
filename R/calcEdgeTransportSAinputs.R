@@ -58,7 +58,6 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
     "Van"
   )
 
-
   # decisionTree.csv contains all possible branches of the decision tree
   decisionTree <- fread(system.file("extdata/decisionTree.csv", package = "mrtransport", mustWork = TRUE))
   decisionOptions <- decisionTree[, c("univocalName", "technology")]
@@ -262,7 +261,6 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
       weight <- weight[, , paste0("gdp_", SSPscen)]
 
-
       # calc different source data
       AMTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
       AMUCD <- toolPrepareUCD(readSource("UCD", subtype), subtype)
@@ -355,7 +353,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # GCAM data is used for regions that are not included in TRACCS, bunkers for regions that are not included
       # in EUROSTAT (non EU-27) and modes that are not included in TRACCS
       # CHE, GBR, ISL, MKD, NOR, TUR are included in TRACCS but not in EUROSTAT
-      missingBunkers <- data$esDemandGCAM[region %in% c("CHE", "GBR", "ISL", "MKD", "NOR", "TUR") &
+      missingBunkers <- data$esDemandGCAM[region %in% c("CHE", "ISL", "MKD", "NOR", "TUR") &
                                             univocalName %in% c("International Aviation", "Domestic Aviation",
                                                                 "Domestic Ship", "International Ship")]
       # GCAM is used for modes not provided by TRACCS for TRACCS regions. 4 Wheelers must be excluded as GCAM
@@ -479,19 +477,21 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                        "variable", "unit"), extrapolate = TRUE)
 
       # Use only for cars (trucks and busses are given combined with non fuel OPEX)
-      CAPEXUCD4W <- data$CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_4W]
+      # -> Filter out purchase costs as they are taken from PSI
+      CAPEXUCD4W <- data$CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_4W
+                                  & !variable == "Capital costs (purchase)"]
+
+      # Take purchase costs from PSI but keep only the vehicle types present in UCD for non EUR regions
+      vehTypeFilter <- unique(CAPEXUCD4W[, c("region", "univocalName")])
+      PSIpurchaseCosts <- merge(data$CAPEXPSI, vehTypeFilter, by = c("region", "univocalName"), all.y = TRUE)
 
       # CAPEX for Busses and Trucks given combined with non-fuel OPEX in the UCD data
       CAPEXcombinedUCD <- data$CAPEXcombinedUCD
       CAPEXcombinedUCD <- CAPEXcombinedUCD[univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus"]
 
       # merge.data.table data
-      # PSI vehicle purchase costs are used for LDV 4 Wheelers in EUR
-      PSIcarsEUR <- data$CAPEXPSI[region %in% ISOcountriesMap[regionCode12 == "EUR"]$region]
       # PSI CAPEX for 4 Wheelers feature only purchase costs - take other capital costs from UCD for EUR regions
-      CAPEXraw <- rbind(PSIcarsEUR, CAPEXUCD4W[!(region %in% ISOcountriesMap[regionCode12 == "EUR"]$region) |
-                                                 (region %in% ISOcountriesMap[regionCode12 == "EUR"]$region
-                                                  & !variable == "Capital costs (purchase)")], CAPEXcombinedUCD)
+      CAPEXraw <- rbind(PSIpurchaseCosts, CAPEXUCD4W, CAPEXcombinedUCD)
 
       GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
                                 unit = "constant 2005 US$MER") |> time_interpolate(highResYears)

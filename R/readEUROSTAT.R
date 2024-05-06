@@ -18,20 +18,23 @@ readEUROSTAT <- function(subtype = c("feDemand", "LDVfleet")) {
   EUROSTATsector <- variable <- region <- NULL
 
   countries <- c("BE", "BG", "CZ", "DK", "DE", "EE", "IE", "EL", "ES", "FR", "HR", "IT", "CY",
-                 "LV", "LT", "LU", "HU", "MT", "NL", "AT", "PL", "PT", "RO", "SI", "SK", "FI", "SE")
+                 "LV", "LT", "LU", "HU", "MT", "NL", "AT", "PL", "PT", "RO", "SI", "SK", "FI", "SE", "UK")
 
   switch(
     subtype,
     "feDemand" = {
       dt <- do.call("rbind", lapply(countries,
                                     function(x) {
-                                        output <- suppressMessages(data.table(read_excel(path =                                 # nolint: object_usage_linter
-                                                                             file.path("Energy statistical country datasheets", # nolint: line_length_linter
-                                                                             "Energy statistical country datasheets 2023-04.xlsx"), # nolint: line_length_linter
-                                                                                         sheet = x, "C8:AI249")))
-                                      names(output)[1] <- "EUROSTATsector"
+                                      # here an old EUROSTAT country data sheet is used (the newest does not include UK)
+                                      # when we want to extend the historical ES demand to later years, we have to find an alternative source for UK
+                                      # GCAM offers substantially lower values
+                                      output <- suppressMessages(data.table(read_excel(path =                                 # nolint: object_usage_linter
+                                                                                         file.path("Energy statistical country datasheets", # nolint: line_length_linter
+                                                                                                   "energy_statistical_countrydatasheets.xlsx"), # nolint: line_length_linter
+                                                                                       sheet = x, "C8:X249")))
+                                      colnames(output) = c("EUROSTATsector", as.character(seq(1990,2010,1)))
                                       output <- output[EUROSTATsector %in% c("International maritime bunkers",
-                                                        "International aviation", "Domestic aviation", "Domestic navigation")] # nolint: line_length_linter
+                                                                             "International aviation", "Domestic aviation", "Domestic navigation")] # nolint: line_length_linter
                                       output <- melt(output, id.vars = c("EUROSTATsector"), variable.name = "period")
                                       output$region <- x
                                       output$unit <- "Mtoe"

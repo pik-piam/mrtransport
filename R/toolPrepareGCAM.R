@@ -33,8 +33,8 @@ toolPrepareGCAM <- function(x, subtype) {
       # -> set to 1 so that they are equally considered
       dt[is.na(esdem) | esdem == 0, esdem := 1]
 
-      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector",
-                                   GCAMtechnology = "technology")]
+      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology"),
+                        allow.cartesian = TRUE]
       # GCAM data partly contains aggregated values for different levels of the decision tree
       # -> take only the lowest level
       dt <- dt[!is.na(univocalName)]
@@ -59,7 +59,8 @@ toolPrepareGCAM <- function(x, subtype) {
       # -> set to 1 so that they are equally considered
       dt[is.na(esdem) | esdem == 0, esdem := 1]
 
-      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology")]
+      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology"),
+                        allow.cartesian = TRUE]
       # GCAM data partly contains aggregated values for different levels of the decision tree
       # -> take only the lowest level
       dt <- dt[!is.na(univocalName)]
@@ -73,7 +74,8 @@ toolPrepareGCAM <- function(x, subtype) {
       # use only historical demand
       dt <- dt[period %in% c(1990, 2005, 2010)]
       # map
-      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology")]
+      dt <- mappingGCAM[dt, on = c(GCAMsector = "sector", GCAMsubsector = "subsector", GCAMtechnology = "technology"),
+                        allow.cartesian = TRUE]
       # GCAM data partly contains aggregated values for different levels of the decision tree
       # -> take only the lowest level
       dt <- dt[!is.na(univocalName)]
