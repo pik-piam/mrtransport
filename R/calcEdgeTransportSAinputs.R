@@ -516,6 +516,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       completeDataCAPFleet <- completeDataSet[univocalName %in% filterEntries$trn_freight_road
                                               | univocalName %in% filterEntries$trn_pass_road_LDV_4W |
                                                 univocalName == "Bus"]
+
       # Check whether data is complete
       check <- merge.data.table(completeDataCAPFleet, CAPEX, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
@@ -595,9 +596,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       weight <- weight[, , paste0("gdp_", SSPscen)]
 
       # read UCD CAPEX given in US$2005/vkt and US$2005/veh
+      # non fuel OPEX include Domestic Aviation, International Aviation, Moped, Motorcycle (50-250cc), Motorcycle (>250cc) (+4W not used here)
       CAPEXUCD <- toolPrepareUCD(readSource("UCD", "CAPEX"), "CAPEX")
+      CAPEXUCD <- CAPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
+      # combined CAPEX and OPEX include Domestic Ship, Freight Rail, HSR, International Ship, Passenger Rail
       CAPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
+      CAPEXcombinedUCD <- CAPEXcombinedUCD[!(univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus")]
 
       # Inter- and extrapolate all data to model input data years
       data <- list(CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD)
@@ -605,8 +610,6 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                      c("region", "univocalName", "technology",
                        "variable", "unit"), extrapolate = TRUE)
 
-      # Includes aviation and two wheelers (used for all vehicle types other than 4 wheelers)
-      CAPEXUCD <- data$CAPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # Data for two wheelers is given in US$2005/veh and needs to be converted to US$2005/vehkm
       # with the help of annual mileage
       AMUCD2W <- toolPrepareUCD(readSource("UCD", "annualMileage"), "annualMileage")
@@ -616,18 +619,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                            extrapolate = TRUE)
       setnames(AMUCD2W, "value", "annualMileage")
 
-      CAPEXUCD <- merge.data.table(CAPEXUCD, AMUCD2W, by = c("region", "univocalName", "technology", "period"),
+      CAPEXUCD <- merge.data.table(data$CAPEXUCD, AMUCD2W, by = c("region", "univocalName", "technology", "period"),
                                    all.x = TRUE)
       CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := value / annualMileage]
       CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2005/vehkm"][, annualMileage := NULL]
 
-      # CAPEX given combined with non-fuel OPEX in the UCD data for shipping and rail (all other than busses
-      # and trucks)
-      CAPEXcombinedUCD <- data$CAPEXcombinedUCD
-      CAPEXcombinedUCD <- CAPEXcombinedUCD[!(univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus")]
-
       # merge.data.table data
-      CAPEXraw <- rbind(CAPEXUCD, CAPEXcombinedUCD)
+      CAPEXraw <- rbind(CAPEXUCD, data$CAPEXcombinedUCD)
 
       GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
                                 unit = "constant 2005 US$MER") |> time_interpolate(lowResYears)
@@ -654,6 +652,9 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       # Check whether data is complete
       check <- merge.data.table(completeDataCAP, CAPEX, all = TRUE)
+      byCols <- names(check)
+      byCols <- byCols[!byCols %in% c("value", "variable")]
+      check[, sum := sum(value), by = eval(byCols)]
       if (nrow(check[is.na(value)]) > 0) {
         stop("CAPEX input data for vehicle types that do not feature fleet tracking is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
@@ -666,6 +667,8 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
              Data does not have the same variable type.")
       } else if (anyNA(CAPEX) == TRUE) {
         stop("CAPEX data for vehicle types that do not feature fleet tracking includes NAs")
+      } else if (nrow(check[sum < 0]) > 0) {
+        stop("Aggregated CAPEX for vehicle types that do not feature fleet tracking includes negative values")
       }
 
       quitteobj <- CAPEX
@@ -676,22 +679,26 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                      (other than cars, trucks, busses). Sources: UCD, PSI"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(lowResYears)
       weight <- weight[, , paste0("gdp_", SSPscen)]
-
+      # read UCD non fuel given in US$2005/vkt and US$2005/veh/yr
+      # non fuel OPEX include Domestic Aviation, International Aviation, Moped, Motorcycle (50-250cc), Motorcycle (>250cc) (+4W not used here)
       nonFuelOPEXUCD <- toolPrepareUCD(readSource("UCD", "nonFuelOPEX"), "nonFuelOPEX")
       nonFuelOPEXUCD <- nonFuelOPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
+      # combined CAPEX and OPEX include Domestic Ship, Freight Rail, HSR, International Ship, Passenger Rail
       nonFuelOPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
       nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!univocalName %in% c(filterEntries$trn_freight_road,
                                                                             filterEntries$trn_pass_road_LDV_4W,
                                                                             "Bus")]
+      # Operating subsidies are given for Freight Rail, Passenger Rail, HSR (+ Bus not used here)
+      operatingSubsidyUCD <- toolPrepareUCD(readSource("UCD", "OperatingSubsidies"), "OperatingSubsidies")
 
       # Inter- and extrapolate all data to model input data years
-      data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD, nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD)
+      data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD,
+                   nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD,
+                   operatingSubsidyUCD = operatingSubsidyUCD)
       data <- lapply(data, approx_dt, lowResYears, "period", "value",
                      c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
 
-      # Includes aviation and two wheelers (used for all vehicle types other than 4 wheelers)
-      nonFuelOPEXUCD <- data$nonFuelOPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # Data for two wheelers is given in US$2005/veh and needs to be converted to US$2005/vehkm
       # with the help of annual mileage
       AMUCD2W <- toolPrepareUCD(readSource("UCD", "annualMileage"), "annualMileage")
@@ -700,21 +707,15 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       AMUCD2W <- approx_dt(AMUCD2W, lowResYears, "period", "value", c("region", "univocalName", "technology"),
                            extrapolate = TRUE)
       setnames(AMUCD2W, "value", "annualMileage")
-      nonFuelOPEXUCD <- merge.data.table(nonFuelOPEXUCD, AMUCD2W, by = c("region", "period",
+      nonFuelOPEXUCD <- merge.data.table(data$nonFuelOPEXUCD, AMUCD2W, by = c("region", "period",
                                                                          "univocalName", "technology"),
                                          all.x = TRUE)
       nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := value / annualMileage]
       nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2005/vehkm"][, annualMileage
                                                                                                     := NULL]
 
-      # CAPEX given combined with non-fuel OPEX in the UCD data for shipping and rail
-      # (all other than busses and trucks)
-      nonFuelOPEXcombinedUCD <- data$nonFuelOPEXcombinedUCD
-      nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!(univocalName %in% filterEntries$trn_freight_road
-                                                         | univocalName == "Bus")]
-
       # merge.data.table data
-      nonFuelOPEXraw <- rbind(nonFuelOPEXUCD, nonFuelOPEXcombinedUCD)
+      nonFuelOPEXraw <- rbind(nonFuelOPEXUCD, data$nonFuelOPEXcombinedUCD, data$operatingSubsidyUCD)
 
       nonFuelOPEX <- toolAdjustNonFuelOPEXother(nonFuelOPEXraw, ISOcountriesMap,
                                                 lowResYears, completeDataSet, filterEntries)
@@ -735,17 +736,19 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # Check whether data is complete
       check <- merge.data.table(completeDataOP, nonFuelOPEX, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
-        stop("Non fuel OPEX input data for vehicle types that do not feature fleet tracking is incomplete")
+        stop("Non fuel OPEX for vehicle types that do not feature fleet tracking is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
-        stop("Non fuel OPEX input data for vehicle types that do not feature fleet tracking includes unnecessary data")
+        stop("Non fuel OPEX for vehicle types that do not feature fleet tracking includes unnecessary data")
       } else if (length(unique(check$unit)) > 1) {
-        stop("Something went wrong in generating non fuel OPEX input data for vehicle types
+        stop("Something went wrong in generating non fuel OPEX input for vehicle types
              that do not feature fleet tracking. Data does not have the same unit.")
       } else if (length(unique(check$variable)) > 1) {
-        stop("Something went wrong in generating non fuel OPEX input data for vehicle types
+        stop("Something went wrong in generating non fuel OPEX input for vehicle types
              that do not feature fleet tracking. Data does not have the same variable type.")
       } else if (anyNA(nonFuelOPEX) == TRUE) {
-        stop("Non fuel OPEX data for vehicle types that do not feature fleet tracking includes NAs")
+        stop("Non fuel OPEX for vehicle types that do not feature fleet tracking includes NAs")
+      } else if (nrow(check[value < 0]) > 0) {
+        stop("Aggregated non fuel OPEX for vehicle types that do not feature fleet tracking includes negative values")
       }
 
       quitteobj <- nonFuelOPEX

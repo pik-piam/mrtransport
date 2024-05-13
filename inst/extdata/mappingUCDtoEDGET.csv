@@ -54,8 +54,8 @@ Freight;Truck;Truck (>12t);NG;Natural Gas;Truck (18t);Gases
 Freight;Rail;All;Coal;Coal;;
 Freight;Rail;All;Electric;Electricity;Freight Rail;Electric
 Freight;Rail;All;Liquids;Liquids;Freight Rail;Liquids
-Freight;Rail;All;Tech-Adv-Electric;Electricity;Freight Rail;Electric
-Freight;Rail;All;Tech-Adv-Liquid;Liquids;Freight Rail;Liquids
+Freight;Rail;All;Tech-Adv-Electric;Electricity;;
+Freight;Rail;All;Tech-Adv-Liquid;Liquids;;
 Freight;Ship Domestic;All;Liquids;Liquids;Domestic Ship;Liquids
 Freight;Ship International;All;Liquids;Liquids;International Ship;Liquids
 Passenger;LDV_2W;Motorcycle (50-250cc);BEV;Electricity;Motorcycle (50-250cc);BEV
@@ -111,9 +111,9 @@ Passenger;LDV_2W;Moped;Liquids;Liquids;Moped;Liquids
 Passenger;LDV_2W;Moped;BEV;Electricity;Moped;BEV
 Passenger;LDV_2W;Scooter;Liquids;Liquids;Moped;Liquids
 Passenger;LDV_2W;Scooter;BEV;Electricity;Moped;BEV
-Passenger;LDV_3W;Three-Wheeler;Liquids;Liquids;Motorcycle (>250cc);Liquids
+Passenger;LDV_3W;Three-Wheeler;Liquids;Liquids;;
 Passenger;LDV_3W;Three-Wheeler;NG;Natural Gas;;
-Passenger;LDV_2W;Motorcycle (50-250cc);LA-BEV;Electricity;Motorcycle (50-250cc);BEV
+Passenger;LDV_2W;Motorcycle (50-250cc);LA-BEV;Electricity;;
 Passenger;LDV_3W;Three-Wheeler;NG;NG;;
 Passenger;Air Domestic;All;Liquids;Liquids;Domestic Aviation;Liquids
 Passenger;Air International ;All;Liquids;Liquids;International Aviation;Liquids
@@ -122,7 +122,7 @@ Passenger;Bus;All;NG;Natural Gas;Bus;Gases
 Passenger;HSR;All;Electric;Electricity;HSR;Electric
 Passenger;Rail;All;Electric;Electricity;Passenger Rail;Electric
 Passenger;Rail;All;Liquids;Liquids;Passenger Rail;Liquids
-Passenger;Rail;All;Tech-Adv-Electric;Electricity;Passenger Rail;Electric
-Passenger;Rail;All;Tech-Adv-Liquid;Liquids;Passenger Rail;Liquids
+Passenger;Rail;All;Tech-Adv-Electric;Electricity;;
+Passenger;Rail;All;Tech-Adv-Liquid;Liquids;;
 Passenger;Walk;All;All;All;Walk;Walk_tmp_technology
 Passenger;Cycle;All;All;All;Cycle;Cycle_tmp_technology
