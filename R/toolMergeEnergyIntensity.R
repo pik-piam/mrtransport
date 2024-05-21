@@ -1,23 +1,24 @@
 #' Merge source data for energy intensity
 #' @author Johanna Hoppe
-#' @param data source data 
+#' @param data source data
 #' @param filterEntries helper to filter for univocalNames
 #' @param countriesTRACCS countries included in the TRACCS database
 
 toolMergeEnergyIntensity <- function(data, filterEntries, countriesTRACCS) {
-  
+
   # merge.data.table data
   # TRACCS>PSI>GCAM
   # 1: TRACCS data
   # Used parts of TRACCS energy Intensity: TRACCS data is used completely except for two wheelers
-  
+
   # 2: GCAM data
   # Used parts of the GCAM energy Intensity:
   # Conventional cars (Liquids, NG) in non-TRACCS countries
   energyIntensityRawGCAMconventionalCarsnonTRACCS <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_4W &
                                                                       technology %in% c("Liquids", "Gases") &
                                                                       !region %in% countriesTRACCS]
-  # All other data for non-TRACCS countries except for Trucks
+
+   # All other data for non-TRACCS countries except for Trucks
   energyIntensityRawGCAMnonCarsnonTRACCS <- data$enIntGCAM[!univocalName %in% filterEntries$trn_pass_road_LDV_4W &
                                                              !univocalName %in% filterEntries$trn_freight_road &
                                                              !region %in% countriesTRACCS]
@@ -35,8 +36,8 @@ toolMergeEnergyIntensity <- function(data, filterEntries, countriesTRACCS) {
   # Hence we use GCAM data for mopeds and motorcyclse adn there alternatives also for TRACCS countries
   energyIntensityRawGCAM2WheelersTRACCSreg <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_2W &
                                                                region %in% countriesTRACCS]
-  
-  
+
+
   #3: PSI data
   # Used for Trucks in non-TRACCS countries
   energyIntensityRawPSITrucks <- data$enIntPSI[univocalName %in% filterEntries$trn_freight_road
@@ -83,7 +84,7 @@ toolMergeEnergyIntensity <- function(data, filterEntries, countriesTRACCS) {
   # Large Car is missing for some nonTRACCS regions, filled in toolAdjustEnergyIntensity
   # -> NAs are introduced for unit & variable
   energyIntensityRawPSIalternativeCarsnonTRACCS[, variable := "Energy intensity"][, unit := "MJ/vehkm"]
-  
+
   energyIntensityRaw <- rbind(data$enIntTRACCS[!univocalName %in% filterEntries$trn_pass_road_LDV_2W],
                               energyIntensityRawGCAMconventionalCarsnonTRACCS,
                               energyIntensityRawGCAMmissingTRACCScat,
