@@ -226,23 +226,23 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
     },
     "histESdemand" = {
       unit <- "billion (p|t)km/yr"
-      description <- "Energy service demand on technology level. Sources: GCAM, TRACCS, EUROSTAT"
+      description <- "Energy service demand on technology level. Sources: GCAM, TRACCS, Eurostat"
       weight <- NULL
 
       # calc different source data
       esDemandGCAM <- toolPrepareGCAM(readSource("GCAM", subtype), subtype)
       esDemandTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
       countriesTRACCS <- unique(esDemandTRACCS$region)
-      feDemandEUROSTAT <- toolPrepareEUROSTAT(readSource("EUROSTAT", "feDemand"))
+      feDemandEurostat <- toolPrepareEurostat(readSource("Eurostat", "feDemand"))
       enIntensity <- magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "energyIntensity",
                                           IEAharm = FALSE, warnNA = FALSE, aggregate = FALSE))
       loadFactor <- magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "loadFactor",
                                          warnNA = FALSE, aggregate = FALSE))
-
+      browser()
       # Inter- and extrapolate all data to model input data years
       data <- list(esDemandGCAM     = esDemandGCAM,
                    esDemandTRACCS   = esDemandTRACCS,
-                   feDemandEUROSTAT = feDemandEUROSTAT,
+                   feDemandEurostat = feDemandEurostat,
                    enIntensity      = enIntensity,
                    loadFactor       = loadFactor)
 
@@ -304,7 +304,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                        "variable", "unit"), extrapolate = TRUE)
 
       # merge.data.table data
-      # EUROSTAT>TRACCS>GCAM
+      # Eurostat>TRACCS>GCAM
       #- EU data is used from TRACCS, rest is filled with GCAM
       countriesTRACCS <- unique(data$LFTRACCS$region)
       loadFactorRaw <- rbind(data$LFTRACCS, data$LFGCAM[!(region %in% countriesTRACCS
@@ -901,7 +901,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       description <- "historical LDV fleet of Eurostat countries, 4W only"
       weight <- NULL
 
-      data <- readSource("EUROSTAT", "LDVfleet")
+      data <- readSource("Eurostat", "LDVfleet")
       data <- magpie2dt(data)
       quitteobj <- data
 
