@@ -356,9 +356,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       CAPEXUCD <- toolPrepareUCD(readSource("UCD", "CAPEX"), "CAPEX")
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
       CAPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
+      # Operating subsidies for Freight Rail, Passenger Rail, HSR (+ Bus not used here) are partially attributed to CAPEX
+      # otherwise negative values in OPEX
+      operatingSubsidyUCD <- toolPrepareUCD(readSource("UCD", "OperatingSubsidies"), "OperatingSubsidies")
+      operatingSubsidyUCD <- operatingSubsidyUCD[univocalName == "Bus"]
 
       # Inter- and extrapolate all data to model input data years
-      data <- list(CAPEXPSI = CAPEXPSI, CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD)
+      data <- list(CAPEXPSI = CAPEXPSI, CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD, operatingSubsidyUCD = operatingSubsidyUCD)
       data <- lapply(data, approx_dt, highResYears, "period", "value",
                      c("region", "univocalName", "technology",
                        "variable", "unit"), extrapolate = TRUE)
@@ -378,7 +382,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       # merge.data.table data
       # PSI CAPEX for 4 Wheelers feature only purchase costs - take other capital costs from UCD for EUR regions
-      CAPEXraw <- rbind(PSIpurchaseCosts, CAPEXUCD4W, CAPEXcombinedUCD)
+      CAPEXraw <- rbind(PSIpurchaseCosts, CAPEXUCD4W, CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
       GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
                                 unit = "constant 2005 US$MER") |> time_interpolate(highResYears)
@@ -432,14 +436,17 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       nonFuelOPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
       nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[univocalName %in% filterEntries$trn_freight_road
                                                        | univocalName == "Bus"]
+      # Operating subsidies for Freight Rail, Passenger Rail, HSR (+ Bus not used here) are partially
+      operatingSubsidyUCD <- toolPrepareUCD(readSource("UCD", "OperatingSubsidies"), "OperatingSubsidies")
+      operatingSubsidyUCD <- operatingSubsidyUCD[univocalName == "Bus"]
 
       # Inter- and extrapolate all data to model input data years
-      data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD, nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD)
+      data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD, nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD, operatingSubsidyUCD = operatingSubsidyUCD)
       data <- lapply(data, approx_dt, highResYears, "period", "value",
                      c("region", "univocalName", "technology",
                        "variable", "unit"), extrapolate = TRUE)
 
-      nonFuelOPEXraw <- rbind(data$nonFuelOPEXUCD, data$nonFuelOPEXcombinedUCD)
+      nonFuelOPEXraw <- rbind(data$nonFuelOPEXUCD, data$nonFuelOPEXcombinedUCD, data$operatingSubsidyUCD)
       nonFuelOPEX <- toolAdjustNonFuelOPEXtrackedFleet(nonFuelOPEXraw, highResYears, completeDataSet, filterEntries)
 
       # nonFuelOPEXtrackedFleet data only includes data for LDV 4 Wheelers, Trucks and Busses
@@ -490,9 +497,12 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # combined CAPEX and OPEX include Domestic Ship, Freight Rail, HSR, International Ship, Passenger Rail
       CAPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
       CAPEXcombinedUCD <- CAPEXcombinedUCD[!(univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus")]
+      # Operating subsidies for Freight Rail, Passenger Rail, HSR (+ Bus not used here) are partially
+      operatingSubsidyUCD <- toolPrepareUCD(readSource("UCD", "OperatingSubsidies"), "OperatingSubsidies")
+      operatingSubsidyUCD <- operatingSubsidyUCD[!(univocalName == "Bus")]
 
       # Inter- and extrapolate all data to model input data years
-      data <- list(CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD)
+      data <- list(CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD, operatingSubsidyUCD = operatingSubsidyUCD)
       data <- lapply(data, approx_dt, lowResYears, "period", "value",
                      c("region", "univocalName", "technology",
                        "variable", "unit"), extrapolate = TRUE)
@@ -512,7 +522,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2005/vehkm"][, annualMileage := NULL]
 
       # merge.data.table data
-      CAPEXraw <- rbind(CAPEXUCD, data$CAPEXcombinedUCD)
+      CAPEXraw <- rbind(CAPEXUCD, data$CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
       GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
                                 unit = "constant 2005 US$MER") |> time_interpolate(lowResYears)
@@ -576,8 +586,9 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!univocalName %in% c(filterEntries$trn_freight_road,
                                                                             filterEntries$trn_pass_road_LDV_4W,
                                                                             "Bus")]
-      # Operating subsidies are given for Freight Rail, Passenger Rail, HSR (+ Bus not used here)
+      # Operating subsidies for Freight Rail, Passenger Rail, HSR (+ Bus not used here)
       operatingSubsidyUCD <- toolPrepareUCD(readSource("UCD", "OperatingSubsidies"), "OperatingSubsidies")
+      operatingSubsidyUCD <- operatingSubsidyUCD[!(univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus")]
 
       # Inter- and extrapolate all data to model input data years
       data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD,
