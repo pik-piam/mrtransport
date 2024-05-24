@@ -4,7 +4,6 @@
 #' @param IEAharm switch IEA harmonization of energy intensity on and off
 #' @param SSPscen shared socioeconomic pathway
 #' @import data.table
-#' @import mrremind
 #' @importFrom rmndt approx_dt
 #' @importFrom madrat readSource calcOutput
 

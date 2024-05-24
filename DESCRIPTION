@@ -4,7 +4,7 @@ Version: 0.4.0.9002
 Authors@R: c(
     person("Johanna", "Hoppe", , "johanna.hoppe@pik-potsdam.de", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0004-6753-5090")),
-    person("Jarusch", "Muessel", , "jarusch.muessel@pik-potsdam.de", role = c("aut")),
+    person("Jarusch", "Muessel", "jarusch.muessel@pik-potsdam.de", role = c("aut")),
     person("Alois", "Dirnaichner", role = "aut"))
 Description: The mrtransport package contains data preprocessing for the
     EDGE-Transport model.
@@ -20,7 +20,6 @@ Imports:
     madrat,
     rmndt,
     stringr,
-    mrremind,
     readxl,
     zoo,
     magrittr,
