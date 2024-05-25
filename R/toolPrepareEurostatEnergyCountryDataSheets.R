@@ -10,7 +10,7 @@
 #' @importFrom rmndt magpie2dt
 #' @export
 
-toolPrepareEurostat <- function(x) {
+toolPrepareEurostatEnergyCountryDataSheets <- function(x) {
   region <- Eurostatsector <- period     <-
    technology <- univocalName <- variable <- unit <- period <- NULL
 

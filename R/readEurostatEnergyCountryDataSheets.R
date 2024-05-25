@@ -1,4 +1,4 @@
-#' Read UCD road transportation data.
+#' Read Eurostat data.
 #'
 #'
 #' @param subtype One of the possible subtypes, see default argument.
@@ -6,7 +6,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' a <- readSource("Eurostat")
+#' a <- readSource("EurostatEnergyCountryDataSheets")
 #' }
 #' @author Johanna Hoppe
 #' @seealso \code{\link{readSource}}
@@ -14,7 +14,7 @@
 #' @importFrom magclass as.magpie
 #' @importFrom readxl read_excel
 
-readEurostat <- function(subtype = c("feDemand", "LDVfleet")) {
+readEurostatEnergyCountryDataSheets <- function(subtype = c("feDemand", "LDVfleet")) {
   Eurostatsector <- variable <- region <- NULL
 
   countries <- c("BE", "BG", "CZ", "DK", "DE", "EE", "IE", "EL", "ES", "FR", "HR", "IT", "CY",

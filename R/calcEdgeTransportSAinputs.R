@@ -232,7 +232,8 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       esDemandGCAM <- toolPrepareGCAM(readSource("GCAM", subtype), subtype)
       esDemandTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
       countriesTRACCS <- unique(esDemandTRACCS$region)
-      feDemandEurostat <- toolPrepareEurostat(readSource("Eurostat", "feDemand"))
+      feDemandEurostat <- toolPrepareEurostatEnergyCountryDataSheets(
+        readSource("EurostatEnergyCountryDataSheets", "feDemand"))
       enIntensity <- magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "energyIntensity",
                                           IEAharm = FALSE, warnNA = FALSE, aggregate = FALSE))
       loadFactor <- magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "loadFactor",
@@ -900,7 +901,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       description <- "historical LDV fleet of Eurostat countries, 4W only"
       weight <- NULL
 
-      data <- readSource("Eurostat", "LDVfleet")
+      data <- readSource("EurostatEnergyCountryDataSheets", "LDVfleet")
       data <- magpie2dt(data)
       quitteobj <- data
 
