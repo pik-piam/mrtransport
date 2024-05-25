@@ -13,7 +13,7 @@
 #' @importFrom madrat toolCountry2isocode toolCountryFill
 #' @importFrom magclass as.magpie getItems getSets mselect getItems<- getSets<-
 
-convertEurostat <- function(x, subtype) {
+convertEurostatEnergyCountryDataSheets <- function(x, subtype) {
   getItems(x, dim = 1) <- toolCountry2isocode(getItems(x, dim = 1), mapping = c("EL" = "GRC")) # nolint: object_usage_linter
   getSets(x)["d1.1"] <- "region"                                                               # nolint: object_usage_linter
   #Convert Mtoe to MJ#

@@ -89,6 +89,7 @@ toolIEAharmonization <- function(...) {
                                    enServiceDem[period %in% harmonizationYears],  by = c("region", "univocalName", "technology", "period"))
     check[, check := (value / loadFactor) * enService * bn * MJtoEJ]
     check[, check := sum(check), by = c("region", "isBunk", "te", "period")][, diff := abs(check - feIEA)]
+
     if (nrow(check[diff > 1e-2]) > 0) {
       stop("There is a problem regarding the Harmonization of the energy intensity data to match IEA energy balances
         final energy")
