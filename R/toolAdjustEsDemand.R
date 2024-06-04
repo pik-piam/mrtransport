@@ -34,6 +34,29 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter) {
   dt[, demldv := NULL]
 
   #3: Correct demand for CHN
+  ## the category "truck > 14t" in China does most likely contain also heavy trucks
+  ## otherwise there are none
+  dt[region %in% c("CHN", "HKG", "MAC"), value := ifelse(univocalName == "Truck (26t)",
+                                                         value[univocalName == "Truck (18t)"] / 4,
+                                                         value),
+     by = c("period", "region", "technology")]
+  dt[region %in% c("CHN", "HKG", "MAC"), value := ifelse(univocalName == "Truck (40t)",
+                                                         value[univocalName == "Truck (18t)"] / 4,
+                                                         value),
+     by = c("period", "region", "technology")]
+  dt[region %in% c("CHN", "HKG", "MAC") & univocalName == "Truck (18t)", value := value / 2,
+     by = c("period", "region", "technology")]
+  dt[region %in% c("USA", "PRI", "UMI", "VIR"), value := ifelse(univocalName == "Truck (26t)",
+                                                                value[univocalName == "Truck (18t)"] / 3,
+                                                                value),
+     by = c("period", "region", "technology")]
+  dt[region %in% c("USA", "PRI", "UMI", "VIR"), value := ifelse(univocalName == "Truck (40t)",
+                                                                value[univocalName == "Truck (18t)"] / 3,
+                                                                value),
+     by = c("period", "region", "technology")]
+  dt[region %in% c("USA", "PRI", "UMI", "VIR") & univocalName == "Truck (18t)", value := value / 3,
+     by = c("period", "region", "technology")]
+
   #from https://www.iea.org/reports/tracking-rail-2020-2
   dt[period <= 2010 & regionCode21 == "CHN" & univocalName == "HSR", value := 70000]
   # from https://theicct.org/sites/default/files/China_Freight_Assessment_English_20181022.pdf

@@ -4,13 +4,14 @@
 \alias{toolIEAharmonization}
 \title{Harmonize the energy intensities to match the IEA energy balances regarding final energy.}
 \usage{
-toolIEAharmonization(enIntensity)
+toolIEAharmonization(...)
 }
 \arguments{
-\item{enIntensity}{energy intensity}
+\item{...}{data to harmonize: Either the energy intensity or the energy service demnand}
 }
 \description{
 We provide energy service trajectories. IEA energy balances have to be met and are not
 consistent with GCAM intensities and energy service trajectories.
-Therefore we have to adjust energy intensities.
+Therefore we have to adjust energy intensities and set the energy service demand to zero,
+where the IEA does not report the energy service demand
 }

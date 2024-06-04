@@ -26,7 +26,7 @@ trn_pass_road;LDV;LDV;NA;NA
 trn_pass_road_LDV;2W;2W;NA;NA
 trn_pass_road_LDV;4W;4W;NA;NA
 trn_pass_road_LDV;Three-Wheeler;Liquids;Motorcycle (>250cc);Liquids
-trn_pass_road_LDV;Three-Wheeler;NG;NA;NA
+trn_pass_road_LDV;Three-Wheeler;NG;Motorcycle (>250cc);Liquids
 trn_pass_road_LDV_2W;Motorcycle (50-250cc);BEV;Motorcycle (50-250cc);BEV
 trn_pass_road_LDV_2W;Motorcycle (50-250cc);Liquids;Motorcycle (50-250cc);Liquids
 trn_pass_road_LDV_4W;Compact Car;BEV;Compact Car;BEV
@@ -44,6 +44,11 @@ trn_pass_road_LDV_4W;Multipurpose Vehicle;FCEV;Large Car and SUV;FCEV
 trn_pass_road_LDV_4W;Multipurpose Vehicle;Hybrid Liquids;Large Car and SUV;Hybrid electric
 trn_pass_road_LDV_4W;Multipurpose Vehicle;Liquids;Large Car and SUV;Liquids
 trn_pass_road_LDV_4W;Multipurpose Vehicle;NG;Large Car and SUV;Gases
+trn_pass_road_LDV_4W;Multipurpose Vehicle;BEV;Subcompact Car;BEV
+trn_pass_road_LDV_4W;Multipurpose Vehicle;FCEV;Subcompact Car;FCEV
+trn_pass_road_LDV_4W;Multipurpose Vehicle;Hybrid Liquids;Subcompact Car;Hybrid electric
+trn_pass_road_LDV_4W;Multipurpose Vehicle;Liquids;Subcompact Car;Liquids
+trn_pass_road_LDV_4W;Multipurpose Vehicle;NG;Subcompact Car;Gases
 trn_pass_road_LDV_4W;Subcompact Car;BEV;Subcompact Car;BEV
 trn_pass_road_LDV_4W;Subcompact Car;FCEV;Subcompact Car;FCEV
 trn_pass_road_LDV_4W;Subcompact Car;Hybrid Liquids;Subcompact Car;Hybrid electric
@@ -115,8 +120,8 @@ trn_pass_road_bus;Heavy Bus;Liquids;Bus;Liquids
 trn_pass_road_bus;Heavy Bus;NG;Bus;Gases
 trn_pass_road_bus;Light Bus;Liquids;Bus;Liquids
 trn_pass_road_bus;Light Bus;NG;Bus;Gases
-trn_pass_road_LDV_2W;Scooter;BEV;Moped;BEV
-trn_pass_road_LDV_2W;Scooter;Liquids;Moped;Liquids
+trn_pass_road_LDV_2W;Scooter;BEV;Motorcycle (50-250cc);BEV
+trn_pass_road_LDV_2W;Scooter;Liquids;Motorcycle (50-250cc);Liquids
 trn_freight_road;Truck;Liquids;Truck (7_5t);Liquids
 trn_freight_road;Truck;NG;Truck (7_5t);Gases
 trn_freight_road;Truck (0-2_7t);Liquids;Truck (0-3_5t);Liquids

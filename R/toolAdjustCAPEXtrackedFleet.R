@@ -22,37 +22,31 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   # 1a: Delete Capital costs other, as it is unclear what it represents
   dt <- dt[!(univocalName %in% filter$trn_pass_road_LDV_4W & variable == "Capital costs (other)")]
 
-  # 1b: CAPEX data for LDV 4 Wheelers in EUR from PSI is not region specific
+  # 1b: Capital costs (purchase) data for LDV 4 Wheelers in EUR from PSI is not region specific
   # and real data is only available for 2015 and 2040 -> rest is interpolated
-  # -> define markups on alternative techs based on the percentage difference in EU countries
-  LDV4WEUR <- copy(dt[univocalName %in% filter$trn_pass_road_LDV_4W
-                      & region %in% ISOcountries[regionCode12 == "EUR"]$region])
-  LDV4WEUR[period == 2040 & technology %in% c("Hybrid electric", "BEV"), value := 0.8 * value]
-  LDV4WEUR[period == 2040 & technology %in% c("FCEV"), value := 0.8 * value]
+  LDV4WpurchaseCost <- copy(dt[univocalName %in% filter$trn_pass_road_LDV_4W
+                      & variable == "Capital costs (purchase)"
+                      & period %in% c(2015, 2040)])
+  # First fix applied in toolPSICosts() in EDGE-T old
+  LDV4WpurchaseCost[period == 2040 & technology == "BEV", value := 0.8 * value]
+  LDV4WpurchaseCost[period == 2040 & technology == "FCEV", value := 0.9 * value]
+  # Second fix applied in mergeData() in EDGE-T old
+  LDV4WpurchaseCost <- rbind(LDV4WpurchaseCost, copy(LDV4WpurchaseCost[period == 2040][, period := 2100]))
   # in 2100, purchase price for BEVs is 0.8 * purchase price, for Hybrid electric is 0.7, for FCEVs is 0.9
   decr <- data.table(technology = c("BEV", "Hybrid electric", "FCEV", "Liquids", "Gases"),
                      factor = c(0.8, 0.7, 0.9, 1, 1))
-  LDV4WEUR <- merge.data.table(LDV4WEUR, decr, by = "technology")
-  LDV4WEUR[variable == "Capital costs (purchase)" & period == 2100, value := value[technology == "Liquids"]
+  LDV4WpurchaseCost <- merge.data.table(LDV4WpurchaseCost, decr, by = "technology")
+  LDV4WpurchaseCost[period == 2100, value := value[technology == "Liquids"]
            * factor, by = c("region", "univocalName")]
-  LDV4WEUR[, factor := NULL]
-  # add "Large Car"and "Light Truck and SUV" taking the same values as for "Large Car and SUV"
-  LDV4WEUR <- rbind(LDV4WEUR,
-                    LDV4WEUR[univocalName == "Large Car and SUV"][, univocalName := "Light Truck and SUV"],
-                    LDV4WEUR[univocalName == "Large Car and SUV"][, univocalName := "Large Car"])
-  LDV4WEUR <- LDV4WEUR[period %in% c(2015, 2040, 2100)]
-  LDV4WEUR <- approx_dt(LDV4WEUR, yrs, "period", "value",
+  LDV4WpurchaseCost[, factor := NULL]
+  LDV4WpurchaseCost <- approx_dt(LDV4WpurchaseCost, yrs, "period", "value",
                         c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
-  markup <- LDV4WEUR[variable == "Capital costs (purchase)"]
-  markup <- markup[, markup := value / value[technology == "Liquids"], by = c("univocalName", "period")]
-  markup <- unique(markup[, c("univocalName", "technology", "period", "markup")])
-  # Apply cost ratio of ICEs vs alternative technologies also on non EUR countries
-  LDV4WnonEUR <- copy(dt[univocalName %in% filter$trn_pass_road_LDV_4W &
-                           !region %in% ISOcountries[regionCode12 == "EUR"]$region])
-  LDV4WnonEUR <- merge.data.table(LDV4WnonEUR, markup, by = c("univocalName", "technology", "period"), all.x = TRUE)
-  LDV4WnonEUR[variable == "Capital costs (purchase)" & technology %in% c("BEV", "Hybrid electric", "FCEV"),
-              value := value * markup][, markup := NULL]
-  dt <- rbind(dt[!univocalName %in% filter$trn_pass_road_LDV_4W], LDV4WEUR, LDV4WnonEUR)
+  dt <- rbind(dt[!(univocalName %in% filter$trn_pass_road_LDV_4W & variable == "Capital costs (purchase)")], LDV4WpurchaseCost)
+
+  #1c: Hybrids get the same Capital costs (infrastructure) as BEVs
+  dt[, value := ifelse(technology == "Hybrid electric" & variable == "Capital costs (infrastructure)",
+                       value[technology == "BEV" & variable == "Capital costs (infrastructure)"],
+                       value), by = c("period", "region", "univocalName")]
 
   #2: Alternative trucks and busses
   # Data for alternative trucks and busses is missing
@@ -113,7 +107,8 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   # UCD applied interest rate of 10% and uniform vehicle lifetime of 15 yrs
   # (https://itspubs.ucdavis.edu/publication_detail.php?id=1884)
   # Calc annuity factor
-  discountRate <- 0.1   #discount rate for vehicle purchases
+  # TEMPORARY change to 0.05 (es in EDGE-T) for comparison
+  discountRate <- 0.05   #discount rate for vehicle purchases
   lifeTime <- 15    #Number of years over which vehicle capital payments are amortized
   annuityFactor <- (discountRate * (1 + discountRate) ^ lifeTime) / ((1 + discountRate) ^ lifeTime - 1)
   # Divide by Annual Mileage to get [unit = US$2005/veh/yr]
@@ -284,7 +279,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   GDPpcMER[, factor := ifelse(gdppc >=  maxGDP, 1, factor)]
 
   dt <- merge(dt, GDPpcMER, by = c("region", "period"))
-  dt[univocalName %in% filter$trn_pass_road_LDV_4W, value := value * factor]
+  dt[univocalName %in% filter$trn_pass_road_LDV_4W & variable == "Capital costs (purchase)", value := value * factor]
   dt[, c("gdppc", "factor") := NULL]
 
   return(dt)

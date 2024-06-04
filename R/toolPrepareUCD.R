@@ -36,7 +36,8 @@ toolPrepareUCD <- function(x, subtype) {
   dt <- magpie2dt(x)
   setkey(dt, region, UCD_sector, mode, size_class, UCD_technology, UCD_fuel, period)
   setkey(weight, region, UCD_sector, mode, size_class, UCD_technology, UCD_fuel)
-  if (subtype %in% c("energyIntensity", "loadFactor", "CAPEX", "nonFuelOPEX", "CAPEXandNonFuelOPEX")) {
+  if (subtype %in% c("energyIntensity", "loadFactor", "CAPEX", "nonFuelOPEX",
+                     "CAPEXandNonFuelOPEX", "OperatingSubsidies")) {
     dt <- merge.data.table(dt, weight, all.x = TRUE)
     dt <- merge.data.table(dt, mappingUCD, all.x = TRUE)
     dt <- dt[!univocalName == ""]

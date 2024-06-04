@@ -110,5 +110,4 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filt
   dt[, check := NULL]
 
   return(dt)
-
 }

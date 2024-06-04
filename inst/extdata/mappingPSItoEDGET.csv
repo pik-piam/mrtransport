@@ -1,102 +1,108 @@
 vehicleTypePSI;technologyPSI;univocalName;technology
 Large;BEV;Large Car and SUV;BEV
 Large;FCEV;Large Car and SUV;FCEV
-Large;HEV-p;;
+Large;HEV-p;Large Car and SUV;Hybrid electric
 Large;ICEV-d;Large Car and SUV;Liquids
 Large;ICEV-g;Large Car and SUV;Gases
 Large;ICEV-p;Large Car and SUV;Liquids
-Large;PHEV-d;Large Car and SUV;Hybrid electric
-Large;PHEV-p;Large Car and SUV;Hybrid electric
+Large;PHEV-c;;
+Large;PHEV-e;;
+Large;BEV;Large Car;BEV
+Large;FCEV;Large Car;FCEV
+Large;HEV-p;Large Car;Hybrid electric
+Large;ICEV-d;Large Car;Liquids
+Large;ICEV-g;Large Car;Gases
+Large;ICEV-p;Large Car;Liquids
 Lower medium;BEV;Compact Car;BEV
 Lower medium;FCEV;Compact Car;FCEV
-Lower medium;HEV-p;;
+Lower medium;HEV-p;Compact Car;Hybrid electric
 Lower medium;ICEV-d;Compact Car;Liquids
 Lower medium;ICEV-g;Compact Car;Gases
 Lower medium;ICEV-p;Compact Car;Liquids
-Lower medium;PHEV-d;Compact Car;Hybrid electric
-Lower medium;PHEV-p;Compact Car;Hybrid electric
+Lower medium;PHEV-c;;
+Lower medium;PHEV-e;;
 Medium;BEV;Midsize Car;BEV
 Medium;FCEV;Midsize Car;FCEV
-Medium;HEV-p;;
+Medium;HEV-p;Midsize Car;Hybrid electric
 Medium;ICEV-d;Midsize Car;Liquids
 Medium;ICEV-g;Midsize Car;Gases
 Medium;ICEV-p;Midsize Car;Liquids
-Medium;PHEV-d;Midsize Car;Hybrid electric
-Medium;PHEV-p;Midsize Car;Hybrid electric
+Medium;PHEV-c;;
+Medium;PHEV-e;;
 Mini;BEV;Mini Car;BEV
 Mini;FCEV;Mini Car;FCEV
-Mini;HEV-p;;
+Mini;HEV-p;Mini Car;Hybrid electric
 Mini;ICEV-d;Mini Car;Liquids
 Mini;ICEV-g;Mini Car;Gases
 Mini;ICEV-p;Mini Car;Liquids
-Mini;PHEV-p;Mini Car;Hybrid electric
-Mini;PHEV-d;Mini Car;Hybrid electric
+Mini;PHEV-e;;
+Mini;PHEV-c;;
 SUV;BEV;;
 SUV;FCEV;;
 SUV;HEV-p;;
 SUV;ICEV-d;;
 SUV;ICEV-g;;
 SUV;ICEV-p;;
-SUV;PHEV-p;;
-SUV;PHEV-d;;
+SUV;PHEV-e;;
+SUV;PHEV-c;;
 Small;BEV;Subcompact Car;BEV
 Small;FCEV;Subcompact Car;FCEV
-Small;HEV-p;;
+Small;HEV-p;Subcompact Car;Hybrid electric
 Small;ICEV-d;Subcompact Car;Liquids
 Small;ICEV-g;Subcompact Car;Gases
 Small;ICEV-p;Subcompact Car;Liquids
-Small;PHEV-p;Subcompact Car;Hybrid electric
-Small;PHEV-d;Subcompact Car;Hybrid electric
+Small;PHEV-e;;
+Small;PHEV-c;;
 Van;BEV;Van;BEV
 Van;FCEV;Van;FCEV
-Van;HEV-p;;
+Van;HEV-p;Van;Hybrid electric
 Van;ICEV-d;Van;Liquids
 Van;ICEV-g;Van;Gases
 Van;ICEV-p;Van;Liquids
-Van;PHEV-p;Van;Hybrid electric
-Van;PHEV-d;Van;Hybrid electric
+Van;PHEV-e;;
+Van;PHEV-c;;
 3_5t;BEV;Truck (0-3_5t);BEV
 3_5t;FCEV;Truck (0-3_5t);FCEV
 3_5t;HEV-d;;
 3_5t;ICEV-d;Truck (0-3_5t);Liquids
 3_5t;ICEV-g;Truck (0-3_5t);Gases
-3_5t;PHEV-d;;
+3_5t;PHEV-c;;
 7_5t;BEV;Truck (7_5t);BEV
 7_5t;FCEV;Truck (7_5t);FCEV
 7_5t;HEV-d;;
 7_5t;ICEV-d;Truck (7_5t);Liquids
 7_5t;ICEV-g;Truck (7_5t);Gases
-7_5t;PHEV-d;;
+7_5t;PHEV-c;;
 18t;BEV;Truck (18t);BEV
 18t;FCEV;Truck (18t);FCEV
 18t;HEV-d;;
 18t;ICEV-d;Truck (18t);Liquids
 18t;ICEV-g;Truck (18t);Gases
-18t;PHEV-d;;
+18t;PHEV-c;;
 26t;BEV;Truck (26t);BEV
 26t;FCEV;Truck (26t);FCEV
 26t;HEV-d;;
 26t;ICEV-d;Truck (26t);Liquids
 26t;ICEV-g;Truck (26t);Gases
-26t;PHEV-d;;
+26t;PHEV-c;;
 32t;BEV;;
 32t;FCEV;;
 32t;HEV-d;;
 32t;ICEV-d;;
 32t;ICEV-g;;
-32t;PHEV-d;;
+32t;PHEV-c;;
 40t;BEV;Truck (40t);BEV
 40t;FCEV;Truck (40t);FCEV
 40t;HEV-d;;
 40t;ICEV-d;Truck (40t);Liquids
 40t;ICEV-g;Truck (40t);Gases
-40t;PHEV-d;;
+40t;PHEV-c;;
 60t;BEV;;
 60t;FCEV;;
 60t;HEV-d;;
 60t;ICEV-d;;
 60t;ICEV-g;;
-60t;PHEV-d;;
+60t;PHEV-c;;
 Large;PHEV;Large Car and SUV;Hybrid electric
 Lower medium;PHEV;Compact Car;Hybrid electric
 Medium;PHEV;Midsize Car;Hybrid electric

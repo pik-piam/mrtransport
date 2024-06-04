@@ -12,6 +12,7 @@
 toolAggregateVehicleTypes <- function(...) {
 
   args <- list(...)
+  args$zeroWeight <- "allow"
 
   # save NAs (= no values) in weightMask
   weightMask <- !is.na(args[["x"]])

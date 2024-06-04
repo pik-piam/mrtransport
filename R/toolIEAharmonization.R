@@ -2,91 +2,116 @@
 #'
 #' We provide energy service trajectories. IEA energy balances have to be met and are not
 #' consistent with GCAM intensities and energy service trajectories.
-#' Therefore we have to adjust energy intensities.
+#' Therefore we have to adjust energy intensities and set the energy service demand to zero,
+#' where the IEA does not report the energy service demand
 #'
-#' @param enIntensity energy intensity
+#' @param ... data to harmonize: Either the energy intensity or the energy service demnand
 #' @importFrom rmndt magpie2dt
 #' @export
 
-toolIEAharmonization <- function(enIntensity) {
- fe <- te <- period <- isBunk <- flow <- . <- feIEA <- region <- univocalName <-
-   value <- enService <- harmFactor <- check <- technology  <-
-     variable <- unit <- NULL
+toolIEAharmonization <- function(...) {
+  fe <- te <- period <- isBunk <- flow <- . <- feIEA <- region <- univocalName <-
+    value <- enService <- harmFactor <- check <- technology  <-
+    variable <- unit <- NULL
 
- # Load IEA energy balances data for harmonization [unit: EJ]
- IEAbalMag <- calcOutput(type = "IO", subtype = "IEA_output", aggregate = FALSE)
- IEAbal <-  magpie2dt(IEAbalMag, datacols = c("se", "fe", "te", "mod", "flow"),
-                      regioncol = "region", yearcol = "period")
- # Select only fuel types that are represented in EDGE-T
- IEAbal <- IEAbal[fe %in% c("fedie", "fepet", "fegat", "feelt")]
- IEAbal <- IEAbal[te != "dot"]  #delete fedie.dot #Q: what is fedie.dot?
- setnames(IEAbal, "value", "feIEA")
+  data <- list(...)
+  harmonizationYears <- c(1990, 2005, 2010)
 
- # As freight and passenger are not seperated in IEA energy balances harmonize by "short-medium",
- # "MARBUNK" (eq. to shipping international) and "AVBUNK" (eq. to aviation international) and technology (te)
- IEAbal[, isBunk := ifelse(grepl("BUNK", flow), flow, "short-medium")]
- IEAbal[, c("se", "fe", "mod", "flow") := NULL]
- # sum fossil liquids and biofuel to tdlit, and biogas and natural gas to tdgat
- IEAbal[te %in% c("tdfospet", "tdfosdie", "tdbiopet", "tdbiodie"), te := "tdlit"]
- IEAbal[te %in% c("tdfosgat", "tdbiogat"), te := "tdgat"]
- IEAbal <- IEAbal[, .(feIEA = sum(feIEA)), by = .(region, period, te, isBunk)]
+  # Load IEA energy balances data for harmonization [unit: EJ]
+  IEAbalMag <- calcOutput(type = "IO", subtype = "IEA_output", aggregate = FALSE)
+  IEAbal <-  magpie2dt(IEAbalMag, datacols = c("se", "fe", "te", "mod", "flow"),
+                       regioncol = "region", yearcol = "period")
+  # Select only fuel types that are represented in EDGE-T
+  IEAbal <- IEAbal[fe %in% c("fedie", "fepet", "fegat", "feelt")]
+  IEAbal <- IEAbal[te != "dot"]  #delete fedie.dot #Q: what is fedie.dot?
+  setnames(IEAbal, "value", "feIEA")
 
- # Energy intensity is given in [MJ/vehkm] and energy service demand in [bn (t|p)km]
- # Read load factor and energy service demand to calculate final energy
- enServiceDemMag <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE,
-                               subtype = "histESdemand")
- enServiceDem <- magpie2dt(enServiceDemMag)
- ##enServiceDem[grepl("Truck.*", univocalName), univocalName := gsub("_", ".", univocalName)]
- enServiceDem <- enServiceDem[!univocalName %in% c("Cycle", "Walk")]
- setnames(enServiceDem, "value", "enService")
- enServiceDem <- enServiceDem[, c("region", "univocalName", "technology", "period", "enService")]
- loadFactorMag <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE,
-                             subtype = "loadFactor")
- loadFactor <- magpie2dt(loadFactorMag)
- loadFactor <- loadFactor[!univocalName %in% c("Cycle", "Walk")]
- setnames(loadFactor, "value", "loadFactor")
- loadFactor <- loadFactor[, c("region", "univocalName", "technology", "period", "loadFactor")]
- enServiceDem <- merge.data.table(enServiceDem, loadFactor, by = c("region", "univocalName", "technology", "period"))
+  # As freight and passenger are not seperated in IEA energy balances harmonize by "short-medium",
+  # "MARBUNK" (eq. to shipping international) and "AVBUNK" (eq. to aviation international) and technology (te)
+  IEAbal[, isBunk := ifelse(grepl("BUNK", flow), flow, "short-medium")]
+  IEAbal[, c("se", "fe", "mod", "flow") := NULL]
+  # sum fossil liquids and biofuel to tdlit, and biogas and natural gas to tdgat
+  IEAbal[te %in% c("tdfospet", "tdfosdie", "tdbiopet", "tdbiodie"), te := "tdlit"]
+  IEAbal[te %in% c("tdfosgat", "tdbiogat"), te := "tdgat"]
+  IEAbal <- IEAbal[, .(feIEA = sum(feIEA)), by = .(region, period, te, isBunk)]
 
- # merge load factor and energy service demand with energy intensity
- enIntensity <- merge.data.table(enIntensity, enServiceDem,  by = c("region", "univocalName", "technology", "period"),
-                                 all.x = TRUE)
- # Calculate final energy in EJ
- MJtoEJ <- 1e-12
- bn <- 1e9
- enIntensity[, fe := (value / loadFactor) * enService * bn * MJtoEJ]
- #Apply IEA categories
- enIntensity[technology %in% c("BEV", "Electric"), te := "tdelt"]
- enIntensity[technology == "Gases", te := "tdgat"]
- #all others are handled as liquids (including hybrid electric)
- enIntensity[is.na(te), te := "tdlit"]
- enIntensity[, isBunk := ifelse(univocalName == "International Aviation", "AVBUNK", NA)]
- enIntensity[, isBunk := ifelse(univocalName == "International Ship", "MARBUNK", isBunk)]
- enIntensity[, isBunk := ifelse(is.na(isBunk), "short-medium", isBunk)]
- enIntensity[, fe := sum(fe), by = c("region", "isBunk", "te", "period")]
+  # If energy intensity is transferred -> harmonize energy intensity to IEA balances in 2005
+  if (!is.null(data$enIntensity)) {
+    enIntensity <- copy(data$enIntensity)
+    # Map energy intensity on IEA data
+    enIntensity[technology %in% c("BEV", "Electric"), te := "tdelt"]
+    enIntensity[technology == "Gases", te := "tdgat"]
+    # All others are handled as liquids (including hybrid electric)
+    enIntensity[is.na(te), te := "tdlit"]
+    enIntensity[, isBunk := ifelse(univocalName == "International Aviation", "AVBUNK", NA)]
+    enIntensity[, isBunk := ifelse(univocalName == "International Ship", "MARBUNK", isBunk)]
+    enIntensity[, isBunk := ifelse(is.na(isBunk), "short-medium", isBunk)]
+    # Energy intensity is given in [MJ/vehkm] and energy service demand in [bn (t|p)km]
+    # Read load factor and energy service demand to calculate final energy
+    enServiceDemMag <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE,
+                                  subtype = "histESdemand")
+    enServiceDem <- magpie2dt(enServiceDemMag)
+    enServiceDem <- enServiceDem[!univocalName %in% c("Cycle", "Walk")]
+    setnames(enServiceDem, "value", "enService")
+    enServiceDem <- enServiceDem[, c("region", "univocalName", "technology", "period", "enService")]
+    loadFactorMag <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE,
+                                subtype = "loadFactor")
+    loadFactor <- magpie2dt(loadFactorMag)
+    loadFactor <- loadFactor[!univocalName %in% c("Cycle", "Walk")]
+    setnames(loadFactor, "value", "loadFactor")
+    loadFactor <- loadFactor[, c("region", "univocalName", "technology", "period", "loadFactor")]
+    enServiceDem <- merge.data.table(enServiceDem, loadFactor,
+                                     by = c("region", "univocalName", "technology", "period"))
+    # merge load factor and energy service demand with energy intensity
+    harmFactor <- merge.data.table(enIntensity[period %in% harmonizationYears],
+                                    enServiceDem[period %in% harmonizationYears],
+                                   by = c("region", "univocalName", "technology", "period"))
+    # Calculate final energy in EJ
+    MJtoEJ <- 1e-12
+    bn <- 1e9
+    harmFactor[, fe := (value / loadFactor) * enService * bn * MJtoEJ]
+    harmFactor[, fe := sum(fe), by = c("region", "isBunk", "te", "period")]
+    # Merge enery intensity and actual final energy with IEA data
+    harmFactor <- merge.data.table(harmFactor, IEAbal[period %in% harmonizationYears],
+                                   by = c("region", "isBunk", "te", "period"), all.x = TRUE)
+    # For some modes and technologies the IEA fe value is zero.
+    # The energy intensity is kept, but the energy service demand is set to zero
+    harmFactor[, harmFactor := ifelse(feIEA == 0 | fe == 0, 1, feIEA / fe)]
+    harmFactor <- unique(harmFactor[, .(region, period, isBunk, te, harmFactor, feIEA)])
 
- #Merge enery intensity and actual final energy with IEA data
- enIntensity <- merge.data.table(enIntensity, IEAbal, by = c("region", "isBunk", "te", "period"), all.x = TRUE)
- # Year for hamonization is set to 2005 (important for functionality of REMIND)
- harmFactor <- enIntensity[period == 2005]
- #For some modes and technologies the IEA fe value is zero (and or our value is zero) -> omitted in the harmonization
- #Note that e.g. NG busses in AUT do have a demand regarding to the IEA data, but in our data there is no demand
- #This leads to a small deviation from our final energy data vs IEA fe data after the harmonization process that
- # is checked and in the end and accepted if not too large
- harmFactor[, harmFactor := ifelse(feIEA == 0 | fe == 0, 0, feIEA / fe)]
- # Harmonization factor of 2005 is taken for all years (To do: test if harmonization in 2005, 2010 and 2015 would be
- # better)
- harmFactor <- unique(harmFactor[, .(region, isBunk, te, harmFactor)])
- enIntensity <- merge(enIntensity, harmFactor, by = c("region", "isBunk", "te"), all.x = TRUE)
- enIntensity[, value := value * harmFactor]
- #Check wether hamonization worked
- enIntensity[, check := (value / loadFactor) * enService * bn * MJtoEJ]
- enIntensity[, check := sum(check), by = c("region", "isBunk", "te", "period")][, diff := check - feIEA]
- if (sum(enIntensity[period == 2005, diff > 1e-3])) {
-   stop("There is a problem regarding the Harmonization of the energy intensity data to match IEA energy balances
+    harmFactor <- approx_dt(harmFactor, unique(data$enIntensity$period), "period", "harmFactor",
+                            idxcols = c("region", "isBunk", "te"), extrapolate = TRUE)
+    enIntensity <- merge(enIntensity, harmFactor, by = c("region", "period", "isBunk", "te"), all.x = TRUE)
+    enIntensity[, value := value * harmFactor]
+    # Check whether hamonization worked
+    # For some regions the IEA reports final energy gases, where our input data features no energy service demand (e.g. Gases in JPN)
+    check <- merge.data.table(enIntensity[period %in% harmonizationYears],
+                                   enServiceDem[period %in% harmonizationYears],  by = c("region", "univocalName", "technology", "period"))
+    check[, check := (value / loadFactor) * enService * bn * MJtoEJ]
+    check[, check := sum(check), by = c("region", "isBunk", "te", "period")][, diff := abs(check - feIEA)]
+
+    if (nrow(check[diff > 1e-2]) > 0) {
+      stop("There is a problem regarding the Harmonization of the energy intensity data to match IEA energy balances
         final energy")
- }
- enIntensity <- enIntensity[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
+    }
+    enIntensity <- enIntensity[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
 
- return(enIntensity)
+    return(enIntensity)
+
+  } else if (!is.null(data$esDemand)) {
+    # If energy service demand is transferred -> Set energy service demand to zero, where fe in IEA balances is zero
+    # Apply IEA categories
+    esDemand <- data$esDemand
+    esDemand[technology %in% c("BEV", "Electric"), te := "tdelt"]
+    esDemand[technology == "Gases", te := "tdgat"]
+    # All others are handled as liquids (including hybrid electric)
+    esDemand[is.na(te), te := "tdlit"]
+    esDemand[, isBunk := ifelse(univocalName == "International Aviation", "AVBUNK", NA)]
+    esDemand[, isBunk := ifelse(univocalName == "International Ship", "MARBUNK", isBunk)]
+    esDemand[, isBunk := ifelse(is.na(isBunk), "short-medium", isBunk)]
+    esDemand <- merge.data.table(esDemand, IEAbal, by = c("region", "period", "isBunk", "te"), all.x = TRUE)
+    esDemand[feIEA == 0, value := 0][, c("isBunk", "te", "feIEA") := NULL]
+
+    return(esDemand)
+  }
 }

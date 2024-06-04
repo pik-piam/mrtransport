@@ -10,24 +10,24 @@
 #' @importFrom rmndt magpie2dt
 #' @export
 
-toolPrepareEUROSTAT <- function(x) {
-  region <- EUROSTATsector <- period     <-
+toolPrepareEurostatEnergyCountryDataSheets <- function(x) {
+  region <- Eurostatsector <- period     <-
    technology <- univocalName <- variable <- unit <- period <- NULL
 
-  mapfile <- system.file("extdata", "mappingEUROSTATtoEDGET.csv",
+  mapfile <- system.file("extdata", "mappingEurostatToEDGET.csv",
    package = "mrtransport", mustWork = TRUE)
-  mappingEUROSTAT <- fread(mapfile, skip = 0)
-  setkey(mappingEUROSTAT, EUROSTATsector)
+  mappingEurostat <- fread(mapfile, skip = 0)
+  setkey(mappingEurostat, Eurostatsector)
   dt <- magpie2dt(x)
-  setkey(dt, region, EUROSTATsector, period)
+  setkey(dt, region, Eurostatsector, period)
 
-  dt <- merge.data.table(dt, mappingEUROSTAT, all.x = TRUE, allow.cartesian = TRUE)
+  dt <- merge.data.table(dt, mappingEurostat, all.x = TRUE, allow.cartesian = TRUE)
 
   dt <- dt[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
   setkey(dt, region, period, univocalName, technology, variable, unit)
 
   if (anyNA(dt) == TRUE) {
-    stop("EUROSTAT data contains NAs")
+    stop("Eurostat data contains NAs")
   }
   return(dt)
 }

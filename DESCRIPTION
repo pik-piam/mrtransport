@@ -1,9 +1,10 @@
 Package: mrtransport
 Title: Input data generation for the EDGE-Transport model
-Version: 0.4.0
+Version: 0.4.0.9005
 Authors@R: c(
     person("Johanna", "Hoppe", , "johanna.hoppe@pik-potsdam.de", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0004-6753-5090")),
+    person("Jarusch", "Muessel", "jarusch.muessel@pik-potsdam.de", role = c("aut")),
     person("Alois", "Dirnaichner", role = "aut"))
 Description: The mrtransport package contains data preprocessing for the
     EDGE-Transport model.
@@ -11,7 +12,7 @@ License: LGPL-3 | file LICENSE
 URL: https://github.com/pik-piam/mrtransport
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Suggests: 
     covr
 Imports:
@@ -19,12 +20,9 @@ Imports:
     madrat,
     rmndt,
     stringr,
-    mrremind,
     readxl,
     zoo,
     magrittr,
-    quitte
-Depends: 
-    R (>= 3.1),
-    data.table (>= 1.11.0)
-Date: 2024-04-18
+    quitte,
+    data.table
+Date: 2024-05-25

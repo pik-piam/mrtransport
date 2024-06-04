@@ -4,7 +4,6 @@
 #' @param IEAharm switch IEA harmonization of energy intensity on and off
 #' @param SSPscen shared socioeconomic pathway
 #' @import data.table
-#' @import mrremind
 #' @importFrom rmndt approx_dt
 #' @importFrom madrat readSource calcOutput
 
@@ -57,7 +56,6 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
     "Truck (7_5t)",
     "Van"
   )
-
 
   # decisionTree.csv contains all possible branches of the decision tree
   decisionTree <- fread(system.file("extdata/decisionTree.csv", package = "mrtransport", mustWork = TRUE))
@@ -118,6 +116,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       enIntGCAM <- toolPrepareGCAM(readSource("GCAM", subtype), subtype)
       enIntUCD <- toolPrepareUCD(readSource("UCD", subtype), subtype)
       enIntTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
+      countriesTRACCS <- unique(enIntTRACCS$region)
       enIntPSI <- toolPreparePSI(readSource("PSI", subtype))
 
       # Inter- and extrapolate all data to model input data years
@@ -126,101 +125,15 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       data <- lapply(data, approx_dt, highResYears, "period", "value",
                      c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
 
-      # merge.data.table data
-      # TRACCS>PSI>GCAM
-      # 1: TRACCS data
-      # Used parts of TRACCS energy Intensity: TRACCS data is used completely except for two wheelers
-      countriesTRACCS <- unique(data$enIntTRACCS$region)
-
-      # 2: GCAM data
-      # Used parts of the GCAM energy Intensity:
-      # Conventional cars (Liquids, NG) in non-TRACCS countries
-      energyIntensityRawGCAMconventionalCarsnonTRACCS <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_4W &
-                                                         technology %in% c("Liquids", "Gases") &
-                                                         !region %in% countriesTRACCS]
-      # All other data for non-TRACCS countries except for Trucks
-      energyIntensityRawGCAMnonCarsnonTRACCS <- data$enIntGCAM[!univocalName %in% filterEntries$trn_pass_road_LDV_4W &
-                                                                 !univocalName %in% filterEntries$trn_freight_road &
-                                                                 !region %in% countriesTRACCS]
-      # Energy Intensity data for Freight Rail, Passenger Rail, HSR, Domestic Aviation, International Aviation,
-      # Domestic Shipping, International Shipping is not provided by TRACCS. Hence GCAM data is used for all countries
-      energyIntensityRawGCAMmissingTRACCScat <- data$enIntGCAM[univocalName %in% c("Freight Rail", "Passenger Rail",
-                                                                                   "HSR", "Domestic Aviation",
-                                                                                   "International Aviation",
-                                                                                   "Domestic Ship",
-                                                                                   "International Ship") &
-                                                                 region %in% countriesTRACCS]
-      # Alternative technologies for motorcycles are missing in the TRACCS database and are taken from GCAM.
-      # Furthermore, in TRACCS energy intensity for motorcycles and mopeds are only reported until 2010
-      # and would be constant when interpolating later years.
-      # Hence we use GCAM data for mopeds and motorcyclse adn there alternatives also for TRACCS countries
-      energyIntensityRawGCAM2WheelersTRACCSreg <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_2W &
-                                                                   region %in% countriesTRACCS]
-
-
-      #3: PSI data
-      # Used for Trucks in non-TRACCS countries
-      energyIntensityRawPSITrucks <- data$enIntPSI[univocalName %in% filterEntries$trn_freight_road
-                                                   & !region %in% countriesTRACCS]
-      # TRACCS data does not include NG Truck (7.5t), Truck (18t), Truck (26t), Truck (40t) -> data is taken from PSI
-      # TRACCS data does not include NG Truck (7_5t), Truck (18t), Truck (26t), Truck (40t) -> data is taken from PSI
-      energyIntensityRawPSItrucksNGTRACCSreg <- data$enIntPSI[univocalName %in% c("Truck (7_5t)", "Truck (18t)",
-                                                              "Truck (26t)", "Truck (40t)") &
-                                                              technology == "Gases" & region %in% countriesTRACCS]
-      # Used for alternative Cars (BEV,FCEV,HEV) in TRACCS countries
-      energyIntensityRawPSIalternativeTechTRACCSreg <- data$enIntPSI[technology %in% c("BEV", "FCEV", "Hybrid electric")
-                                                                     & region %in% countriesTRACCS]
-      # Use only data for vehicle types that are listed in the TRACCS data base
-      TRACCSVehTypes <- copy(data$enIntTRACCS)
-      TRACCSVehTypes <- unique(TRACCSVehTypes[, c("value", "technology") := NULL])
-      # Apply only on the vehicle types that are in general available from the PSI dataset
-      # (2 Wheelers and Busses are not provided by PSI)
-      TRACCSVehTypes <- TRACCSVehTypes[univocalName %in% unique(energyIntensityRawPSIalternativeTechTRACCSreg
-                                                                $univocalName)]
-      energyIntensityRawPSIalternativeTechTRACCSreg <- merge.data.table(energyIntensityRawPSIalternativeTechTRACCSreg,
-                                                                        TRACCSVehTypes, all.y = TRUE,
-                                                                        by = c("region", "univocalName",
-                                                                               "variable", "unit", "period"))
-      # Used for alternative Cars (BEV,FCEV,HEV) in non-TRACCS countries
-      # For non TRACCS iso countries the available vehicle types differ.
-      # Use the additional data on alternative Cars only for the existing vehicle types in GCAM
-      energyIntensityRawPSIalternativeCarsnonTRACCS <- data$enIntPSI[technology %in% c("BEV", "FCEV",
-                                                                                       "Hybrid electric") &
-                                                                       !region %in% countriesTRACCS]
-      # Create structure for GCAM vehicle types and alternative tech options
-      GCAMVehTypes <- energyIntensityRawGCAMconventionalCarsnonTRACCS[univocalName
-                                                                      %in% filterEntries$trn_pass_road_LDV_4W &
-                                                                        !region %in% countriesTRACCS]
-      GCAMVehTypes <- unique(GCAMVehTypes[, c("value", "technology", "variable", "unit") := NULL])[, altTech := 1]
-      AltTechOpt <- data.table(technology = c("BEV", "FCEV", "Hybrid electric"), altTech = c(1, 1, 1))
-      GCAMVehTypes <- merge.data.table(GCAMVehTypes, AltTechOpt, by = "altTech", allow.cartesian = TRUE)
-      GCAMVehTypes[, altTech := NULL]
-      energyIntensityRawPSIalternativeCarsnonTRACCS <-
-        merge.data.table(energyIntensityRawPSIalternativeCarsnonTRACCS,
-                         GCAMVehTypes, all.y = TRUE, by = c("region",
-                                                            "period",
-                                                            "univocalName",
-                                                            "technology"))
-      # Large Car is missing for some nonTRACCS regions, filled in toolAdjustEnergyIntensity
-      # -> NAs are introduced for unit & variable
-      energyIntensityRawPSIalternativeCarsnonTRACCS[, variable := "Energy intensity"][, unit := "MJ/vehkm"]
-
-      energyIntensityRaw <- rbind(data$enIntTRACCS[!univocalName %in% filterEntries$trn_pass_road_LDV_2W],
-                                  energyIntensityRawGCAMconventionalCarsnonTRACCS,
-                                  energyIntensityRawGCAMmissingTRACCScat,
-                                  energyIntensityRawGCAMnonCarsnonTRACCS,
-                                  energyIntensityRawGCAM2WheelersTRACCSreg,
-                                  energyIntensityRawPSITrucks,
-                                  energyIntensityRawPSItrucksNGTRACCSreg,
-                                  energyIntensityRawPSIalternativeTechTRACCSreg,
-                                  energyIntensityRawPSIalternativeCarsnonTRACCS)
+      energyIntensityRaw <- toolMergeEnergyIntensity(data, filterEntries, countriesTRACCS)
 
       # Include data adjustments: fill gaps and correct data if necessary based on projects, other sources and own
       # assumptions
       energyIntensity <- toolAdjustEnergyIntensity(energyIntensityRaw, countriesTRACCS, data$enIntPSI, filterEntries)
+
       # Harmonize energy intensity data in order to match IEA final energy values
       if (IEAharm == TRUE) {
-        energyIntensity <- mrtransport::toolIEAharmonization(energyIntensity)
+        energyIntensity <- mrtransport::toolIEAharmonization(enIntensity = energyIntensity)
       }
 
       # Add energy intensity of zero for active modes
@@ -235,7 +148,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                          | (univocalName %in% lowResUnivocalNames
                                             & period %in% lowResYears)]
 
-      setkey(energyIntensity,  region, period, univocalName, technology, variable, unit)
+      setkey(energyIntensity, region, period, univocalName, technology, variable, unit)
 
       # Check whether data is complete
       check <- merge.data.table(completeDataSet, energyIntensity, all = TRUE)
@@ -261,7 +174,6 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       description <- "Annual mileage on technology level. Sources: TRACCS, UCD"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
       weight <- weight[, , paste0("gdp_", SSPscen)]
-
 
       # calc different source data
       AMTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
@@ -313,73 +225,46 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
     },
     "histESdemand" = {
       unit <- "billion (p|t)km/yr"
-      description <- "Energy service demand on technology level. Sources: GCAM, TRACCS, EUROSTAT"
+      description <- "Energy service demand on technology level. Sources: GCAM, TRACCS, Eurostat"
       weight <- NULL
 
       # calc different source data
       esDemandGCAM <- toolPrepareGCAM(readSource("GCAM", subtype), subtype)
       esDemandTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
-      feDemandEUROSTAT <- toolPrepareEUROSTAT(readSource("EUROSTAT", "feDemand"))
+      countriesTRACCS <- unique(esDemandTRACCS$region)
+      feDemandEurostat <- toolPrepareEurostatEnergyCountryDataSheets(
+        readSource("EurostatEnergyCountryDataSheets", "feDemand"))
       enIntensity <- magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "energyIntensity",
                                           IEAharm = FALSE, warnNA = FALSE, aggregate = FALSE))
-      enIntensity[, unit := NULL][, variable := NULL]
       loadFactor <- magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "loadFactor",
                                          warnNA = FALSE, aggregate = FALSE))
-      loadFactor[, unit := NULL][, variable := NULL]
 
       # Inter- and extrapolate all data to model input data years
-      data <- list(esDemandGCAM = esDemandGCAM, esDemandTRACCS = esDemandTRACCS, feDemandEUROSTAT = feDemandEUROSTAT)
+      data <- list(esDemandGCAM     = esDemandGCAM,
+                   esDemandTRACCS   = esDemandTRACCS,
+                   feDemandEurostat = feDemandEurostat,
+                   enIntensity      = enIntensity,
+                   loadFactor       = loadFactor)
+
       # The historical energy service demand is only used for years <= 2010, future years will be calculated by demand
       # regression in the model
       data <- lapply(data, approx_dt, highResYears[highResYears <= 2010], "period", "value",
                      c("region", "univocalName", "technology",
                        "variable", "unit"), extrapolate = TRUE)
 
-      # Calc Energy Service demand based on FE data from EUROSTAT for bunkers
-      setnames(enIntensity, "value", "enIntensity")
-      setnames(loadFactor, "value", "loadFactor")
-      esDemandEUROSTAT <- merge.data.table(data$feDemandEUROSTAT, enIntensity,
-                                           by = c("region", "univocalName", "technology", "period"))
-      esDemandEUROSTAT <- merge.data.table(esDemandEUROSTAT, loadFactor, by = c("region", "period",
-                                                                                "univocalName", "technology"))
-      toBillion <- 1e-09
-      esDemandEUROSTAT[, value := (value / enIntensity) * loadFactor * toBillion][, c("enIntensity",
-                                                                                      "loadFactor") := NULL]
-      esDemandEUROSTAT[univocalName %in% c(filterEntries$trn_pass, "International Aviation"), unit := "billion pkm/yr"]
-      esDemandEUROSTAT[univocalName %in% c(filterEntries$trn_freight, "International Ship"), unit := "billion tkm/yr"]
-      esDemandEUROSTAT[, variable := "ES"]
-
-      # merge.data.table data
-      # TRACCS data is used completely
-      # EUROSTAT data is used completely
-      # GCAM data is used for regions that are not included in TRACCS, bunkers for regions that are not included
-      # in EUROSTAT (non EU-27) and modes that are not included in TRACCS
-      # CHE, GBR, ISL, MKD, NOR, TUR are included in TRACCS but not in EUROSTAT
-      missingBunkers <- data$esDemandGCAM[region %in% c("CHE", "GBR", "ISL", "MKD", "NOR", "TUR") &
-                                            univocalName %in% c("International Aviation", "Domestic Aviation",
-                                                                "Domestic Ship", "International Ship")]
-      # GCAM is used for modes not provided by TRACCS for TRACCS regions. 4 Wheelers must be excluded as GCAM
-      # uses different vehicle types and bunkers are used from EUROSTAT
-      # For some reason energy service demand for Truck(0-3_5t)/Light commercial vehicles is not reported by TRACCS
-      # -> also taken from GCAM
-      missingModes <- data$esDemandGCAM[region %in% unique(data$esDemandTRACCS$region) &
-                                          !univocalName %in% unique(data$esDemandTRACCS$univocalName) &
-                                          !univocalName %in% c("International Aviation", "Domestic Aviation",
-                                                               "Domestic Ship", "International Ship") &
-                                          !univocalName %in% filterEntries$trn_pass_road_LDV_4W]
-      esDemandRaw <- rbind(
-        data$esDemandTRACCS, esDemandEUROSTAT, data$esDemandGCAM[!(region %in% unique(data$esDemandTRACCS$region))],
-        missingBunkers, missingModes
-      )
+      esDemandRaw <- toolMergeHistESdemand(data, filterEntries, countriesTRACCS)
 
       esDemand <- toolAdjustEsDemand(esDemandRaw, ISOcountriesMap, completeDataSet, filterEntries)
 
+      # Harmonize energy intensity data in order to match IEA final energy values
+      if (IEAharm == TRUE) {
+        esDemand <- mrtransport::toolIEAharmonization(esDemand = esDemand)
+      }
+
       esDemand <- esDemand[, c("region", "period", "univocalName", "technology",
                                "variable", "unit", "value")]
-      esDemand <- esDemand[(univocalName %in% highResUnivocalNames
-                            & period %in% highResYears)
-                           | (univocalName %in% lowResUnivocalNames
-                              & period %in% lowResYears)]
+      esDemand <- esDemand[(univocalName %in% highResUnivocalNames & period %in% highResYears)
+                           | (univocalName %in% lowResUnivocalNames & period %in% lowResYears)]
 
       setkey(esDemand,  region, period, univocalName, technology,
              variable, unit)
@@ -419,7 +304,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                        "variable", "unit"), extrapolate = TRUE)
 
       # merge.data.table data
-      # EUROSTAT>TRACCS>GCAM
+      # Eurostat>TRACCS>GCAM
       #- EU data is used from TRACCS, rest is filled with GCAM
       countriesTRACCS <- unique(data$LFTRACCS$region)
       loadFactorRaw <- rbind(data$LFTRACCS, data$LFGCAM[!(region %in% countriesTRACCS
@@ -471,27 +356,33 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       CAPEXUCD <- toolPrepareUCD(readSource("UCD", "CAPEX"), "CAPEX")
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
       CAPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
+      # Operating subsidies for Freight Rail, Passenger Rail, HSR (+ Bus not used here) are partially attributed to CAPEX
+      # otherwise negative values in OPEX
+      operatingSubsidyUCD <- toolPrepareUCD(readSource("UCD", "OperatingSubsidies"), "OperatingSubsidies")
+      operatingSubsidyUCD <- operatingSubsidyUCD[univocalName == "Bus"]
 
       # Inter- and extrapolate all data to model input data years
-      data <- list(CAPEXPSI = CAPEXPSI, CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD)
+      data <- list(CAPEXPSI = CAPEXPSI, CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD, operatingSubsidyUCD = operatingSubsidyUCD)
       data <- lapply(data, approx_dt, highResYears, "period", "value",
                      c("region", "univocalName", "technology",
                        "variable", "unit"), extrapolate = TRUE)
 
       # Use only for cars (trucks and busses are given combined with non fuel OPEX)
-      CAPEXUCD4W <- data$CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_4W]
+      # -> Filter out purchase costs as they are taken from PSI
+      CAPEXUCD4W <- data$CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_4W
+                                  & !variable == "Capital costs (purchase)"]
+
+      # Take purchase costs from PSI but keep only the vehicle types present in UCD for non EUR regions
+      vehTypeFilter <- unique(CAPEXUCD4W[, c("region", "univocalName")])
+      PSIpurchaseCosts <- merge(data$CAPEXPSI, vehTypeFilter, by = c("region", "univocalName"), all.y = TRUE)
 
       # CAPEX for Busses and Trucks given combined with non-fuel OPEX in the UCD data
       CAPEXcombinedUCD <- data$CAPEXcombinedUCD
       CAPEXcombinedUCD <- CAPEXcombinedUCD[univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus"]
 
       # merge.data.table data
-      # PSI vehicle purchase costs are used for LDV 4 Wheelers in EUR
-      PSIcarsEUR <- data$CAPEXPSI[region %in% ISOcountriesMap[regionCode12 == "EUR"]$region]
       # PSI CAPEX for 4 Wheelers feature only purchase costs - take other capital costs from UCD for EUR regions
-      CAPEXraw <- rbind(PSIcarsEUR, CAPEXUCD4W[!(region %in% ISOcountriesMap[regionCode12 == "EUR"]$region) |
-                                                 (region %in% ISOcountriesMap[regionCode12 == "EUR"]$region
-                                                  & !variable == "Capital costs (purchase)")], CAPEXcombinedUCD)
+      CAPEXraw <- rbind(PSIpurchaseCosts, CAPEXUCD4W, CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
       GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
                                 unit = "constant 2005 US$MER") |> time_interpolate(highResYears)
@@ -516,6 +407,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       completeDataCAPFleet <- completeDataSet[univocalName %in% filterEntries$trn_freight_road
                                               | univocalName %in% filterEntries$trn_pass_road_LDV_4W |
                                                 univocalName == "Bus"]
+
       # Check whether data is complete
       check <- merge.data.table(completeDataCAPFleet, CAPEX, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
@@ -544,14 +436,17 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       nonFuelOPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
       nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[univocalName %in% filterEntries$trn_freight_road
                                                        | univocalName == "Bus"]
+      # Operating subsidies for Freight Rail, Passenger Rail, HSR (+ Bus not used here) are partially
+      operatingSubsidyUCD <- toolPrepareUCD(readSource("UCD", "OperatingSubsidies"), "OperatingSubsidies")
+      operatingSubsidyUCD <- operatingSubsidyUCD[univocalName == "Bus"]
 
       # Inter- and extrapolate all data to model input data years
-      data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD, nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD)
+      data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD, nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD, operatingSubsidyUCD = operatingSubsidyUCD)
       data <- lapply(data, approx_dt, highResYears, "period", "value",
                      c("region", "univocalName", "technology",
                        "variable", "unit"), extrapolate = TRUE)
 
-      nonFuelOPEXraw <- rbind(data$nonFuelOPEXUCD, data$nonFuelOPEXcombinedUCD)
+      nonFuelOPEXraw <- rbind(data$nonFuelOPEXUCD, data$nonFuelOPEXcombinedUCD, data$operatingSubsidyUCD)
       nonFuelOPEX <- toolAdjustNonFuelOPEXtrackedFleet(nonFuelOPEXraw, highResYears, completeDataSet, filterEntries)
 
       # nonFuelOPEXtrackedFleet data only includes data for LDV 4 Wheelers, Trucks and Busses
@@ -595,18 +490,23 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       weight <- weight[, , paste0("gdp_", SSPscen)]
 
       # read UCD CAPEX given in US$2005/vkt and US$2005/veh
+      # non fuel OPEX include Domestic Aviation, International Aviation, Moped, Motorcycle (50-250cc), Motorcycle (>250cc) (+4W not used here)
       CAPEXUCD <- toolPrepareUCD(readSource("UCD", "CAPEX"), "CAPEX")
+      CAPEXUCD <- CAPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
+      # combined CAPEX and OPEX include Domestic Ship, Freight Rail, HSR, International Ship, Passenger Rail
       CAPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
+      CAPEXcombinedUCD <- CAPEXcombinedUCD[!(univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus")]
+      # Operating subsidies for Freight Rail, Passenger Rail, HSR (+ Bus not used here) are partially
+      operatingSubsidyUCD <- toolPrepareUCD(readSource("UCD", "OperatingSubsidies"), "OperatingSubsidies")
+      operatingSubsidyUCD <- operatingSubsidyUCD[!(univocalName == "Bus")]
 
       # Inter- and extrapolate all data to model input data years
-      data <- list(CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD)
+      data <- list(CAPEXUCD = CAPEXUCD, CAPEXcombinedUCD = CAPEXcombinedUCD, operatingSubsidyUCD = operatingSubsidyUCD)
       data <- lapply(data, approx_dt, lowResYears, "period", "value",
                      c("region", "univocalName", "technology",
                        "variable", "unit"), extrapolate = TRUE)
 
-      # Includes aviation and two wheelers (used for all vehicle types other than 4 wheelers)
-      CAPEXUCD <- data$CAPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # Data for two wheelers is given in US$2005/veh and needs to be converted to US$2005/vehkm
       # with the help of annual mileage
       AMUCD2W <- toolPrepareUCD(readSource("UCD", "annualMileage"), "annualMileage")
@@ -616,18 +516,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                            extrapolate = TRUE)
       setnames(AMUCD2W, "value", "annualMileage")
 
-      CAPEXUCD <- merge.data.table(CAPEXUCD, AMUCD2W, by = c("region", "univocalName", "technology", "period"),
+      CAPEXUCD <- merge.data.table(data$CAPEXUCD, AMUCD2W, by = c("region", "univocalName", "technology", "period"),
                                    all.x = TRUE)
       CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := value / annualMileage]
       CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2005/vehkm"][, annualMileage := NULL]
 
-      # CAPEX given combined with non-fuel OPEX in the UCD data for shipping and rail (all other than busses
-      # and trucks)
-      CAPEXcombinedUCD <- data$CAPEXcombinedUCD
-      CAPEXcombinedUCD <- CAPEXcombinedUCD[!(univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus")]
-
       # merge.data.table data
-      CAPEXraw <- rbind(CAPEXUCD, CAPEXcombinedUCD)
+      CAPEXraw <- rbind(CAPEXUCD, data$CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
       GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
                                 unit = "constant 2005 US$MER") |> time_interpolate(lowResYears)
@@ -654,6 +549,9 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       # Check whether data is complete
       check <- merge.data.table(completeDataCAP, CAPEX, all = TRUE)
+      byCols <- names(check)
+      byCols <- byCols[!byCols %in% c("value", "variable")]
+      check[, sum := sum(value), by = eval(byCols)]
       if (nrow(check[is.na(value)]) > 0) {
         stop("CAPEX input data for vehicle types that do not feature fleet tracking is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
@@ -666,6 +564,8 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
              Data does not have the same variable type.")
       } else if (anyNA(CAPEX) == TRUE) {
         stop("CAPEX data for vehicle types that do not feature fleet tracking includes NAs")
+      } else if (nrow(check[sum < 0]) > 0) {
+        stop("Aggregated CAPEX for vehicle types that do not feature fleet tracking includes negative values")
       }
 
       quitteobj <- CAPEX
@@ -676,22 +576,27 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                      (other than cars, trucks, busses). Sources: UCD, PSI"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(lowResYears)
       weight <- weight[, , paste0("gdp_", SSPscen)]
-
+      # read UCD non fuel given in US$2005/vkt and US$2005/veh/yr
+      # non fuel OPEX include Domestic Aviation, International Aviation, Moped, Motorcycle (50-250cc), Motorcycle (>250cc) (+4W not used here)
       nonFuelOPEXUCD <- toolPrepareUCD(readSource("UCD", "nonFuelOPEX"), "nonFuelOPEX")
       nonFuelOPEXUCD <- nonFuelOPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
+      # combined CAPEX and OPEX include Domestic Ship, Freight Rail, HSR, International Ship, Passenger Rail
       nonFuelOPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
       nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!univocalName %in% c(filterEntries$trn_freight_road,
                                                                             filterEntries$trn_pass_road_LDV_4W,
                                                                             "Bus")]
+      # Operating subsidies for Freight Rail, Passenger Rail, HSR (+ Bus not used here)
+      operatingSubsidyUCD <- toolPrepareUCD(readSource("UCD", "OperatingSubsidies"), "OperatingSubsidies")
+      operatingSubsidyUCD <- operatingSubsidyUCD[!(univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus")]
 
       # Inter- and extrapolate all data to model input data years
-      data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD, nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD)
+      data <- list(nonFuelOPEXUCD = nonFuelOPEXUCD,
+                   nonFuelOPEXcombinedUCD = nonFuelOPEXcombinedUCD,
+                   operatingSubsidyUCD = operatingSubsidyUCD)
       data <- lapply(data, approx_dt, lowResYears, "period", "value",
                      c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
 
-      # Includes aviation and two wheelers (used for all vehicle types other than 4 wheelers)
-      nonFuelOPEXUCD <- data$nonFuelOPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # Data for two wheelers is given in US$2005/veh and needs to be converted to US$2005/vehkm
       # with the help of annual mileage
       AMUCD2W <- toolPrepareUCD(readSource("UCD", "annualMileage"), "annualMileage")
@@ -700,21 +605,15 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       AMUCD2W <- approx_dt(AMUCD2W, lowResYears, "period", "value", c("region", "univocalName", "technology"),
                            extrapolate = TRUE)
       setnames(AMUCD2W, "value", "annualMileage")
-      nonFuelOPEXUCD <- merge.data.table(nonFuelOPEXUCD, AMUCD2W, by = c("region", "period",
+      nonFuelOPEXUCD <- merge.data.table(data$nonFuelOPEXUCD, AMUCD2W, by = c("region", "period",
                                                                          "univocalName", "technology"),
                                          all.x = TRUE)
       nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := value / annualMileage]
       nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2005/vehkm"][, annualMileage
                                                                                                     := NULL]
 
-      # CAPEX given combined with non-fuel OPEX in the UCD data for shipping and rail
-      # (all other than busses and trucks)
-      nonFuelOPEXcombinedUCD <- data$nonFuelOPEXcombinedUCD
-      nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!(univocalName %in% filterEntries$trn_freight_road
-                                                         | univocalName == "Bus")]
-
       # merge.data.table data
-      nonFuelOPEXraw <- rbind(nonFuelOPEXUCD, nonFuelOPEXcombinedUCD)
+      nonFuelOPEXraw <- rbind(nonFuelOPEXUCD, data$nonFuelOPEXcombinedUCD, data$operatingSubsidyUCD)
 
       nonFuelOPEX <- toolAdjustNonFuelOPEXother(nonFuelOPEXraw, ISOcountriesMap,
                                                 lowResYears, completeDataSet, filterEntries)
@@ -735,17 +634,19 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # Check whether data is complete
       check <- merge.data.table(completeDataOP, nonFuelOPEX, all = TRUE)
       if (nrow(check[is.na(value)]) > 0) {
-        stop("Non fuel OPEX input data for vehicle types that do not feature fleet tracking is incomplete")
+        stop("Non fuel OPEX for vehicle types that do not feature fleet tracking is incomplete")
       } else if (nrow(check[is.na(check)]) > 0) {
-        stop("Non fuel OPEX input data for vehicle types that do not feature fleet tracking includes unnecessary data")
+        stop("Non fuel OPEX for vehicle types that do not feature fleet tracking includes unnecessary data")
       } else if (length(unique(check$unit)) > 1) {
-        stop("Something went wrong in generating non fuel OPEX input data for vehicle types
+        stop("Something went wrong in generating non fuel OPEX input for vehicle types
              that do not feature fleet tracking. Data does not have the same unit.")
       } else if (length(unique(check$variable)) > 1) {
-        stop("Something went wrong in generating non fuel OPEX input data for vehicle types
+        stop("Something went wrong in generating non fuel OPEX input for vehicle types
              that do not feature fleet tracking. Data does not have the same variable type.")
       } else if (anyNA(nonFuelOPEX) == TRUE) {
-        stop("Non fuel OPEX data for vehicle types that do not feature fleet tracking includes NAs")
+        stop("Non fuel OPEX for vehicle types that do not feature fleet tracking includes NAs")
+      } else if (nrow(check[value < 0]) > 0) {
+        stop("Aggregated non fuel OPEX for vehicle types that do not feature fleet tracking includes negative values")
       }
 
       quitteobj <- nonFuelOPEX
@@ -1000,7 +901,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       description <- "historical LDV fleet of Eurostat countries, 4W only"
       weight <- NULL
 
-      data <- readSource("EUROSTAT", "LDVfleet")
+      data <- readSource("EurostatEnergyCountryDataSheets", "LDVfleet")
       data <- magpie2dt(data)
       quitteobj <- data
 

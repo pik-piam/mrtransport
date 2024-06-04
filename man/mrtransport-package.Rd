@@ -20,6 +20,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Jarusch jarusch.muessel@pik-potsdam.de Muessel
   \item Alois Dirnaichner
 }
 

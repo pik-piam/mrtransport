@@ -1,4 +1,4 @@
-#' Read UCD road transportation data.
+#' Read Eurostat data.
 #'
 #'
 #' @param subtype One of the possible subtypes, see default argument.
@@ -6,7 +6,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' a <- readSource("EUROSTAT")
+#' a <- readSource("EurostatEnergyCountryDataSheets")
 #' }
 #' @author Johanna Hoppe
 #' @seealso \code{\link{readSource}}
@@ -14,32 +14,35 @@
 #' @importFrom magclass as.magpie
 #' @importFrom readxl read_excel
 
-readEUROSTAT <- function(subtype = c("feDemand", "LDVfleet")) {
-  EUROSTATsector <- variable <- region <- NULL
+readEurostatEnergyCountryDataSheets <- function(subtype = c("feDemand", "LDVfleet")) {
+  Eurostatsector <- variable <- region <- NULL
 
   countries <- c("BE", "BG", "CZ", "DK", "DE", "EE", "IE", "EL", "ES", "FR", "HR", "IT", "CY",
-                 "LV", "LT", "LU", "HU", "MT", "NL", "AT", "PL", "PT", "RO", "SI", "SK", "FI", "SE")
+                 "LV", "LT", "LU", "HU", "MT", "NL", "AT", "PL", "PT", "RO", "SI", "SK", "FI", "SE", "UK")
 
   switch(
     subtype,
     "feDemand" = {
       dt <- do.call("rbind", lapply(countries,
                                     function(x) {
-                                        output <- suppressMessages(data.table(read_excel(path =                                 # nolint: object_usage_linter
-                                                                             file.path("Energy statistical country datasheets", # nolint: line_length_linter
-                                                                             "Energy statistical country datasheets 2023-04.xlsx"), # nolint: line_length_linter
-                                                                                         sheet = x, "C8:AI249")))
-                                      names(output)[1] <- "EUROSTATsector"
-                                      output <- output[EUROSTATsector %in% c("International maritime bunkers",
-                                                        "International aviation", "Domestic aviation", "Domestic navigation")] # nolint: line_length_linter
-                                      output <- melt(output, id.vars = c("EUROSTATsector"), variable.name = "period")
+                                      # here an old EUROSTAT country data sheet is used (the newest does not include UK)
+                                      # when we want to extend the historical ES demand to later years, we have to find an alternative source for UK
+                                      # GCAM offers substantially lower values
+                                      output <- suppressMessages(data.table(read_excel(path =                                 # nolint: object_usage_linter
+                                                                                         file.path("Energy statistical country datasheets", # nolint: line_length_linter
+                                                                                                   "energy_statistical_countrydatasheets.xlsx"), # nolint: line_length_linter
+                                                                                       sheet = x, "C8:X249")))
+                                      colnames(output) = c("Eurostatsector", as.character(seq(1990,2010,1)))
+                                      output <- output[Eurostatsector %in% c("International maritime bunkers",
+                                                                             "International aviation", "Domestic aviation", "Domestic navigation")] # nolint: line_length_linter
+                                      output <- melt(output, id.vars = c("Eurostatsector"), variable.name = "period")
                                       output$region <- x
                                       output$unit <- "Mtoe"
                                       return(output)
                                     }))
       #Bring to quitte column order
       dt[, variable := "Final energy"]
-      dt <- dt[, c("region", "EUROSTATsector", "variable", "unit", "period",  "value")]
+      dt <- dt[, c("region", "Eurostatsector", "variable", "unit", "period",  "value")]
       x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = "period")
       return(x)
     },
@@ -71,14 +74,14 @@ readEUROSTAT <- function(subtype = c("feDemand", "LDVfleet")) {
                  "Kosovo (under United Nations Security Council Resolution 1244/99)"]
 
       dt <- melt(dt, id.vars = c("region"), variable.name = "period")
-      dt$EUROSTATvehicleType <- "LDV-4Wheeler"
+      dt$EurostatvehicleType <- "LDV-4Wheeler"
       dt$unit <- "Mio veh"
 
       dt[, variable := "LDV Fleet"]
 
       dt[]
 
-      dt <- dt[, c("region", "EUROSTATvehicleType", "variable", "unit", "period",  "value")]
+      dt <- dt[, c("region", "EurostatvehicleType", "variable", "unit", "period",  "value")]
       x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = "period")
       return(x)
     },
@@ -125,8 +128,8 @@ readEUROSTAT <- function(subtype = c("feDemand", "LDVfleet")) {
                                                "Kosovo (under United Nations Security Council Resolution 1244/99)"]
 
                                       output <- melt(output, id.vars = c("region"), variable.name = "period")
-                                      output$EUROSTATtechnology <- tech
-                                      output$EUROSTATvehicleType <- "LDV-4Wheeler"
+                                      output$Eurostattechnology <- tech
+                                      output$EurostatvehicleType <- "LDV-4Wheeler"
                                       output$unit <- "Mio veh"
                                       return(output)
                                     }))
@@ -134,7 +137,7 @@ readEUROSTAT <- function(subtype = c("feDemand", "LDVfleet")) {
 
       dt[]
 
-      dt <- dt[, c("region", "EUROSTATvehicleType", "EUROSTATtechnology", "variable", "unit", "period",  "value")]
+      dt <- dt[, c("region", "EurostatvehicleType", "Eurostattechnology", "variable", "unit", "period",  "value")]
       x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = "period")
       return(x)
     },
