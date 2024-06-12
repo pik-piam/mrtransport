@@ -80,5 +80,9 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter) {
   # (the shares are roughly OK)
   dt[region == "DEU" & univocalName %in% filter$trn_freight, value := value * 620 / 587]
   dt[, c("countryName", "regionCode21", "regionCode12", "check") := NULL]
+
+  #7: International Shipping data for AZE is off in 1990 and 2005 -> use data from 2006
+  dt[region == "AZE" & univocalName == "International Ship",
+     value := ifelse(period %in% c(1990, 2005), value[period == 2006], value)]
   return(dt)
 }
