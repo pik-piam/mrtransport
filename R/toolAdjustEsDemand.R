@@ -80,5 +80,6 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter) {
   # (the shares are roughly OK)
   dt[region == "DEU" & univocalName %in% filter$trn_freight, value := value * 620 / 587]
   dt[, c("countryName", "regionCode21", "regionCode12", "check") := NULL]
+
   return(dt)
 }
