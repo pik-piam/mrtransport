@@ -107,8 +107,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   # UCD applied interest rate of 10% and uniform vehicle lifetime of 15 yrs
   # (https://itspubs.ucdavis.edu/publication_detail.php?id=1884)
   # Calc annuity factor
-  # TEMPORARY change to 0.05 (es in EDGE-T) for comparison
-  discountRate <- 0.05   #discount rate for vehicle purchases
+  discountRate <- 0.1   #discount rate for vehicle purchases
   lifeTime <- 15    #Number of years over which vehicle capital payments are amortized
   annuityFactor <- (discountRate * (1 + discountRate) ^ lifeTime) / ((1 + discountRate) ^ lifeTime - 1)
   # Divide by Annual Mileage to get [unit = US$2005/veh/yr]
