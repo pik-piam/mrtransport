@@ -90,10 +90,10 @@ toolIEAharmonization <- function(...) {
     check[, check := (value / loadFactor) * enService * bn * MJtoEJ]
     check[, check := sum(check), by = c("region", "isBunk", "te", "period")][, diff := abs(check - feIEA)]
 
-    # if (nrow(check[diff > 1e-2]) > 0) {
-    #   stop("There is a problem regarding the Harmonization of the energy intensity data to match IEA energy balances
-    #     final energy")
-    # }
+    if (nrow(check[diff > 1e-2]) > 0) {
+       stop("There is a problem regarding the Harmonization of the energy intensity data to match IEA energy balances
+         final energy")
+    }
     enIntensity <- enIntensity[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
 
     return(enIntensity)
@@ -101,17 +101,16 @@ toolIEAharmonization <- function(...) {
   } else if (!is.null(data$esDemand)) {
     # If energy service demand is transferred -> Set energy service demand to zero, where fe in IEA balances is zero
     # # Apply IEA categories
-    # esDemand <- data$esDemand
-    # esDemand[technology %in% c("BEV", "Electric"), te := "tdelt"]
-    # esDemand[technology == "Gases", te := "tdgat"]
-    # # All others are handled as liquids (including hybrid electric)
-    # esDemand[is.na(te), te := "tdlit"]
-    # esDemand[, isBunk := ifelse(univocalName == "International Aviation", "AVBUNK", NA)]
-    # esDemand[, isBunk := ifelse(univocalName == "International Ship", "MARBUNK", isBunk)]
-    # esDemand[, isBunk := ifelse(is.na(isBunk), "short-medium", isBunk)]
-    # esDemand <- merge.data.table(esDemand, IEAbal, by = c("region", "period", "isBunk", "te"), all.x = TRUE)
-    # esDemand[feIEA == 0, value := 0][, c("isBunk", "te", "feIEA") := NULL]
-
-    return(data$esDemand)
+    esDemand <- data$esDemand
+    esDemand[technology %in% c("BEV", "Electric"), te := "tdelt"]
+    esDemand[technology == "Gases", te := "tdgat"]
+    # All others are handled as liquids (including hybrid electric)
+    esDemand[is.na(te), te := "tdlit"]
+    esDemand[, isBunk := ifelse(univocalName == "International Aviation", "AVBUNK", NA)]
+    esDemand[, isBunk := ifelse(univocalName == "International Ship", "MARBUNK", isBunk)]
+    esDemand[, isBunk := ifelse(is.na(isBunk), "short-medium", isBunk)]
+    esDemand <- merge.data.table(esDemand, IEAbal, by = c("region", "period", "isBunk", "te"), all.x = TRUE)
+    esDemand[feIEA == 0, value := 0][, c("isBunk", "te", "feIEA") := NULL]
+    return(esDemand)
   }
 }

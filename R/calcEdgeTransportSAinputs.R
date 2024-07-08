@@ -508,7 +508,15 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                        "variable", "unit"), extrapolate = TRUE)
 
       # Data for two wheelers is given in US$2005/veh and needs to be converted to US$2005/vehkm
-      # with the help of annual mileage
+      # with the help of annuity and annual mileage
+
+      # UCD applied interest rate of 10% and uniform vehicle lifetime of 15 yrs
+      # (https://itspubs.ucdavis.edu/publication_detail.php?id=1884)
+      # Calc annuity factor
+      discountRate <- 0.1   #discount rate for vehicle purchases
+      lifeTime <- 15    #Number of years over which vehicle capital payments are amortized
+      annuityFactor <- (discountRate * (1 + discountRate) ^ lifeTime) / ((1 + discountRate) ^ lifeTime - 1)
+
       AMUCD2W <- toolPrepareUCD(readSource("UCD", "annualMileage"), "annualMileage")
       AMUCD2W <- AMUCD2W[univocalName %in% filterEntries$trn_pass_road_LDV_2W]
       AMUCD2W <- AMUCD2W[, c("region", "univocalName", "technology", "period", "value")]
@@ -518,7 +526,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       CAPEXUCD <- merge.data.table(data$CAPEXUCD, AMUCD2W, by = c("region", "univocalName", "technology", "period"),
                                    all.x = TRUE)
-      CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := value / annualMileage]
+      CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := (value * annuityFactor)/ annualMileage]
       CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2005/vehkm"][, annualMileage := NULL]
 
       # merge.data.table data
