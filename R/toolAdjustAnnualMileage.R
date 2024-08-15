@@ -30,14 +30,15 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   completeData <- completeData[!univocalName %in% c("Cycle", "Walk")]
   dt <- merge.data.table(completeData, dt, all = TRUE)
   # For some regions an annual mileage is provided for certain vehicle types, but no demand.
-  # These values need to be deleted
+  # These values need to be deleted 
   dt <- dt[!is.na(check)]
   # update variable and unit for introduced NAs
   dt[, unit := "vehkm/veh/yr"][, variable := "Annual mileage"][, check := NULL]
-  # Average first within regions over technologies -> e.g. BEV gets the same value as other technologies
-  dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("region", "period", "univocalName")]
-  # If there are still NAs, average over regions -> e.g. ICE in FRA gets the same value as ICE in DEU
-  dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("period", "univocalName", "technology")]
+  # Not used atm. Alternative would be to use min() instead of mean() here, as BEV shares for DEU became to high with this version: Average first within regions over technologies -> e.g. BEV gets the same value as other technologies
+  #dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("region", "period", "univocalName")]
+  # If there are still NAs, average over univocalNames (before it was and univocalName regions -> e.g. ICE in FRA gets the same value as ICE in DEU)
+  dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value), by = c("period", "univocalName")]
+
 
 
 #b) Annual Mileage for Trucks is missing completely - insert assumptions made by Alois in 2022 (probably from ARIADNE)
