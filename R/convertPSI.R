@@ -31,11 +31,16 @@ convertPSI <- function(x, subtype) {
   switch(
     subtype,
     "CAPEX" = {
-      #PSI CAPEX need to be transformed to USD2005
-      EUR2017toUSD2017 <- 1.14
-      USD2017toUSD2005 <- 0.78
-      x <- x * EUR2017toUSD2017 * USD2017toUSD2005
-      getItems(x, dim = "unit") <- "US$2005/veh"       # nolint: object_usage_linter
+
+      # PSI CAPEX need to be transformed to USD2017
+      x <- GDPuc::convertGDP(
+        gdp = x,
+        unit_in = "constant 2017 €",
+        unit_out = mrdrivers::toolGetUnitDollar(),
+        replace_NAs = c("linear", "with_USA")
+      )
+
+      getItems(x, dim = "unit") <- "US$2017/veh"       # nolint: object_usage_linter
     },
     "energyIntensity" = {
       #PSI energy intensity needs to be transformed to MJ/vehkm
