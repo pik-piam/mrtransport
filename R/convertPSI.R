@@ -37,7 +37,7 @@ convertPSI <- function(x, subtype) {
         gdp = x,
         unit_in = "constant 2017 €",
         unit_out = mrdrivers::toolGetUnitDollar(),
-        replace_NAs = c("linear", "with_USA")
+        replace_NAs = "with_USA"
       )
 
       getItems(x, dim = "unit") <- "US$2017/veh"       # nolint: object_usage_linter

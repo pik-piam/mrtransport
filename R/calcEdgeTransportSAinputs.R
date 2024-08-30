@@ -344,7 +344,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       quitteobj <- loadFactor
     },
     "CAPEXtrackedFleet" = {
-      unit <- "US$2005/veh"
+      unit <- "US$2017/veh"
       description <- "CAPEX for vehicle types that feature fleet tracking (cars, trucks and busses).
                       Sources: UCD, PSI"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
@@ -352,9 +352,9 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       # read PSI CAPEX
       CAPEXPSI <- toolPreparePSI(readSource("PSI", "CAPEX"))
-      # read UCD CAPEX given in US$2005/vkt and US$2005/veh
+      # read UCD CAPEX given in US$2017/vkt and US$2017/veh
       CAPEXUCD <- toolPrepareUCD(readSource("UCD", "CAPEX"), "CAPEX")
-      # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
+      # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2017/vehkm
       CAPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
       # Operating subsidies for Freight Rail, Passenger Rail, HSR (+ Bus not used here) are partially attributed to CAPEX
       # otherwise negative values in OPEX
@@ -384,8 +384,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # PSI CAPEX for 4 Wheelers feature only purchase costs - take other capital costs from UCD for EUR regions
       CAPEXraw <- rbind(PSIpurchaseCosts, CAPEXUCD4W, CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
-      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
-                                unit = "constant 2005 US$MER") |> time_interpolate(highResYears)
+      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE) |> time_interpolate(highResYears)
       GDPpcMERmag <- GDPpcMERmag[, , paste0("gdppc_", SSPscen)]
 
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
@@ -424,7 +423,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       quitteobj <- CAPEX
     },
     "nonFuelOPEXtrackedFleet" = {
-      unit <- "US$2005/veh/yr"
+      unit <- "US$2017/veh/yr"
       description <- "Non-fuel OPEX on technology level for vehicle types that feature fleet tracking
                      (cars, trucks, busses). Sources: UCD, PSI"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
@@ -432,7 +431,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       nonFuelOPEXUCD <- toolPrepareUCD(readSource("UCD", "nonFuelOPEX"), "nonFuelOPEX")
       nonFuelOPEXUCD <- nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_4W]
-      # For trucks and busses UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
+      # For trucks and busses UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2017/vehkm
       nonFuelOPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
       nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[univocalName %in% filterEntries$trn_freight_road
                                                        | univocalName == "Bus"]
@@ -483,17 +482,17 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       quitteobj <- nonFuelOPEX
     },
     "CAPEXother" = {
-      unit <- "US$2005/vehkm"
+      unit <- "US$2017/vehkm"
       description <- "CAPEX (purchase costs) for vehicle types that do not feature fleet tracking
                       (all other than cars, trucks and busses). Sources: UCD"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(lowResYears)
       weight <- weight[, , paste0("gdp_", SSPscen)]
 
-      # read UCD CAPEX given in US$2005/vkt and US$2005/veh
+      # read UCD CAPEX given in US$2017/vkt and US$2017/veh
       # non fuel OPEX include Domestic Aviation, International Aviation, Moped, Motorcycle (50-250cc), Motorcycle (>250cc) (+4W not used here)
       CAPEXUCD <- toolPrepareUCD(readSource("UCD", "CAPEX"), "CAPEX")
       CAPEXUCD <- CAPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
-      # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
+      # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2017/vehkm
       # combined CAPEX and OPEX include Domestic Ship, Freight Rail, HSR, International Ship, Passenger Rail
       CAPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
       CAPEXcombinedUCD <- CAPEXcombinedUCD[!(univocalName %in% filterEntries$trn_freight_road | univocalName == "Bus")]
@@ -507,7 +506,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                      c("region", "univocalName", "technology",
                        "variable", "unit"), extrapolate = TRUE)
 
-      # Data for two wheelers is given in US$2005/veh and needs to be converted to US$2005/vehkm
+      # Data for two wheelers is given in US$2017/veh and needs to be converted to US$2017/vehkm
       # with the help of annuity and annual mileage
 
       # UCD applied interest rate of 10% and uniform vehicle lifetime of 15 yrs
@@ -527,13 +526,12 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       CAPEXUCD <- merge.data.table(data$CAPEXUCD, AMUCD2W, by = c("region", "univocalName", "technology", "period"),
                                    all.x = TRUE)
       CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := (value * annuityFactor)/ annualMileage]
-      CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2005/vehkm"][, annualMileage := NULL]
+      CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2017/vehkm"][, annualMileage := NULL]
 
       # merge.data.table data
       CAPEXraw <- rbind(CAPEXUCD, data$CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
-      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
-                                unit = "constant 2005 US$MER") |> time_interpolate(lowResYears)
+      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE) |> time_interpolate(lowResYears)
       GDPpcMERmag <- GDPpcMERmag[, , paste0("gdppc_", SSPscen)]
 
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
@@ -579,16 +577,16 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       quitteobj <- CAPEX
     },
     "nonFuelOPEXother" = {
-      unit <- "US$2005/vehkm"
+      unit <- "US$2017/vehkm"
       description <- "Non fuel OPEX on technology level for vehicle types that do not feature fleet tracking
                      (other than cars, trucks, busses). Sources: UCD, PSI"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(lowResYears)
       weight <- weight[, , paste0("gdp_", SSPscen)]
-      # read UCD non fuel given in US$2005/vkt and US$2005/veh/yr
+      # read UCD non fuel given in US$2017/vkt and US$2017/veh/yr
       # non fuel OPEX include Domestic Aviation, International Aviation, Moped, Motorcycle (50-250cc), Motorcycle (>250cc) (+4W not used here)
       nonFuelOPEXUCD <- toolPrepareUCD(readSource("UCD", "nonFuelOPEX"), "nonFuelOPEX")
       nonFuelOPEXUCD <- nonFuelOPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
-      # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2005/vehkm
+      # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$2017/vehkm
       # combined CAPEX and OPEX include Domestic Ship, Freight Rail, HSR, International Ship, Passenger Rail
       nonFuelOPEXcombinedUCD <- toolPrepareUCD(readSource("UCD", "CAPEXandNonFuelOPEX"), "CAPEXandNonFuelOPEX")
       nonFuelOPEXcombinedUCD <- nonFuelOPEXcombinedUCD[!univocalName %in% c(filterEntries$trn_freight_road,
@@ -605,7 +603,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       data <- lapply(data, approx_dt, lowResYears, "period", "value",
                      c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
 
-      # Data for two wheelers is given in US$2005/veh and needs to be converted to US$2005/vehkm
+      # Data for two wheelers is given in US$2017/veh and needs to be converted to US$2017/vehkm
       # with the help of annual mileage
       AMUCD2W <- toolPrepareUCD(readSource("UCD", "annualMileage"), "annualMileage")
       AMUCD2W <- AMUCD2W[univocalName %in% filterEntries$trn_pass_road_LDV_2W]
@@ -617,7 +615,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                                                          "univocalName", "technology"),
                                          all.x = TRUE)
       nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := value / annualMileage]
-      nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2005/vehkm"][, annualMileage
+      nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := "US$2017/vehkm"][, annualMileage
                                                                                                     := NULL]
 
       # merge.data.table data
@@ -759,7 +757,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       quitteobj <- VOT
     },
     "timeValueCosts" = {
-      unit <- "US$2005/pkm"
+      unit <- "US$2017/pkm"
       description <- "Time value costs for passenger transport modes.
                       Sources: GCAM"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
@@ -777,8 +775,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                          valcol = "multiplier")[, c("variable", "unit") := NULL]
       setkey(valueOfTimeMultiplier, region, period, univocalName, technology)
 
-      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE,
-                                unit = "constant 2005 US$MER") |> time_interpolate(highResYears)
+      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE) |> time_interpolate(highResYears)
       GDPpcMERmag <- GDPpcMERmag[, , paste0("gdppc_", SSPscen)]
 
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
@@ -789,11 +786,11 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       timeValueCosts <- merge(timeValueCosts, GDPpcMER)
       weeksPerYear <- 50
       hoursPerWeek <- 40
-      timeValueCosts[, value := gdppc                   ## [US$2005/person/year]
-                     * multiplier                        ## [US$2005/person/year]
-                     / (hoursPerWeek * weeksPerYear) /     ## [US$2005/h]
-                       speed]                            ## [US$2005/pkm]
-      timeValueCosts[, variable := "Time value costs"][, unit := "US$2005/pkm"]
+      timeValueCosts[, value := gdppc                   ## [US$2017/person/year]
+                     * multiplier                        ## [US$2017/person/year]
+                     / (hoursPerWeek * weeksPerYear) /     ## [US$2017/h]
+                       speed]                            ## [US$2017/pkm]
+      timeValueCosts[, variable := "Time value costs"][, unit := "US$2017/pkm"]
       timeValueCosts <- timeValueCosts[, c("region", "univocalName", "technology",
                                            "variable", "unit", "period", "value")]
       timeValueCosts <- timeValueCosts[(univocalName %in% highResUnivocalNames
@@ -822,7 +819,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       quitteobj <- timeValueCosts
     },
     "PurchasePriceSubsidies" = {
-      unit <- "US$2005/veh"
+      unit <- "US$2017/veh"
       description <- "Subsidies for individuals purchasing alternative technology LDVs.
                       If untilPrice is not NA, then the subsidies only apply if the purchase price (CAPEX)
                       is smaller than or equal to the untilPrice."
@@ -846,7 +843,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       # merge subsidies with CAPEX data to obtain purchase price and calculate subsidies
       data <- merge(data, CAPEXapprox, all.y = TRUE, by = intersect(names(data), names(CAPEXapprox)))
-      data$unit <- "US$2005/veh"
+      data$unit <- "US$2017/veh"
 
       # calculate subsidies based on purchase price and untilPrice values
       calculateSubsidies <- function(period, price, subsidy, untilPrice, subsidy2,

@@ -38,11 +38,11 @@ convertUCD <- function(x, subtype) {
     x <- toolAggregate(x, rel = UCD2iso)
 
     # convert US$2005 to US$20217
-    x <- GDPuc::convertGDP(
+    y <- GDPuc::convertGDP(
       gdp = x,
       unit_in = "constant 2005 US$MER",
       unit_out = mrdrivers::toolGetUnitDollar(),
-      replace_NAs = c("linear", "with_USA")
+      replace_NAs = "with_USA"
     )
 
     magclass::getNames(x) <- gsub("US\\$2005", "US$2017", magclass::getNames(x))
