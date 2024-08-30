@@ -16,7 +16,8 @@
 
 readUCD <- function(subtype = c(
                       "energyIntensity", "feDemand", "loadFactor", "annualMileage",
-                      "nonMotorizedDemand", "speed", "costs")) {
+                      "nonMotorizedDemand", "speed", "CAPEX", "nonFuelOPEX",
+                      "CAPEXandNonFuelOPEX", "OperatingSubsidies")) {
   variable <- unit <- UCD_sector <- NULL
 
   UCD <- fread("UCD_transportation_database.csv", header = TRUE)
