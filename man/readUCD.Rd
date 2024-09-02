@@ -6,7 +6,8 @@
 \usage{
 readUCD(
   subtype = c("energyIntensity", "feDemand", "loadFactor", "annualMileage",
-    "nonMotorizedDemand", "speed", "costs")
+    "nonMotorizedDemand", "speed", "CAPEX", "nonFuelOPEX", "CAPEXandNonFuelOPEX",
+    "OperatingSubsidies")
 )
 }
 \arguments{
