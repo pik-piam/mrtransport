@@ -1,9 +1,8 @@
-ValidationKey: '1419006'
+ValidationKey: '1439208'
 AutocreateReadme: yes
 AcceptedWarnings:
 - 'Warning: package ''.*'' was built under R version'
 - 'Warning: namespace ''.*'' is not available and has been replaced'
-- Found the following file with non-ASCII characters
 AcceptedNotes: 'Undefined global functions or variables:'
 allowLinterWarnings: yes
 enforceVersionUpdate: no
