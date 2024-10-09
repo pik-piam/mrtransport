@@ -2,7 +2,7 @@
 % Please edit documentation in R/convertPSI.R
 \name{convertPSI}
 \alias{convertPSI}
-\title{Convert PSI data to iso country.}
+\title{Convert PSI data to iso country. Add some test line.}
 \usage{
 convertPSI(x, subtype)
 }
@@ -15,7 +15,7 @@ convertPSI(x, subtype)
 magpie object
 }
 \description{
-Convert PSI data to iso country.
+Convert PSI data to iso country. Add some test line.
 }
 \examples{
 \dontrun{

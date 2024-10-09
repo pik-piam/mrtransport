@@ -1,4 +1,4 @@
-#' Convert PSI data to iso country.
+#' Convert PSI data to iso country. Add some test line.
 #'
 #' @param x a magpie data object
 #' @param subtype One of the possible subtypes, see default argument.
