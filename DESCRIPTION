@@ -26,4 +26,6 @@ Imports:
     magrittr,
     quitte,
     data.table
+Suggests:
+    testthat
 Date: 2024-10-09
