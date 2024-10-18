@@ -33,7 +33,7 @@ convertPSI <- function(x, subtype) {
     "CAPEX" = {
 
       # PSI CAPEX need to be transformed from EUR 2017 to USD 2017
-      x <- GDPuc::convertGDP(
+      x <- GDPuc::toolConvertGDP(
         gdp = x,
         unit_in = "constant 2017 EUR",
         unit_out = mrdrivers::toolGetUnitDollar(),
