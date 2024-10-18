@@ -38,7 +38,7 @@ convertUCD <- function(x, subtype) {
     x <- toolAggregate(x, rel = UCD2iso)
 
     # convert US$2005 to US$20217
-    y <- GDPuc::convertGDP(
+    x <- GDPuc::convertGDP(
       gdp = x,
       unit_in = "constant 2005 US$MER",
       unit_out = mrdrivers::toolGetUnitDollar(),
