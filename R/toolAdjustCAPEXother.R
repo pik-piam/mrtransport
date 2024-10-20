@@ -39,13 +39,13 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   h2Air <- dt[univocalName == "Domestic Aviation" & technology == "Liquids"][, technology := "Hydrogen"]
   # CAPEX of hydrogen airplanes is assumed today 5 times more expensive than a conventional airplane
   # (i.e. not present in the market)
-  h2Air[univocalName %in% "Domestic Aviation" & period <= 2020,
-        value := 5 * value]
+  h2Air[period <= 2020, value := 5 * value]
   # for hydrogen airplanes, in between 2020 and 2040 the cost follows a linear trend,
   # and reaches a value 30% higher than a liquids fuelled airplane
-  h2Air[univocalName == "Domestic Aviation" & period >= 2020,
-        value := ifelse(period <= 2040, value[period == 2020] + (1.3 * value[period == 2100] - value[period == 2020])
-                        * (period - 2020) / (2100 - 2020), 1.3 * value[period == 2100])]
+  h2Air[period >= 2020,
+        value := ifelse(period <= 2040, value[period == 2020] - (value[period == 2020] - 1.3 * value[period == 2100])
+                        * (period - 2020) / (2040 - 2020), value), by = c("region")]
+  h2Air[, value := ifelse(period > 2040, value[period == 2040], value), by = c("region")]
   dt <- rbind(dt, h2Air)
 
   #4: Some two wheeler classes are missing and are replaced by other vehicle classes
