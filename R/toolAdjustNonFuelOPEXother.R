@@ -37,13 +37,13 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filt
   h2Air <- dt[univocalName == "Domestic Aviation" & technology == "Liquids"][, technology := "Hydrogen"]
   # following https://www.fch.europa.eu/sites/default/files/FCH%20Docs/20200507_Hydrogen%20Powered%20Aviation%20report_FINAL%20web%20%28ID%208706035%29.pdf # nolint: line_length_linter
   # maintenance costs are 50% higher than than a liquids fuelled airplane
-  h2Air[univocalName == "Domestic Aviation" & period <= 2020,
-        value := 1.5 * value]
-  # for hydrogen airplanes, in between 2020 and 2040 the cost follows a linear trend, and reaches
-  # a value 30% higher than a liquids fuelled airplane
-  h2Air[univocalName == "Domestic Aviation" & period >= 2020,
-        value := ifelse(period <= 2040, value[period == 2020] + (1.3 * value[period == 2100] - value[period == 2020])
-                        * (period - 2020) / (2100 - 2020), 1.3 * value[period == 2100])]
+  h2Air[period <= 2020, value := 1.5 * value]
+  # for hydrogen airplanes, in between 2020 and 2040 the cost follows a linear trend,
+  # and reaches a value 30% higher than a liquids fuelled airplane
+  h2Air[period >= 2020,
+        value := ifelse(period <= 2040, value[period == 2020] - (value[period == 2020] - 1.3 * value[period == 2100])
+                        * (period - 2020) / (2040 - 2020), value), by = c("region")]
+  h2Air[, value := ifelse(period > 2040, value[period == 2040], value), by = c("region")]
   dt <- rbind(dt, h2Air)
 
   #4: Some two wheeler classes are missing and are replaced by other vehicle classes
