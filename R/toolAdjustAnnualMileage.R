@@ -49,7 +49,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # If there are still NAs take mean over regions by technology
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value),
      by = c("period", "technology", "univocalName")]
-
+browser()
 #b) Annual Mileage for Trucks is missing completely - insert assumptions made by Alois in 2022 (probably from ARIADNE)
   annualMileageTrucks <- fread(
     text = "univocalName, annualMileage
