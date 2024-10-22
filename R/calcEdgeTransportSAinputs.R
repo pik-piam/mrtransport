@@ -776,7 +776,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
                                          valcol = "multiplier")[, c("variable", "unit") := NULL]
       setkey(valueOfTimeMultiplier, region, period, univocalName, technology)
 
-      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE) |> time_interpolate(highResYears)
+      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE, unit = "constant 2017 US$MER") |> time_interpolate(highResYears)
       GDPpcMERmag <- GDPpcMERmag[, , paste0("gdppc_", SSPscen)]
 
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
