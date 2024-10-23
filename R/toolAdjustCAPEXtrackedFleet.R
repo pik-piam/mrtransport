@@ -17,7 +17,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   variable <- value <- region <- regionCode12 <- period <-
     technology <- univocalName <- markup <- univocalName <-
     unit <- check <- gdppc <- . <- NULL
- browser()
+
   # 1: LDV 4 Wheeler adjustments
   # 1a: Delete Capital costs other, as it is unclear what it represents
   dt <- dt[!(univocalName %in% filter$trn_pass_road_LDV_4W & variable == "Capital costs (other)")]
