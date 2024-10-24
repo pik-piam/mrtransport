@@ -385,7 +385,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # PSI CAPEX for 4 Wheelers feature only purchase costs - take other capital costs from UCD for EUR regions
       CAPEXraw <- rbind(PSIpurchaseCosts, CAPEXUCD4W, CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
-      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE) |> time_interpolate(highResYears)
+      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE, unit = "constant 2017 US$MER") |> time_interpolate(highResYears)
       GDPpcMERmag <- GDPpcMERmag[, , paste0("gdppc_", SSPscen)]
 
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
@@ -532,7 +532,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
       # merge.data.table data
       CAPEXraw <- rbind(CAPEXUCD, data$CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
-      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE) |> time_interpolate(lowResYears)
+      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE, unit = "constant 2017 US$MER") |> time_interpolate(lowResYears)
       GDPpcMERmag <- GDPpcMERmag[, , paste0("gdppc_", SSPscen)]
 
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
