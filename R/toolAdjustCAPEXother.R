@@ -112,8 +112,10 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   dt[, check := NULL]
 
   #5: Lower the prices for LDW 2 Wheelers depending on the GDP to represent a 2nd hand vehicle market
-  minGDP <- 4000     ## minimum GDPcap after which the linear trend starts
-  maxGDP <- 30000    ## maximum GDPcap marking the level where no factor is implemented
+  convfact <- convertSingle(x = 1, iso3c = "USA",  unit_in = "constant 2005 Int$PPP",
+                            unit_out = mrdrivers::toolGetUnitDollar())
+  minGDP <- 4000 * convfact  ## minimum GDPcap after which the linear trend starts
+  maxGDP <- 30000 * convfact  ## maximum GDPcap marking the level where no factor is implemented
   lowerBound <- 0.3  ## maximum decrease to be applied to the original costs value
 
   GDPpcMER[, factor := ifelse(gdppc < maxGDP & gdppc >  minGDP, (1 - lowerBound) /
