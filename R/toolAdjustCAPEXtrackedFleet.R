@@ -96,7 +96,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   #Sum part of the CAPEX and non Fuel OPEX and the operating subsidies that is now attributed to the CAPEX
   dt <- dt[, .(value = sum(value)), by = c("region", "univocalName", "technology",
                                            "variable", "unit", "period")]
-  # Values given in US$2017/vehkm need to be transferred to US$2017/veh with the help of annual mileage
+  # Values given in US$/vehkm need to be transferred to US$/veh with the help of annual mileage
   # and annuity factor
   annualMileage <-  magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",
                                          warnNA = FALSE, aggregate = FALSE))[, c("unit", "variable") := NULL]
@@ -110,14 +110,15 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   discountRate <- 0.1   #discount rate for vehicle purchases
   lifeTime <- 15    #Number of years over which vehicle capital payments are amortized
   annuityFactor <- (discountRate * (1 + discountRate) ^ lifeTime) / ((1 + discountRate) ^ lifeTime - 1)
-  # Divide by Annual Mileage to get [unit = US$2017/veh/yr]
+  monUnit <- gsub(".*?(\\d{4}).*", "US$\\1", mrdrivers::toolGetUnitDollar())
+  # Divide by Annual Mileage to get [unit = US$/veh yr]
   dt <- merge.data.table(dt, annualMileage, all.x = TRUE)
   dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", value := value * annualMileage]
-  dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", unit := "US$2017/veh/yr"]
+  dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", unit := paste0(monUnit, "/veh yr")]
   # Divide by annuity factor to get CAPEX per veh
   dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", value := value / annuityFactor]
   dt[, annualMileage := NULL]
-  dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus",  unit := "US$2017/veh"]
+  dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus",  unit := paste0(monUnit, "/veh")]
 
   #4: Missing vehicle types in certain countries
   completeData <- completeData[univocalName %in% filter$trn_freight_road |
@@ -180,7 +181,9 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
 
   missingTrucks <- rbind(missing18t, missing26t, missing40t)
   #Korea (KOR) is missing all truck types and gets assigned the values of Taiwan (TWN)
-  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Capital costs (total)"][, unit := "US$2017/veh"]
+  monUnit <- gsub(".*?(\\d{4}).*", "US$\\1", mrdrivers::toolGetUnitDollar())
+  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Capital costs (total)"]
+  missingTrucks[, unit := paste0(monUnit, "/veh")]
 
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_freight_road)], missingTrucks)
   trucksKOR <- dt[region == "TWN" & univocalName %in% filter$trn_freight_road][, region := "KOR"]
@@ -264,7 +267,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   missingLar[, value := SUV][, SUV := NULL]
 
   missing4W <- rbind(missingVan, missingMini, missingMid, missingSub, missingCom, missingLar)
-  missing4W[, unit := "US$2017/veh"]
+  missing4W[, unit := paste0(monUnit, "/veh")]
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_pass_road_LDV_4W)], missing4W)[, check := NULL]
 
   # 5: Lower the prices for LDW 4 Wheelers depending on the GDP to represent a 2nd hand vehicle market
