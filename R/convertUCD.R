@@ -43,7 +43,7 @@ convertUCD <- function(x, subtype) {
       unit_out = mrdrivers::toolGetUnitDollar(),
       replace_NAs = "with_USA"
     )
-    
+
     monUnit <- gsub(".*?(\\d{4}).*", "US$\\1", mrdrivers::toolGetUnitDollar())
     magclass::getNames(x) <- gsub("US\\$2005", monUnit, magclass::getNames(x))
 

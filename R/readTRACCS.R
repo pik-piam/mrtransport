@@ -155,7 +155,7 @@ readTRACCS <- function(subtype = c("fuelEnDensity", "roadFuelConsumption", "ener
         }))
       mpobj <- data[
         , .(country_name, TRACCS_category, TRACCS_vehicle_type,
-          TRACCS_technology, variable = "Annual mileage", unit = "vehkm/veh/yr", period, value)] %>%
+          TRACCS_technology, variable = "Annual mileage", unit = "vehkm/veh yr", period, value)] %>%
         as.magpie(spatial = "country_name", temporal = "period")
       return(mpobj)
     },

@@ -105,8 +105,7 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   missingMoped[is.na(value), value := twoW250][, twoW250 := NULL]
 
   missing2W <- rbind(missing50, missing250, missingMoped)
-  monUnit <- gsub(".*?(\\d{4}).*", "US$\\1", mrdrivers::toolGetUnitDollar())
-  missing2W[, unit := paste0(monUnit, "/vehkm")][, variable := "Capital costs (total)"]
+  missing2W[, unit := unique(dt[!(is.na(value))]$unit)][, variable := "Capital costs (total)"]
 
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_pass_road_LDV_2W)], missing2W)
   dt[, check := NULL]

@@ -71,11 +71,11 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   #magclass converts "." in vehicle types to "_" (e.g. Truck (0-3_5t))
   setkey(annualMileage, region, univocalName, technology, period)
 
-  #Divide by Annual Mileage to get [unit = US$/veh/yr]
+  #Divide by Annual Mileage to get [unit = US$/veh yr]
   dt <- merge.data.table(dt, annualMileage, all.x = TRUE)
   dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", value := value * annualMileage]
-  monUnit <- gsub(".*?(\\d{4}).*", "US$\\1", mrdrivers::toolGetUnitDollar())
-  dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", unit := paste0(monUnit, "/veh yr")]
+
+  dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", unit := gsub("vehkm", "veh yr", unit)]
   dt[, annualMileage := NULL]
   dt <- dt[, .(value = sum(value)), by = c("region", "univocalName", "technology",
                                            "variable", "unit", "period")]
@@ -129,7 +129,8 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
 
   missingTrucks <- rbind(missing18t, missing26t, missing40t)
   # Korea (KOR) is missing all truck types and gets assigned the values of Taiwan (TWN)
-  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Operating costs (total non-fuel)"][, unit := paste0(monUnit, "/veh yr")]
+  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Operating costs (total non-fuel)"]
+  missingTrucks[, unit := unique(dt[!(is.na(value))]$unit)]
 
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_freight_road)], missingTrucks)
   trucksKOR <- dt[region == "TWN" & univocalName %in% filter$trn_freight_road][, region := "KOR"]
@@ -193,7 +194,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
 
   missing4W <- rbind(missingVan, missingMini, missingMid, missingSub, missingCom, missingLar)
   missing4W[is.na(variable), variable := "Operating costs (total non-fuel)"]
-  missing4W[is.na(unit), unit := paste0(monUnit, "/veh yr")]
+  missing4W[is.na(unit), unit := unique(dt[!(is.na(value))]$unit)]
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_pass_road_LDV_4W)], missing4W)
 
   return(dt)

@@ -8,7 +8,7 @@
 #' @importFrom madrat readSource calcOutput
 #' @importFrom magclass time_interpolate
 
-calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRUE) { # nolint: cyclocomp_linter
+calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE) { # nolint: cyclocomp_linter
 
   temporal <- spatial <- present <- period <- region <- technology <-
     univocalName <- gdppc <- speed <- altTech <- variable <- value <-
@@ -173,7 +173,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
     },
     "annualMileage" = {
-      unit <- "vehkm/yr"
+      unit <- "vehkm/veh yr"
       description <- "Annual mileage on technology level. Sources: TRACCS, UCD"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
       weight <- weight[, , paste0("gdp_", SSPscen)]
@@ -199,7 +199,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2EU", IEAharm = TRU
 
       # Add annual mileage of zero for active modes
       activeModes <- completeDataSet[univocalName %in% c("Cycle", "Walk")]
-      activeModes[, unit := "vehkm/veh/yr"][, variable := "Annual mileage"][, value := 0][, check := NULL]
+      activeModes[, unit := "vehkm/veh yr"][, variable := "Annual mileage"][, value := 0][, check := NULL]
       annualMileage <- rbind(annualMileage, activeModes)
 
       annualMileage <- annualMileage[, c("region", "period", "univocalName", "technology",
