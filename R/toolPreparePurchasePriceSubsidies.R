@@ -23,7 +23,8 @@ toolPreparePurchasePriceSubsidies <- function(x) {
   setkey(dt, region, subsidiesVehicleType, subsidiesTechnology)
 
   dt <- merge.data.table(dt, mappingSubsidies, all.x = TRUE, allow.cartesian = TRUE)
-  dt[, unit := "US$2017"]
+  monUnit <- gsub(".*?(\\d{4}).*", "US$\\1", mrdrivers::toolGetUnitDollar())
+  dt[, unit := paste0(monUnit, "/veh")]
   dt <- dt[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
 
   return(dt)

@@ -42,7 +42,7 @@ readUCD <- function(subtype = c(
     "annualMileage" = {
       dt <- UCD[variable == "annual travel per vehicle"]
       dt[, variable := "Annual mileage"]
-      dt[, unit := "vehkm/veh/yr"]
+      dt[, unit := "vehkm/veh yr"]
     },
     "nonMotorizedDemand" = {
       dt <- UCD[variable == "service output"]
@@ -68,7 +68,7 @@ readUCD <- function(subtype = c(
                                 "Operating costs (tolls)", "Operating costs (total non-fuel)")]
 
       dt[unit == "2005$/vkt", unit := "US$2005/vehkm"]
-      dt[unit == "2005$/veh/yr", unit := "US$2005/veh/yr"]
+      dt[unit == "2005$/veh/yr", unit := "US$2005/veh yr"]
     },
     "CAPEXandNonFuelOPEX" = {
       dt <- UCD[variable %in% c("CAPEX and non-fuel OPEX")]

@@ -28,12 +28,13 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # Non-motorized modes do not get an annual mileage (no fleet tracking possible for walking/
   # not planned for non-motorized cycling)
   completeData <- completeData[!univocalName %in% c("Cycle", "Walk")]
+  mileageUnit <- unique(dt$unit)
   dt <- merge.data.table(completeData, dt, all = TRUE)
   # For some regions an annual mileage is provided for certain vehicle types, but no demand.
   # These values need to be deleted
   dt <- dt[!is.na(check)]
   # update variable and unit for introduced NAs
-  dt[, unit := "vehkm/veh/yr"][, variable := "Annual mileage"][, check := NULL]
+  dt[, unit := mileageUnit][, variable := "Annual mileage"][, check := NULL]
 
   # Average first within regions over technologies -> e.g. BEV gets the same value as other technologies
   # Take min over technologies for BEV

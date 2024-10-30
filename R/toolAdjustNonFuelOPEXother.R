@@ -104,7 +104,7 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filt
   missingMoped[is.na(value), value := twoW250][, twoW250 := NULL]
 
   missing2W <- rbind(missing50, missing250, missingMoped)
-  missing2W[, unit := "US$2017/vehkm"][, variable := "Operating costs (total non-fuel)"]
+  missing2W[, unit := unique(dt[!(is.na(value))]$unit)][, variable := "Operating costs (total non-fuel)"]
 
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_pass_road_LDV_2W)], missing2W)
   dt[, check := NULL]

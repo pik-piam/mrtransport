@@ -64,17 +64,18 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   dt[univocalName %in% filter$trn_freight_road & technology %in% c("Liquids", "Gases"), value := value * (1 - 0.3)]
   dt[univocalName %in% filter$trn_freight_road & technology %in% c("BEV", "FCEV"), value := value * (1 - 0.5)]
   dt[univocalName %in% filter$trn_freight_road, variable := "Operating costs (total non-fuel)"]
-  #Values given in US$2017/vehkm need to be transferred to US$2017/veh/yr with the help of annual mileage
+  #Values given in US$/vehkm need to be transferred to US$/veh/yr with the help of annual mileage
   annualMileage <-  magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",
                                          warnNA = FALSE, aggregate = FALSE))[, c("unit", "variable") := NULL]
   setnames(annualMileage, "value", "annualMileage")
   #magclass converts "." in vehicle types to "_" (e.g. Truck (0-3_5t))
   setkey(annualMileage, region, univocalName, technology, period)
 
-  #Divide by Annual Mileage to get [unit = US$2017/veh/yr]
+  #Divide by Annual Mileage to get [unit = US$/veh yr]
   dt <- merge.data.table(dt, annualMileage, all.x = TRUE)
   dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", value := value * annualMileage]
-  dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", unit := "US$2017/veh/yr"]
+
+  dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus", unit := gsub("vehkm", "veh yr", unit)]
   dt[, annualMileage := NULL]
   dt <- dt[, .(value = sum(value)), by = c("region", "univocalName", "technology",
                                            "variable", "unit", "period")]
@@ -128,7 +129,8 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
 
   missingTrucks <- rbind(missing18t, missing26t, missing40t)
   # Korea (KOR) is missing all truck types and gets assigned the values of Taiwan (TWN)
-  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Operating costs (total non-fuel)"][, unit := "US$2017/veh/yr"]
+  missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Operating costs (total non-fuel)"]
+  missingTrucks[, unit := unique(dt[!(is.na(value))]$unit)]
 
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_freight_road)], missingTrucks)
   trucksKOR <- dt[region == "TWN" & univocalName %in% filter$trn_freight_road][, region := "KOR"]
@@ -192,7 +194,7 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
 
   missing4W <- rbind(missingVan, missingMini, missingMid, missingSub, missingCom, missingLar)
   missing4W[is.na(variable), variable := "Operating costs (total non-fuel)"]
-  missing4W[is.na(unit), unit := "US$2017/veh/yr"]
+  missing4W[is.na(unit), unit := unique(dt[!(is.na(value))]$unit)]
   dt <- rbind(dt[!(is.na(value) & univocalName %in% filter$trn_pass_road_LDV_4W)], missing4W)
 
   return(dt)
