@@ -4,7 +4,7 @@
 \alias{calcEdgeTransportSAinputs}
 \title{Provide EDGE-Transport input parameters}
 \usage{
-calcEdgeTransportSAinputs(subtype, SSPscen = "SSP2EU", IEAharm = TRUE)
+calcEdgeTransportSAinputs(subtype, SSPscen = "SSP2", IEAharm = TRUE)
 }
 \arguments{
 \item{subtype}{one of the parameters required for EDGE-T SA}
