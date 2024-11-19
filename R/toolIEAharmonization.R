@@ -11,14 +11,13 @@
 
 toolIEAharmonization <- function(...) {
   fe <- te <- period <- isBunk <- flow <- . <- feIEA <- region <- univocalName <-
-    value <- enService <- harmFactor <- check <- technology  <-
-    variable <- unit <- NULL
+    value <- enService <- harmFactor <- check <- technology  <- NULL
 
   data <- list(...)
   harmonizationYears <- c(1990, 2005, 2010)
 
   # Load IEA energy balances data for harmonization [unit: EJ]
-  IEAbalMag <- calcOutput(type = "IO", subtype = "IEA_output", aggregate = FALSE)
+  IEAbalMag <- calcOutput(type = "IEAOutputTransport", aggregate = FALSE)
   IEAbal <-  magpie2dt(IEAbalMag, datacols = c("se", "fe", "te", "mod", "flow"),
                        regioncol = "region", yearcol = "period")
   # Select only fuel types that are represented in EDGE-T
@@ -64,7 +63,7 @@ toolIEAharmonization <- function(...) {
                                      by = c("region", "univocalName", "technology", "period"))
     # merge load factor and energy service demand with energy intensity
     harmFactor <- merge.data.table(enIntensity[period %in% harmonizationYears],
-                                    enServiceDem[period %in% harmonizationYears],
+                                   enServiceDem[period %in% harmonizationYears],
                                    by = c("region", "univocalName", "technology", "period"))
     # Calculate final energy in EJ
     MJtoEJ <- 1e-12
@@ -83,15 +82,18 @@ toolIEAharmonization <- function(...) {
                             idxcols = c("region", "isBunk", "te"), extrapolate = TRUE)
     enIntensity <- merge(enIntensity, harmFactor, by = c("region", "period", "isBunk", "te"), all.x = TRUE)
     enIntensity[, value := value * harmFactor]
-    # Check whether hamonization worked
-    # For some regions the IEA reports final energy gases, where our input data features no energy service demand (e.g. Gases in JPN)
+
+    # Check whether harmonization worked
+    # For some regions the IEA reports final energy gases, where our input data
+    # features no energy service demand (e.g. Gases in JPN)
     check <- merge.data.table(enIntensity[period %in% harmonizationYears],
-                                   enServiceDem[period %in% harmonizationYears],  by = c("region", "univocalName", "technology", "period"))
+                              enServiceDem[period %in% harmonizationYears],
+                              by = c("region", "univocalName", "technology", "period"))
     check[, check := (value / loadFactor) * enService * bn * MJtoEJ]
     check[, check := sum(check), by = c("region", "isBunk", "te", "period")][, diff := abs(check - feIEA)]
 
     if (nrow(check[diff > 1e-2]) > 0) {
-       stop("There is a problem regarding the Harmonization of the energy intensity data to match IEA energy balances
+      stop("There is a problem regarding the Harmonization of the energy intensity data to match IEA energy balances
          final energy")
     }
     enIntensity <- enIntensity[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
