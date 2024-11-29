@@ -34,7 +34,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   LDV4WpurchaseCost <- rbind(LDV4WpurchaseCost, copy(LDV4WpurchaseCost[period == 2040][, period := 2100]))
   # in 2100, purchase price for BEVs is 0.8 * purchase price, for Hybrid electric is 0.7, for FCEVs is 0.9
   decr <- data.table(technology = c("BEV", "Hybrid electric", "FCEV", "Liquids", "Gases"),
-                     factor = c(0.8, 0.7, 0.9, 1, 1))
+                     factor = c(0.6, 0.7, 0.9, 1, 1))
   LDV4WpurchaseCost <- merge.data.table(LDV4WpurchaseCost, decr, by = "technology")
   LDV4WpurchaseCost[period == 2100, value := value[technology == "Liquids"]
            * factor, by = c("region", "univocalName")]
