@@ -7,14 +7,14 @@
 #' @importFrom rmndt approx_dt
 #' @importFrom madrat readSource calcOutput
 #' @importFrom magclass time_interpolate
+#' @importFrom stats setNames
 
 calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE) { # nolint: cyclocomp_linter
 
   temporal <- spatial <- present <- period <- region <- technology <-
     univocalName <- gdppc <- speed <- altTech <- variable <- value <-
-    regionCode12 <- multiplier <- time_interpolate <- setNames <-
-    capex <- untilPrice <- untilPrice2 <- purchasePriceSubsidy <-
-    purchasePriceSubsidy2 <- NULL
+    regionCode12 <- multiplier <- capex <- untilPrice <- untilPrice2 <-
+    purchasePriceSubsidy <- purchasePriceSubsidy2 <- NULL
 
   monUnit <- gsub(".*?(\\d{4}).*", "US$\\1", mrdrivers::toolGetUnitDollar())
 
@@ -110,6 +110,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
 
   switch(subtype,
     "energyIntensity" = {
+      browser()
       unit <- "MJ/vehkm"
       description <- "Energy intensity on technology level. Sources: TRACCS, PSI, UCD, GCAM"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
