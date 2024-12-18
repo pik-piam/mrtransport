@@ -7,7 +7,6 @@
 #' @importFrom rmndt approx_dt
 #' @importFrom madrat readSource calcOutput
 #' @importFrom magclass time_interpolate
-#' @importFrom stats setNames
 
 calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE) { # nolint: cyclocomp_linter
 
