@@ -826,7 +826,6 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
                       If untilPrice is not NA, then the subsidies only apply if the purchase price (CAPEX)
                       is smaller than or equal to the untilPrice."
       weight <- NULL
-
       data <- toolPreparePurchasePriceSubsidies(readSource("TransportPurchasePriceSubsidies"))
       data <- dcast(data, region + univocalName + technology + unit + period ~ variable, value.var = "value")
 
