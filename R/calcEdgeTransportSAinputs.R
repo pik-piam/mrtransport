@@ -110,7 +110,6 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
 
   switch(subtype,
     "energyIntensity" = {
-      browser()
       unit <- "MJ/vehkm"
       description <- "Energy intensity on technology level. Sources: TRACCS, PSI, UCD, GCAM"
       weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
