@@ -12,9 +12,8 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
 
   temporal <- spatial <- present <- period <- region <- technology <-
     univocalName <- gdppc <- speed <- altTech <- variable <- value <-
-    regionCode12 <- multiplier <- time_interpolate <- setNames <-
-    capex <- untilPrice <- untilPrice2 <- purchasePriceSubsidy <-
-    purchasePriceSubsidy2 <- NULL
+    regionCode12 <- multiplier <- capex <- untilPrice <- untilPrice2 <-
+    purchasePriceSubsidy <- purchasePriceSubsidy2 <- NULL
 
   monUnit <- gsub(".*?(\\d{4}).*", "US$\\1", mrdrivers::toolGetUnitDollar())
 
