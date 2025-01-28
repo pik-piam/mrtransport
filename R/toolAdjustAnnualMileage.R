@@ -17,7 +17,6 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
     ## (from 14 kkm to 13.6 kkm per vehicle and year)
     dt[region == "DEU" & univocalName %in% filter$trn_pass_road_LDV_4W, value := value * 0.9]
   }
-
 #2: Assume missing data
 #a) Some modes and technologies are missing an annual mileage
   # TRACCS sets annual mileage for not available technologies in certain countries
@@ -36,20 +35,13 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # update variable and unit for introduced NAs
   dt[, unit := mileageUnit][, variable := "Annual mileage"][, check := NULL]
 
-  # Average first within regions over technologies -> e.g. BEV gets the same value as other technologies
-  # Take min over technologies for BEV
-  dt[, min := ifelse(!all(is.na(value)), min(value, na.rm = TRUE), NA_real_), by = c("region", "period", "univocalName")]
-  dt[, value := ifelse(
-    technology == "BEV" & is.na(value), min, value),
-    by = c("region", "period", "univocalName")]
-  dt[, min := NULL]
-  # Take mean over technologies for all other technologies
-  dt[, value := ifelse(
-    !(technology == "BEV") & is.na(value), mean(value, na.rm = TRUE), value),
-    by = c("region", "period", "univocalName")]
-  # If there are still NAs take mean over regions by technology
+  dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value),
+     by = c("period", "univocalName", "region")]
+
+  # If there are NAs take mean over regions by technology
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value),
      by = c("period", "technology", "univocalName")]
+  dt <- dt[period <= 2010, value := value[period == 2010], by = .(region, univocalName, variable, technology)]
 
 #b) Annual Mileage for Trucks is missing completely - insert assumptions made by Alois in 2022 (probably from ARIADNE)
   annualMileageTrucks <- fread(
