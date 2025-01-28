@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: If you use this software, please cite it using the metadata from this file.
 type: software
 title: 'mrtransport: Input data generation for the EDGE-Transport model'
-version: 0.10.1
-date-released: '2024-12-18'
+version: 0.10.3
+date-released: '2025-01-22'
 abstract: The mrtransport package contains data preprocessing for the EDGE-Transport
   model.
 authors:
@@ -14,6 +14,11 @@ authors:
 - family-names: Muessel
   given-names: Jarusch
   email: jarusch.muessel@pik-potsdam.de
+  orcid: https://orcid.org/0000-0002-1857-7866
+- family-names: Hagen
+  given-names: Alex K.
+  email: alex.hagen@pik-potsdam.de
+  orcid: https://orcid.org/0000-0003-4793-8664
 - family-names: Dirnaichner
   given-names: Alois
 license: LGPL-3.0

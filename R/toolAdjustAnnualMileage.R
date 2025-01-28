@@ -68,5 +68,9 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   dt <- merge.data.table(dt, missingAnnualMileageData, by = "univocalName", all.x = TRUE, allow.cartesian = TRUE)
   dt[, value := ifelse(!is.na(annualMileage), annualMileage, value)][, annualMileage := NULL]
 
+#3 data until 2010 has weird spikes -> take 1990 value and interpolate
+  xdata <- unique(dt$period)
+  dt <- dt[period == 1990 | period > 2010]
+  dt <- rmndt::approx_dt(dt, xdata, "period", "value")
 return(dt)
 }
