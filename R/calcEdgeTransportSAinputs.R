@@ -107,12 +107,18 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
 
   filterEntries <- lapply(setNames(categories, categories), findEntries, dataTable = decisionTree)
 
-  switch(subtype,
+  switch(
+    subtype,
     "energyIntensity" = {
       unit <- "MJ/vehkm"
       description <- "Energy intensity on technology level. Sources: TRACCS, PSI, UCD, GCAM"
-      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
-      weight <- weight[, , paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP",
+                           scenario = c("SSPs", "SDPs"),
+                           naming = "scenario",
+                           average2020 = FALSE,
+                           aggregate = FALSE) |>
+        time_interpolate(highResYears)
+      weight <- weight[, , SSPscen]
 
       # calc different source data
       enIntGCAM <- toolPrepareGCAM(readSource("GCAM", subtype), subtype)
@@ -174,8 +180,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
     "annualMileage" = {
       unit <- "vehkm/veh yr"
       description <- "Annual mileage on technology level. Sources: TRACCS, UCD"
-      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
-      weight <- weight[, , paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP",
+                           scenario = c("SSPs", "SDPs"),
+                           naming = "scenario",
+                           average2020 = FALSE,
+                           aggregate = FALSE) |>
+        time_interpolate(highResYears)
+      weight <- weight[, , SSPscen]
 
       # calc different source data
       AMTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
@@ -293,8 +304,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       unit <- "(t|p)/veh"
       description <- "Load factor on technology level that states the tons/number of passengers in a vehicle.
                       Sources: TRACCS, GCAM"
-      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
-      weight <- weight[, , paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP",
+                           scenario = c("SSPs", "SDPs"),
+                           naming = "scenario",
+                           average2020 = FALSE,
+                           aggregate = FALSE) |>
+        time_interpolate(highResYears)
+      weight <- weight[, , SSPscen]
 
       # read different source data
       LFTRACCS <- toolPrepareTRACCS(readSource("TRACCS", subtype), subtype)
@@ -349,8 +365,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       unit <- paste0(monUnit, "/veh")
       description <- "CAPEX for vehicle types that feature fleet tracking (cars, trucks and busses).
                       Sources: UCD, PSI"
-      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
-      weight <- weight[, , paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP",
+                           scenario = c("SSPs", "SDPs"),
+                           naming = "scenario",
+                           average2020 = FALSE,
+                           aggregate = FALSE) |>
+        time_interpolate(highResYears)
+      weight <- weight[, , SSPscen]
 
       # read PSI CAPEX
       CAPEXPSI <- toolPreparePSI(readSource("PSI", "CAPEX"))
@@ -386,8 +407,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       # PSI CAPEX for 4 Wheelers feature only purchase costs - take other capital costs from UCD for EUR regions
       CAPEXraw <- rbind(PSIpurchaseCosts, CAPEXUCD4W, CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
-      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE, unit = mrdrivers::toolGetUnitDollar()) |> time_interpolate(highResYears)
-      GDPpcMERmag <- GDPpcMERmag[, , paste0("gdppc_", SSPscen)]
+      GDPpcMERmag <- calcOutput("GDPpc",
+                                scenario = c("SSPs", "SDPs"),
+                                naming = "scenario",
+                                aggregate = FALSE,
+                                unit = mrdrivers::toolGetUnitDollar()) |>
+        time_interpolate(highResYears)
+      GDPpcMERmag <- GDPpcMERmag[, , SSPscen]
 
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
       CAPEX <- toolAdjustCAPEXtrackedFleet(CAPEXraw, ISOcountriesMap, highResYears,
@@ -428,8 +454,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       unit <- paste0(monUnit, "/veh yr")
       description <- "Non-fuel OPEX on technology level for vehicle types that feature fleet tracking
                      (cars, trucks, busses). Sources: UCD, PSI"
-      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
-      weight <- weight[, , paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP",
+                           scenario = c("SSPs", "SDPs"),
+                           naming = "scenario",
+                           average2020 = FALSE,
+                           aggregate = FALSE) |>
+        time_interpolate(highResYears)
+      weight <- weight[, , SSPscen]
 
       nonFuelOPEXUCD <- toolPrepareUCD(readSource("UCD", "nonFuelOPEX"), "nonFuelOPEX")
       nonFuelOPEXUCD <- nonFuelOPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_4W]
@@ -487,11 +518,17 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       unit <- paste0(monUnit, "/vehkm")
       description <- "CAPEX (purchase costs) for vehicle types that do not feature fleet tracking
                       (all other than cars, trucks and busses). Sources: UCD"
-      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(lowResYears)
-      weight <- weight[, , paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP",
+                           scenario = c("SSPs", "SDPs"),
+                           naming = "scenario",
+                           average2020 = FALSE,
+                           aggregate = FALSE) |>
+        time_interpolate(lowResYears)
+      weight <- weight[, , SSPscen]
 
       # read UCD CAPEX given in US$/vehkm and US$/veh
-      # non fuel OPEX include Domestic Aviation, International Aviation, Moped, Motorcycle (50-250cc), Motorcycle (>250cc) (+4W not used here)
+      # non fuel OPEX include Domestic Aviation, International Aviation, Moped, Motorcycle (50-250cc),
+      # Motorcycle (>250cc) (+4W not used here)
       CAPEXUCD <- toolPrepareUCD(readSource("UCD", "CAPEX"), "CAPEX")
       CAPEXUCD <- CAPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$/vehkm
@@ -527,14 +564,20 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
 
       CAPEXUCD <- merge.data.table(data$CAPEXUCD, AMUCD2W, by = c("region", "univocalName", "technology", "period"),
                                    all.x = TRUE)
-      CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := (value * annuityFactor)/ annualMileage]
-      CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, unit := paste0(monUnit, "/vehkm")][, annualMileage := NULL]
+      CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W, value := (value * annuityFactor) / annualMileage]
+      CAPEXUCD[univocalName %in% filterEntries$trn_pass_road_LDV_2W,
+               unit := paste0(monUnit, "/vehkm")][, annualMileage := NULL]
 
       # merge.data.table data
       CAPEXraw <- rbind(CAPEXUCD, data$CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
-      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE, unit = mrdrivers::toolGetUnitDollar()) |> time_interpolate(lowResYears)
-      GDPpcMERmag <- GDPpcMERmag[, , paste0("gdppc_", SSPscen)]
+      GDPpcMERmag <- calcOutput("GDPpc",
+                                scenario = c("SSPs", "SDPs"),
+                                naming = "scenario",
+                                aggregate = FALSE,
+                                unit = mrdrivers::toolGetUnitDollar()) |>
+        time_interpolate(lowResYears)
+      GDPpcMERmag <- GDPpcMERmag[, , SSPscen]
 
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
 
@@ -582,10 +625,16 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       unit <- paste0(monUnit, "/vehkm")
       description <- "Non fuel OPEX on technology level for vehicle types that do not feature fleet tracking
                      (other than cars, trucks, busses). Sources: UCD, PSI"
-      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(lowResYears)
-      weight <- weight[, , paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP",
+                           scenario = c("SSPs", "SDPs"),
+                           naming = "scenario",
+                           average2020 = FALSE,
+                           aggregate = FALSE) |>
+        time_interpolate(lowResYears)
+      weight <- weight[, , SSPscen]
       # read UCD non fuel given in US$/vehkm and US$/veh/yr
-      # non fuel OPEX include Domestic Aviation, International Aviation, Moped, Motorcycle (50-250cc), Motorcycle (>250cc) (+4W not used here)
+      # non fuel OPEX include Domestic Aviation, International Aviation, Moped, Motorcycle (50-250cc),
+      # Motorcycle (>250cc) (+4W not used here)
       nonFuelOPEXUCD <- toolPrepareUCD(readSource("UCD", "nonFuelOPEX"), "nonFuelOPEX")
       nonFuelOPEXUCD <- nonFuelOPEXUCD[!univocalName %in% filterEntries$trn_pass_road_LDV_4W]
       # For some modes UCD offers only a combined value for CAPEX and non-fuel OPEX given in US$/vehkm
@@ -664,8 +713,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       description <- "Speed of traveling on vehicle type level (same for all technologies). Changes over time for
                       the motorized modes. Used to calculate the time value costs for passenger transport modes.
                       Sources: GCAM"
-      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
-      weight <- weight[, , paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP",
+                           scenario = c("SSPs", "SDPs"),
+                           naming = "scenario",
+                           average2020 = FALSE,
+                           aggregate = FALSE) |>
+        time_interpolate(highResYears)
+      weight <- weight[, , SSPscen]
 
       # read sources
       speedGCAM <- toolPrepareGCAM(readSource("GCAM", "speedMotorized"), "speedMotorized")
@@ -718,8 +772,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
                       Data is provided for different passenger transport modes and is equal for all regions and years.
                       Used to calculate the time value costs for passenger
                       transport modes. Sources: GCAM"
-      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
-      weight <- weight[, , paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP",
+                           scenario = c("SSPs", "SDPs"),
+                           naming = "scenario",
+                           average2020 = FALSE,
+                           aggregate = FALSE) |>
+        time_interpolate(highResYears)
+      weight <- weight[, , SSPscen]
 
       # read sources
       VOTGCAM <- toolPrepareGCAM(readSource("GCAM", "valueOfTimeMultiplier"), "valueOfTimeMultiplier")
@@ -762,8 +821,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       unit <- paste0(monUnit, "/pkm")
       description <- "Time value costs for passenger transport modes.
                       Sources: GCAM"
-      weight <- calcOutput("GDP", average2020 = FALSE, aggregate = FALSE) |> time_interpolate(highResYears)
-      weight <- weight[, , paste0("gdp_", SSPscen)]
+      weight <- calcOutput("GDP",
+                           scenario = c("SSPs", "SDPs"),
+                           naming = "scenario",
+                           average2020 = FALSE,
+                           aggregate = FALSE) |>
+        time_interpolate(highResYears)
+      weight <- weight[, , SSPscen]
 
       # Speed of modes [km/h]
       speedOfModesMagpieobj <- calcOutput(type = "EdgeTransportSAinputs", aggregate = FALSE, warnNA = FALSE,
@@ -777,8 +841,13 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
                                          valcol = "multiplier")[, c("variable", "unit") := NULL]
       setkey(valueOfTimeMultiplier, region, period, univocalName, technology)
 
-      GDPpcMERmag <- calcOutput("GDPpc", aggregate = FALSE, unit = mrdrivers::toolGetUnitDollar()) |> time_interpolate(highResYears)
-      GDPpcMERmag <- GDPpcMERmag[, , paste0("gdppc_", SSPscen)]
+      GDPpcMERmag <- calcOutput("GDPpc",
+                                scenario = c("SSPs", "SDPs"),
+                                naming = "scenario",
+                                aggregate = FALSE,
+                                unit = mrdrivers::toolGetUnitDollar()) |>
+        time_interpolate(highResYears)
+      GDPpcMERmag <- GDPpcMERmag[, , SSPscen]
 
       GDPpcMER <- magpie2dt(GDPpcMERmag, yearcol = "period", regioncol = "region", valcol = "gdppc")[, variable := NULL]
 

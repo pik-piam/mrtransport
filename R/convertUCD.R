@@ -11,32 +11,28 @@
 #' @author Johanna Hoppe, Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
 #' @importFrom data.table fread
-#' @importFrom madrat toolAggregate
 #' @importFrom magclass getItems getSets getItems<- getSets<-
 #' @export
-
+#'
 convertUCD <- function(x, subtype) {
 
-  gdp <- calcOutput("GDP", aggregate = FALSE)
-  gdp <- gdp[, getYears(x),  "gdp_SSP2"]
+  gdp <- calcOutput("GDP", scenario = "SSP2", naming = "scenario", aggregate = FALSE)[, getYears(x), ]
 
-  UCD2isoMapFile <- system.file("extdata", "isoUCD.csv",
-                                package = "mrtransport", mustWork = TRUE)
+  UCD2isoMapFile <- system.file("extdata", "isoUCD.csv", package = "mrtransport", mustWork = TRUE)
   UCD2iso <- fread(UCD2isoMapFile, skip = 0)
 
   if (subtype == "feDemand") {
     x <- toolAggregate(x, rel = UCD2iso, weight = gdp)
-    #Convert PJ to MJ
+    # Convert PJ to MJ
     PJToMJ <- 1e9
     x <- x * PJToMJ
-    getItems(x, dim = "unit") <- "MJ"               # nolint: object_usage_linter
+    getItems(x, dim = "unit") <- "MJ"
+
   } else if (subtype == "nonMotorizedDemand") {
     x <- toolAggregate(x, rel = UCD2iso, weight = gdp)
-  } else if (subtype %in% c("CAPEX", "nonFuelOPEX",
-                            "CAPEXandNonFuelOPEX", "OperatingSubsidies")) {
 
+  } else if (subtype %in% c("CAPEX", "nonFuelOPEX", "CAPEXandNonFuelOPEX", "OperatingSubsidies")) {
     x <- toolAggregate(x, rel = UCD2iso)
-
     x <- GDPuc::toolConvertGDP(
       gdp = x,
       unit_in = "constant 2005 US$MER",

@@ -11,18 +11,16 @@
 #' @author Johanna Hoppe, Alois Dirnaichner
 #' @seealso \code{\link{readSource}}
 #' @import data.table
-#' @importFrom madrat toolAggregate getISOlist calcOutput readSource
 #' @importFrom magclass getYears getItems getSets getItems<- getSets<-
 #' @importFrom rmndt magpie2dt
 #' @export
-
+#'
 convertGCAM <- function(x, subtype) {
   region <- NULL
 
   GCAM2iso <- fread(system.file("extdata", "isoGCAM.csv", package = "mrtransport"))
-  gdp <- calcOutput("GDP", aggregate = FALSE)
-  gdp <- gdp[, getYears(x),  "gdp_SSP2"]
-  getItems(x, dim = 1) <- gsub("_", " ", getItems(x, dim = 1), fixed = TRUE) # nolint: object_usage_linter
+  gdp <- calcOutput("GDP", scenario = "SSP2", naming = "scenario", aggregate = FALSE)[, getYears(x), ]
+  getItems(x, dim = 1) <- gsub("_", " ", getItems(x, dim = 1), fixed = TRUE)
 
   if (subtype == "histESdemand") {
     #extensive variables need a weight for disaggregation
