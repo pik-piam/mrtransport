@@ -6,7 +6,8 @@
 #' @param ISOcountries list of iso countries
 #' @param yrs temporal resolution of EDGE-T model
 #' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
-#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
+#' @param filter list of filters for specific branches in the upper decision tree, containing all associated
+#' univocalNames
 #' @importFrom rmndt magpie2dt
 #' @import data.table
 #' @return a quitte object

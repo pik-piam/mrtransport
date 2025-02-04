@@ -5,14 +5,15 @@
 #' @param dt calculated raw data without adjustments
 #' @param yrs temporal resolution of EDGE-T model
 #' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
-#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
+#' @param filter list of filters for specific branches in the upper decision tree, containing all associated
+#' univocalNames
 #' @import data.table
 #' @importFrom rmndt magpie2dt
 #' @return a quitte object
 
 toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   variable <- . <- technology <- period <- value <-
-    univocalName <- unit <- region <- sector <- check <- NULL
+    univocalName <- unit <- region <- check <- NULL
 
   # 1: Aggregate different non Fuel OPEX types
   dt[univocalName %in% filter$trn_pass_road_LDV_4W, variable := "Operating costs (total non-fuel)"]
@@ -31,19 +32,25 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
   targetYearLate <- 2150  # target year for FCEV trucks
 
   # cost of electric truck is 60% more than a as conventional truck today
-  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "BEV", value := 1.6 * value]
+  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "BEV",
+                          value := 1.6 * value]
   # cost of a FCEV truck is 80% more than a as conventional truck today
-  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "FCEV", value :=  1.8 * value]
+  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "FCEV",
+                          value :=  1.8 * value]
   # cost of electric and H2 buses is 40% more of a conventional bus today
   altCostCAPEXnonFuelOPEX[univocalName == "Bus" & period <= 2020, value := 1.4 * value]
 
-  altCostCAPEXnonFuelOPEX <- altCostCAPEXnonFuelOPEX[period <= 2020 | (univocalName == "Bus" & period >= targetYearEarly) |
-                       (univocalName %in% filter$trn_freight_road & technology == "BEV" & period >= targetYearEarly) |
-                       (univocalName %in% filter$trn_freight_road & technology == "FCEV" & period >= targetYearLate)]
+  altCostCAPEXnonFuelOPEX <- altCostCAPEXnonFuelOPEX[
+    period <= 2020 |
+      (univocalName == "Bus" & period >= targetYearEarly) |
+      (univocalName %in% filter$trn_freight_road & technology == "BEV" & period >= targetYearEarly) |
+      (univocalName %in% filter$trn_freight_road & technology == "FCEV" & period >= targetYearLate)
+  ]
   # follow linear trends until target years/cost parity with ICE cost -> after the target years we assume no
   # further cost decline. This is somehow odd and should be checked
   altCostCAPEXnonFuelOPEX <- approx_dt(altCostCAPEXnonFuelOPEX, yrs, "period", "value",
-                       c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
+                                       c("region", "univocalName", "technology", "variable", "unit"),
+                                       extrapolate = TRUE)
   dt <- rbind(altCostCAPEXnonFuelOPEX, altCost[!variable == "CAPEX and non-fuel OPEX"], dt)
 
   # 2: Non fuel OPEX are given combined with CAPEX for trucks and busses: Apply assumptions on CAPEX share
@@ -81,7 +88,8 @@ toolAdjustNonFuelOPEXtrackedFleet <- function(dt, yrs, completeData, filter) {
                                            "variable", "unit", "period")]
 
   #3: Missing vehicle types in certain countries
-  completeData <- completeData[univocalName %in% filter$trn_freight_road | univocalName %in% filter$trn_pass_road_LDV_4W |
+  completeData <- completeData[univocalName %in% filter$trn_freight_road |
+                                 univocalName %in% filter$trn_pass_road_LDV_4W |
                                  univocalName == "Bus"]
   dt <- merge.data.table(dt, completeData, all.y = TRUE)
   dt[, check := NULL]

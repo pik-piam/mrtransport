@@ -14,8 +14,7 @@
 #' @return a quitte object
 
 toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, filter) {
-  variable <- value <- region <- regionCode12 <- period <-
-    technology <- univocalName <- markup <- univocalName <-
+  variable <- value <- region <- period <- technology <- univocalName <- univocalName <-
     unit <- check <- gdppc <- . <- NULL
 
   # 1: LDV 4 Wheeler adjustments
@@ -24,9 +23,9 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
 
   # 1b: Capital costs (purchase) data for LDV 4 Wheelers in EUR from PSI is not region specific
   # and real data is only available for 2015 and 2040 -> rest is interpolated
-  LDV4WpurchaseCost <- copy(dt[univocalName %in% filter$trn_pass_road_LDV_4W
-                      & variable == "Capital costs (purchase)"
-                      & period %in% c(2015, 2040)])
+  LDV4WpurchaseCost <- copy(dt[univocalName %in% filter$trn_pass_road_LDV_4W                               &
+                                 variable == "Capital costs (purchase)"                               &
+                                 period %in% c(2015, 2040)])
   # First fix applied in toolPSICosts() in EDGE-T old
   LDV4WpurchaseCost[period == 2040 & technology == "BEV", value := 0.8 * value]
   LDV4WpurchaseCost[period == 2040 & technology == "FCEV", value := 0.9 * value]
@@ -37,18 +36,19 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
                      factor = c(0.6, 0.7, 0.9, 1, 1))
   LDV4WpurchaseCost <- merge.data.table(LDV4WpurchaseCost, decr, by = "technology")
   LDV4WpurchaseCost[period == 2100, value := value[technology == "Liquids"]
-           * factor, by = c("region", "univocalName")]
+                    * factor, by = c("region", "univocalName")]
   LDV4WpurchaseCost[, factor := NULL]
   LDV4WpurchaseCost <- approx_dt(LDV4WpurchaseCost, yrs, "period", "value",
-                        c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
-  dt <- rbind(dt[!(univocalName %in% filter$trn_pass_road_LDV_4W & variable == "Capital costs (purchase)")], LDV4WpurchaseCost)
+                                 c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
+  dt <- rbind(dt[!(univocalName %in% filter$trn_pass_road_LDV_4W & variable == "Capital costs (purchase)")],
+              LDV4WpurchaseCost)
 
-  #1c: Hybrids get the same Capital costs (infrastructure) as BEVs
+  # 1c: Hybrids get the same Capital costs (infrastructure) as BEVs
   dt[, value := ifelse(technology == "Hybrid electric" & variable == "Capital costs (infrastructure)",
                        value[technology == "BEV" & variable == "Capital costs (infrastructure)"],
                        value), by = c("period", "region", "univocalName")]
 
-  #2: Alternative trucks and busses
+  # 2: Alternative trucks and busses
   # Data for alternative trucks and busses is missing
   BEV <- dt[(univocalName %in% filter$trn_freight_road | univocalName == "Bus") & technology == "Liquids"]
   BEV[, technology := "BEV"]
@@ -62,30 +62,36 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   targetYearLate <- 2150  ## target year for FCEV trucks
 
   # cost of electric truck is 60% more than a as conventional truck today
-  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "BEV", value := 1.6 * value]
+  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "BEV",
+                          value := 1.6 * value]
   # cost of a FCEV truck is 80% more than a as conventional truck today
-  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "FCEV", value :=  1.8 * value]
+  altCostCAPEXnonFuelOPEX[univocalName %in% filter$trn_freight_road & period <= 2020 & technology == "FCEV",
+                          value :=  1.8 * value]
   # cost of electric and H2 buses is 40% more of a conventional bus today
   altCostCAPEXnonFuelOPEX[univocalName == "Bus" & period <= 2020, value := 1.4 * value]
 
-  altCostCAPEXnonFuelOPEX <- altCostCAPEXnonFuelOPEX[period <= 2020 | (univocalName == "Bus" & period >= targetYearEarly) |
-                       (univocalName %in% filter$trn_freight_road & technology == "BEV" & period >= targetYearEarly) |
-                       (univocalName %in% filter$trn_freight_road & technology == "FCEV" & period >= targetYearLate)]
+  altCostCAPEXnonFuelOPEX <- altCostCAPEXnonFuelOPEX[
+    period <= 2020 |
+      (univocalName == "Bus" & period >= targetYearEarly) |
+      (univocalName %in% filter$trn_freight_road & technology == "BEV" & period >= targetYearEarly) |
+      (univocalName %in% filter$trn_freight_road & technology == "FCEV" & period >= targetYearLate)
+  ]
   # follow linear trends until target years/cost parity with ICE cost -> after the target years we assume no
   # further cost decline. This is somehow odd and should be checked
   altCostCAPEXnonFuelOPEX <- approx_dt(altCostCAPEXnonFuelOPEX, yrs, "period", "value",
-                       c("region", "univocalName", "technology", "variable", "unit"), extrapolate = TRUE)
+                                       c("region", "univocalName", "technology", "variable", "unit"),
+                                       extrapolate = TRUE)
   dt <- rbind(altCostCAPEXnonFuelOPEX, altCost[!variable == "CAPEX and non-fuel OPEX"], dt)
 
-  #3: CAPEX are given combined with non fuel OPEX for trucks and busses: Apply assumptions on CAPEX share
-  #3a: Busses
+  # 3: CAPEX are given combined with non fuel OPEX for trucks and busses: Apply assumptions on CAPEX share
+  # 3a: Busses
   # https://mdpi-res.com/d_attachment/wevj/wevj-11-00056/article_deploy/wevj-11-00056.pdf?version=1597829235
   # BEV busses: veh + batt. = 25% of TCO
   dt[univocalName == "Bus" & technology %in% c("BEV", "FCEV"), value := value * 0.25]
-  #3b: diesel busses: 15% of TCO
+  # 3b: diesel busses: 15% of TCO
   dt[univocalName == "Bus" & technology %in% c("Liquids", "Gases"), value := value * 0.15]
   dt[univocalName == "Bus", variable := "Capital costs (total)"]
-  #3c: Trucks
+  # 3c: Trucks
   # https://theicct.org/sites/default/files/publications/TCO-BETs-Europe-white-paper-v4-nov21.pdf
   # p. 11: retail price = 150k for diesel, 500 - 200k for BEV
   # p. 22: TCO 550 for diesel, TCO = 850 - 500k for BEV
@@ -93,7 +99,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   dt[univocalName %in% filter$trn_freight_road & technology %in% c("Liquids", "Gases"), value := value * 0.3]
   dt[univocalName %in% filter$trn_freight_road & technology %in% c("BEV", "FCEV"), value := value * 0.5]
   dt[univocalName %in% filter$trn_freight_road, variable := "Capital costs (total)"]
-  #Sum part of the CAPEX and non Fuel OPEX and the operating subsidies that is now attributed to the CAPEX
+  # Sum part of the CAPEX and non Fuel OPEX and the operating subsidies that is now attributed to the CAPEX
   dt <- dt[, .(value = sum(value)), by = c("region", "univocalName", "technology",
                                            "variable", "unit", "period")]
   # Values given in US$/vehkm need to be transferred to US$/veh with the help of annual mileage
@@ -107,9 +113,9 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   # UCD applied interest rate of 10% and uniform vehicle lifetime of 15 yrs
   # (https://itspubs.ucdavis.edu/publication_detail.php?id=1884)
   # Calc annuity factor
-  discountRate <- 0.1   #discount rate for vehicle purchases
-  lifeTime <- 15    #Number of years over which vehicle capital payments are amortized
-  annuityFactor <- (discountRate * (1 + discountRate) ^ lifeTime) / ((1 + discountRate) ^ lifeTime - 1)
+  discountRate <- 0.1   # discount rate for vehicle purchases
+  lifeTime <- 15    # Number of years over which vehicle capital payments are amortized
+  annuityFactor <- (discountRate * (1 + discountRate)^lifeTime) / ((1 + discountRate)^lifeTime - 1)
 
   # Divide by Annual Mileage to get [unit = US$/veh yr]
   dt <- merge.data.table(dt, annualMileage, all.x = TRUE)
@@ -120,13 +126,13 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   dt[, annualMileage := NULL]
   dt[univocalName %in% filter$trn_freight_road | univocalName == "Bus",  unit := gsub("veh yr", "veh", unit)]
 
-  #4: Missing vehicle types in certain countries
+  # 4: Missing vehicle types in certain countries
   completeData <- completeData[univocalName %in% filter$trn_freight_road |
                                  univocalName %in% filter$trn_pass_road_LDV_4W |
                                  univocalName == "Bus"]
   dt <- merge.data.table(dt, completeData, all.y = TRUE)
 
-  #5a: Some Truck types are missing for many countries in the UCD database
+  # 5a: Some Truck types are missing for many countries in the UCD database
 
   # First approach: If other countries of the same region feature these truck types, assign mean values of them
   # #this is a good example, that our current truck data is somewhat odd, mean Truck 18t
@@ -135,19 +141,19 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   # Here, Puerto Rico (PRI) is setting the price for 18t and
   # #is assigned to the USA region in UCD (therefore prices are much higher)
 
-  #Replacing the missing values with values from other countries in the same region does not work at the moment,
-  #2nd approach: Replace with other vehicle types in the same country
+  # Replacing the missing values with values from other countries in the same region does not work at the moment,
+  # 2nd approach: Replace with other vehicle types in the same country
 
-  #Find NAs
-  #KOR does not feature truck (0-3_5t) and truck (7_5t) in the UCD database
-  #NEU, EUR and REF do not feature truck (18t) in the UCD database
+  # Find NAs
+  # KOR does not feature truck (0-3_5t) and truck (7_5t) in the UCD database
+  # NEU, EUR and REF do not feature truck (18t) in the UCD database
   missing18t <- dt[is.na(value) & univocalName == "Truck (18t)"]
-  #OAS, SSA and MEA do not feature truck (26t) in the UCD database
+  # OAS, SSA and MEA do not feature truck (26t) in the UCD database
   missing26t <- dt[is.na(value) & univocalName == "Truck (26t)"]
-  #OAS, SSA, MEA and CAZ do not feature truck(40t) in the UCD database
+  # OAS, SSA, MEA and CAZ do not feature truck(40t) in the UCD database
   missing40t <- dt[is.na(value) & univocalName == "Truck (40t)"]
 
-  #Get values for other truck types
+  # Get values for other truck types
   truck26t <- dt[!is.na(value) & univocalName == "Truck (26t)"]
   truck26t <- truck26t[, c("region", "technology", "period", "value")]
   setnames(truck26t, "value", "truck26t")
@@ -160,7 +166,7 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   truck18t <- truck18t[, c("region", "technology", "period", "value")]
   setnames(truck18t, "value", "truck18t")
 
-  #Replace NAs step by step with values of other truck types until data is complete
+  # Replace NAs step by step with values of other truck types until data is complete
   missing18t <- merge.data.table(missing18t, truck26t, by = c("region", "technology", "period"), all.x = TRUE)
   missing18t <- merge.data.table(missing18t, truck7t, by = c("region", "technology", "period"), all.x = TRUE)
   missing18t[, value := truck26t][, truck26t := NULL]
@@ -176,11 +182,11 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   missing40t <- merge.data.table(missing40t, truck7t, by = c("region", "technology", "period"), all.x = TRUE)
   missing40t[, value := truck26t][, truck26t := NULL]
   missing40t[is.na(value), value := truck18t][, truck18t := NULL]
-  #JPN gets 7_5t assigned -> this should be fixed
+  # JPN gets 7_5t assigned -> this should be fixed
   missing40t[is.na(value), value := truck7t][, truck7t := NULL]
 
   missingTrucks <- rbind(missing18t, missing26t, missing40t)
-  #Korea (KOR) is missing all truck types and gets assigned the values of Taiwan (TWN)
+  # Korea (KOR) is missing all truck types and gets assigned the values of Taiwan (TWN)
   missingTrucks <- missingTrucks[!region == "KOR"][, variable := "Capital costs (total)"]
   missingTrucks[, unit := unique(dt[!(is.na(value))]$unit)]
 
@@ -188,8 +194,8 @@ toolAdjustCAPEXtrackedFleet <- function(dt, ISOcountries, yrs, completeData, GDP
   trucksKOR <- dt[region == "TWN" & univocalName %in% filter$trn_freight_road][, region := "KOR"]
   dt <- rbind(dt, trucksKOR)
 
-  #5b: Some car vehicle classes are missing as well and are replaced by other vehicle classes
-  #Find missing values
+  # 5b: Some car vehicle classes are missing as well and are replaced by other vehicle classes
+  # Find missing values
   missingVan <- dt[is.na(value) & univocalName == "Van"][, c("variable", "unit") := NULL]
   missingMini <- dt[is.na(value) & univocalName == "Mini Car"][, c("variable", "unit") := NULL]
   missingMid <- dt[is.na(value) & univocalName == "Midsize Car"][, c("variable", "unit") := NULL]

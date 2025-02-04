@@ -15,8 +15,7 @@ toolPrepareTRACCS <- function(x, subtype) {
     univocalName  <- unit <- region  <-
     TRACCS_category <- TRACCS_vehicle_type <- TRACCS_technology <- vehPop <- NULL
 
-  mapfile <- system.file("extdata", "mappingTRACCStoEDGET.csv",
-   package = "mrtransport", mustWork = TRUE)
+  mapfile <- system.file("extdata", "mappingTRACCStoEDGET.csv", package = "mrtransport", mustWork = TRUE)
   mappingTRACCS <- fread(mapfile, skip = 0)
   setkey(mappingTRACCS, TRACCS_category, TRACCS_vehicle_type, TRACCS_technology)
   weight <- readSource("TRACCS", subtype = "fleetData")

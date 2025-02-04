@@ -6,6 +6,8 @@
 
 toolMergeEnergyIntensity <- function(data, filterEntries, countriesTRACCS) {
 
+  univocalName <- technology <- region <- altTech <- unit <- univocalName <- variable <- NULL
+
   # merge.data.table data
   # TRACCS>PSI>GCAM
   # 1: TRACCS data
@@ -14,14 +16,18 @@ toolMergeEnergyIntensity <- function(data, filterEntries, countriesTRACCS) {
   # 2: GCAM data
   # Used parts of the GCAM energy Intensity:
   # Conventional cars (Liquids, NG) in non-TRACCS countries
-  energyIntensityRawGCAMconventionalCarsnonTRACCS <- data$enIntGCAM[univocalName %in% filterEntries$trn_pass_road_LDV_4W &
-                                                                      technology %in% c("Liquids", "Gases") &
-                                                                      !region %in% countriesTRACCS]
+  energyIntensityRawGCAMconventionalCarsnonTRACCS <- data$enIntGCAM[
+    univocalName %in% filterEntries$trn_pass_road_LDV_4W &
+      technology %in% c("Liquids", "Gases") &
+      !region %in% countriesTRACCS
+  ]
 
-   # All other data for non-TRACCS countries except for Trucks
-  energyIntensityRawGCAMnonCarsnonTRACCS <- data$enIntGCAM[!univocalName %in% filterEntries$trn_pass_road_LDV_4W &
-                                                             !univocalName %in% filterEntries$trn_freight_road &
-                                                             !region %in% countriesTRACCS]
+  # All other data for non-TRACCS countries except for Trucks
+  energyIntensityRawGCAMnonCarsnonTRACCS <- data$enIntGCAM[
+    !univocalName %in% filterEntries$trn_pass_road_LDV_4W &
+      !univocalName %in% filterEntries$trn_freight_road &
+      !region %in% countriesTRACCS
+  ]
   # Energy Intensity data for Freight Rail, Passenger Rail, HSR, Domestic Aviation, International Aviation,
   # Domestic Shipping, International Shipping is not provided by TRACCS. Hence GCAM data is used for all countries
   energyIntensityRawGCAMmissingTRACCScat <- data$enIntGCAM[univocalName %in% c("Freight Rail", "Passenger Rail",

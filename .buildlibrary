@@ -4,7 +4,7 @@ AcceptedWarnings:
 - 'Warning: package ''.*'' was built under R version'
 - 'Warning: namespace ''.*'' is not available and has been replaced'
 AcceptedNotes: 'Undefined global functions or variables:'
-allowLinterWarnings: yes
+allowLinterWarnings: no
 enforceVersionUpdate: no
 skipCoverage: no
 AutocreateCITATION: yes

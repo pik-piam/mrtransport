@@ -19,7 +19,8 @@ toolAdjustEnergyIntensity(
 
 \item{TrendsEnIntPSI}{Energy intensity trends from PSI}
 
-\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated univocalNames}
+\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated
+univocalNames}
 
 \item{ariadneAdjustments}{optional parameter adjustements according to ARIADNE model intercomparison in 2022}
 }

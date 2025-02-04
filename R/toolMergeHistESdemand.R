@@ -6,6 +6,8 @@
 
 toolMergeHistESdemand <- function(data, filterEntries, countriesTRACCS) {
 
+  univocalName <- region <- loadFactor <- unit <- enIntensity <- variable <- value <- NULL
+
   # Calc Energy Service demand based on FE data from Eurostat for bunkers
   data$enIntensity[, unit := NULL][, variable := NULL]
   data$loadFactor[, unit := NULL][, variable := NULL]
@@ -14,7 +16,7 @@ toolMergeHistESdemand <- function(data, filterEntries, countriesTRACCS) {
   esDemandEurostat <- merge.data.table(data$feDemandEurostat, data$enIntensity,
                                        by = c("region", "univocalName", "technology", "period"))
   esDemandEurostat <- merge.data.table(esDemandEurostat, data$loadFactor, by = c("region", "period",
-                                                                            "univocalName", "technology"))
+                                                                                 "univocalName", "technology"))
   toBillion <- 1e-09
   esDemandEurostat[, value := (value / enIntensity) * loadFactor * toBillion][, c("enIntensity",
                                                                                   "loadFactor") := NULL]

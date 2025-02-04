@@ -11,7 +11,8 @@ toolAdjustAnnualMileage(dt, completeData, filter, ariadneAdjustments = TRUE)
 
 \item{completeData}{All combinations of region, period, univocalName and technology in EDGE-T decision tree}
 
-\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated univocalNames}
+\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated
+univocalNames}
 
 \item{ariadneAdjustments}{switch on and off adjustments according to ARIADNE model intercomparison in 2022}
 }

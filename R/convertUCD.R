@@ -47,6 +47,6 @@ convertUCD <- function(x, subtype) {
     x <- toolAggregate(x, rel = UCD2iso)
   }
 
-  getSets(x)["d1.1"] <- "region"                  # nolint: object_usage_linter
-  return(x)
+  getSets(x)["d1.1"] <- "region"
+  x
 }

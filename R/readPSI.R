@@ -16,13 +16,14 @@
 #' @export
 
 readPSI <- function(subtype = c("CAPEX", "energyIntensity")) {
- scenario <- value <- variable <- unit <- region <- V1 <- NULL
+  scenario <- value <- variable <- unit <- region <- V1 <- NULL
 
   switch(
     subtype,
     "CAPEX" = {
-      dt <- suppressMessages(data.table(read_excel("Car model result_modified.xlsx", # nolint: object_usage_linter
-                 sheet = "Vehicle", "A1:X191", col_names = TRUE)))
+      dt <- suppressMessages(data.table(read_excel("Car model result_modified.xlsx",
+                                                   sheet = "Vehicle", "A1:X191",
+                                                   col_names = TRUE)))
       dt <- dt[scenario %in% c("current", "Baseline"), c("scenario", "technology", "vehicle_type_PSI", "Total1_(Euro)")]
       ## substitute the "scenario" with the year it stands for
       dt[, scenario := ifelse(scenario == "current", 2015, 2040)]
@@ -53,5 +54,5 @@ readPSI <- function(subtype = c("CAPEX", "energyIntensity")) {
       x <- as.magpie(as.data.frame(dt), spatial = "region", temporal = "period")
     }
   )
- return(x)
+  return(x)
 }

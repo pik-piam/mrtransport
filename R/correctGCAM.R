@@ -12,7 +12,6 @@
 #' @seealso \code{\link{readSource}}
 #' @import data.table
 #' @importFrom rmndt magpie2dt
-#' @importFrom zoo na.approx
 #' @importFrom magclass as.magpie
 #' @export
 correctGCAM <- function(x, subtype) {
@@ -26,8 +25,8 @@ correctGCAM <- function(x, subtype) {
       #-> that is not right and needs to be corrected
       #linear interpolation from first value in 1990 to value in 2015
       dt[period %in% c(2005, 2010) & region == "EU-12" & subsector == "HSR", value := NA]
-      dt[region == "EU-12" & subsector == "HSR", value := na.approx(value, x = period),
-                  by = c("region", "sector", "subsector", "technology")]
+      dt[region == "EU-12" & subsector == "HSR", value := zoo::na.approx(value, x = period),
+         by = c("region", "sector", "subsector", "technology")]
       ## Electric trains do not exist in certain countries and need to be listed as zero demand
       miss <- CJ(region = dt$region, period = dt$period, sector = "trn_freight", unit = "million ton-km",
                  variable = "ES", subsector = "Freight Rail", technology = "Electric",
@@ -36,7 +35,8 @@ correctGCAM <- function(x, subtype) {
       frTrain[is.na(value), value := 0]
       dt <- rbind(dt[!(subsector == "Freight Rail" & technology == "Electric")], frTrain)
       x <- as.magpie(as.data.frame(dt), temporal = "period", spatial = "region")
-    })
+    }
+  )
 
   return(x)
 }

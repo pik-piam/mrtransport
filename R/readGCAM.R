@@ -15,9 +15,8 @@
 #' @importFrom magrittr `%>%`
 #' @export
 
-readGCAM <- function(subtype = c(
-  "energyIntensity",  "loadFactor", "histESdemand", "speedMotorized",
-  "speedNonMotorized", "valueOfTimeMultiplier")) {
+readGCAM <- function(subtype = c("energyIntensity",  "loadFactor", "histESdemand", "speedMotorized",
+                                 "speedNonMotorized", "valueOfTimeMultiplier")) {
 
   market.name <- variable <- unit <- scenario <- . <- supplysector <- value <- NULL
 

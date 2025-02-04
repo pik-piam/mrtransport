@@ -28,7 +28,7 @@ convertGCAM <- function(x, subtype) {
     #convert unit from million (t|p)km to billion (t|p)km
     millionToBillion <- 0.001
     x <- x * millionToBillion
-    getItems(x, dim = "unit") <- c("billion pkm/yr", "billion tkm/yr")       # nolint: object_usage_linter
+    getItems(x, dim = "unit") <- c("billion pkm/yr", "billion tkm/yr")
   } else if (subtype %in% c("energyIntensity", "loadFactor", "speedMotorized", "PPPtoMERfactor")) {
     #intensive variables do not need a weight for disaggregation
     x <- toolAggregate(x, rel = GCAM2iso)

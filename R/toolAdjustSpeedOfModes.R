@@ -4,12 +4,12 @@
 #' @author Johanna Hoppe
 #' @param dt calculated raw data without adjustments
 #' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
-#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
+#' @param filter list of filters for specific branches in the upper decision tree, containing all associated
+#' univocalNames
 #' @return a quitte object
 
 toolAdjustSpeedOfModes <- function(dt, completeData, filter) {
-  check <- value  <- region <- univocalName <- maxSpeed <- period <-
-    region   <- unit <- variable <- technology <- NULL
+  check <- value  <- region <- univocalName <- maxSpeed <- period <- NULL
 
   #1: Map data on EDGE-T structure to identify missing values
   # speed only used for passenger transport modes
