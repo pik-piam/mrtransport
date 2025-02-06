@@ -4,12 +4,12 @@
 #' @author Johanna Hoppe
 #' @param dt calculated raw data without adjustments
 #' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
-#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
+#' @param filter list of filters for specific branches in the upper decision tree, containing all associated
+#' univocalNames
 #' @return a quitte object
 
 toolAdjustValueOfTimeMultiplier <- function(dt, completeData, filter) {
-  check <- PPPtoMER <- value  <- region <- technology <-
-    univocalName <- variable <- unit <- period <- NULL
+  check <- PPPtoMER <- value <- univocalName <- NULL
 
   #1: Move from a market exchange rate (MER) based expression of the time value multiplier
   # to a purchase power parity (PPP) based one
@@ -22,7 +22,7 @@ toolAdjustValueOfTimeMultiplier <- function(dt, completeData, filter) {
   completeData <- completeData[univocalName %in% filter$trn_pass]
   completeData <- unique(completeData)
   dt <- merge.data.table(dt, completeData, by = c("region", "univocalName", "period"),
-                                                 all.y = TRUE, allow.cartesian = TRUE)
+                         all.y = TRUE, allow.cartesian = TRUE)
   dt[, check := NULL]
 
   return(dt)

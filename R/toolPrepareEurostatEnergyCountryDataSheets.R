@@ -12,10 +12,9 @@
 
 toolPrepareEurostatEnergyCountryDataSheets <- function(x) {
   region <- Eurostatsector <- period     <-
-   technology <- univocalName <- variable <- unit <- period <- NULL
+    technology <- univocalName <- variable <- unit <- period <- NULL
 
-  mapfile <- system.file("extdata", "mappingEurostatToEDGET.csv",
-   package = "mrtransport", mustWork = TRUE)
+  mapfile <- system.file("extdata", "mappingEurostatToEDGET.csv", package = "mrtransport", mustWork = TRUE)
   mappingEurostat <- fread(mapfile, skip = 0)
   setkey(mappingEurostat, Eurostatsector)
   dt <- magpie2dt(x)

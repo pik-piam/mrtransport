@@ -11,7 +11,6 @@
 #' @author Johanna Hoppe
 #' @seealso \code{\link{readSource}}
 #' @import data.table
-#' @importFrom madrat toolAggregate
 #' @importFrom magclass getItems getItems<-
 #' @importFrom rmndt magpie2dt
 #' @export
@@ -40,13 +39,13 @@ convertPSI <- function(x, subtype) {
         replace_NAs = "with_USA"
       )
       monUnit <- gsub(".*?(\\d{4}).*", "US$\\1", mrdrivers::toolGetUnitDollar())
-      getItems(x, dim = "unit") <- paste0(monUnit, "/veh")       # nolint: object_usage_linter
+      getItems(x, dim = "unit") <- paste0(monUnit, "/veh")
     },
     "energyIntensity" = {
       #PSI energy intensity needs to be transformed to MJ/vehkm
       kJPerVehkmtoMJperVehkm <- 1e-3
       x <- x * kJPerVehkmtoMJperVehkm
-      getItems(x, dim = "unit") <- "MJ/vehkm"          # nolint: object_usage_linter
+      getItems(x, dim = "unit") <- "MJ/vehkm"
     }
   )
   return(x)

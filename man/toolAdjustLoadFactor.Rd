@@ -13,7 +13,8 @@ toolAdjustLoadFactor(dt, completeData, TRACCScountries, filter)
 
 \item{TRACCScountries}{countries included in TRACCS database}
 
-\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated univocalNames}
+\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated
+univocalNames}
 }
 \value{
 a quitte object

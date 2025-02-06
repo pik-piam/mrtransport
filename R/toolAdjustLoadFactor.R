@@ -5,21 +5,22 @@
 #' @param dt calculated raw data without adjustments
 #' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
 #' @param TRACCScountries countries included in TRACCS database
-#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
+#' @param filter list of filters for specific branches in the upper decision tree, containing all associated
+#' univocalNames
 #' @return a quitte object
 
 toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
- value <- region <- univocalName <- univocalName <- check <- unit  <- variable <- NULL
+  value <- region <- univocalName <- univocalName <- check <- unit  <- variable <- NULL
 
-#1: Correct unrealisitc data
-#a) 3_5t load factor as provided by GCAM is unrealistically high
+  #1: Correct unrealisitc data
+  #a) 3_5t load factor as provided by GCAM is unrealistically high
   dt[!(region %in% TRACCScountries) & univocalName == "Truck (0-3_5t)", value := 0.4]
 
-#b) 40t dt in TRACCS is too low, using KBA data (2019 dataset)
+  #b) 40t dt in TRACCS is too low, using KBA data (2019 dataset)
   # https://www.kba.de/DE/Statistik/Produktkatalog/produkte/Kraftverkehr/vd3_uebersicht.html?nn=3514348
   dt[region == "DEU" & univocalName == "Truck (40t)", value := 11.5]
 
-#2: Assume missing data
+  #2: Assume missing data
   # Non-motorized modes do not get a loadFactor
   completeData <- completeData[!univocalName %in% c("Cycle", "Walk")]
   dt <- merge.data.table(completeData, dt, all = TRUE)
@@ -32,5 +33,5 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   dt[is.na(unit), unit := ifelse(univocalName %in% filter$trn_pass, "p/veh", "t/veh")]
   dt[is.na(variable), variable := "Load factor"]
 
-return(dt)
+  return(dt)
 }

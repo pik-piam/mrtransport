@@ -8,13 +8,12 @@
 #' @return a quitte object
 #'
 #' @importFrom rmndt magpie2dt
-#' @importFrom quitte as.quitte
 #' @import data.table
 #' @export
 
 toolPrepareGCAM <- function(x, subtype) {
   region <- period     <-
-   technology <- univocalName <- variable <- unit <- esdem <- value <- . <- NULL
+    technology <- univocalName <- variable <- unit <- esdem <- value <- . <- NULL
 
   dt <- magpie2dt(x)
   mapfile <- system.file("extdata", "mappingGCAMtoEDGET.csv", package = "mrtransport", mustWork = TRUE)
@@ -47,7 +46,7 @@ toolPrepareGCAM <- function(x, subtype) {
       dt[, value := value * convBTUtoMJ][, unit := "MJ/vehkm"]
       dt <- dt[, c("region", "univocalName", "technology", "variable", "unit", "period", "value")]
       setkey(dt, region, period, univocalName, technology, variable, unit)
-      },
+    },
     "loadFactor" = {
       weight <- readSource("GCAM", subtype = "histESdemand")
       weight <- magpie2dt(weight)[, c("variable", "unit") := NULL]
@@ -84,7 +83,7 @@ toolPrepareGCAM <- function(x, subtype) {
                by = c("region", "period", "univocalName", "technology", "variable", "unit")]
       dt <- dt[, c("region", "period", "univocalName", "technology", "variable", "unit", "value")]
       setkey(dt,  region, period, univocalName, technology, variable, unit)
-      },
+    },
     "speedMotorized" = {
       # weights are needed for GCAM vehicle types that are mapped on the same EDGE-T vehicle type
       weight <- readSource("GCAM", subtype = "histESdemand")
@@ -92,7 +91,7 @@ toolPrepareGCAM <- function(x, subtype) {
       # Speed is not differentiated between different technologies -> aggregate weights (ES demand)
       # to VehicleType level
       weight <- weight[, .(value = sum(value)),
-               by = c("region", "period", "sector", "subsector")]
+                       by = c("region", "period", "sector", "subsector")]
       setnames(weight, "value", "esdem")
       setnames(dt, c("supplysector", "tranSubsector"), c("sector", "subsector"))
       dt <- weight[dt, on = c("region", "period", "sector", "subsector")]
@@ -110,7 +109,7 @@ toolPrepareGCAM <- function(x, subtype) {
       dt <- dt[, c("region", "univocalName", "variable", "unit", "period", "value")]
       setkey(dt,  region, univocalName, variable,
              unit, period)
-      },
+    },
     "speedNonMotorized" = {
       setnames(dt, c("supplysector", "tranSubsector"), c("sector", "subsector"))
       #GCAM data for speed of modes is not technology specific

@@ -9,8 +9,6 @@
 #' @return IEA data as MAgPIE object aggregated to country level
 #' @author Falk Benke
 #'
-#' @importFrom tidyr unite
-#' @importFrom tidyselect all_of
 #' @importFrom rlang .data
 #' @importFrom magclass getNames getNames<- setNames dimSums mbind
 #'
@@ -34,10 +32,10 @@ calcIEAOutputTransport <- function() {
   target <- c("REMINDitems_in", "REMINDitems_out", "REMINDitems_tech", "iea_product", "iea_flows")
 
   ieamatch <- ieamatch %>%
-    dplyr::select(all_of(c("iea_product", "iea_flows", "Weight", target))) %>%
+    dplyr::select(tidyselect::all_of(c("iea_product", "iea_flows", "Weight", target))) %>%
     stats::na.omit() %>%
-    unite("target", all_of(target), sep = ".", remove = FALSE) %>%
-    unite("product.flow", c("iea_product", "iea_flows"), sep = ".") %>%
+    tidyr::unite("target", tidyselect::all_of(target), sep = ".", remove = FALSE) %>%
+    tidyr::unite("product.flow", c("iea_product", "iea_flows"), sep = ".") %>%
     dplyr::filter(.data$product.flow %in% getNames(data))
 
   reminditems <- do.call(

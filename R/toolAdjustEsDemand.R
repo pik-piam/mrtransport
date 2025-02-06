@@ -5,7 +5,8 @@
 #' @param dt calculated raw data without adjustments
 #' @param mapIso2region map iso countries to regions
 #' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
-#' @param filter list of filters for specific branches in the upper decision tree, containing all associated univocalNames
+#' @param filter list of filters for specific branches in the upper decision tree, containing all associated
+#' univocalNames
 #' @return a quitte object
 
 toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter) {
