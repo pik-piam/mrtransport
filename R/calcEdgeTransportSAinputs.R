@@ -109,7 +109,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       unit <- "MJ/vehkm"
       description <- "Energy intensity on technology level. Sources: TRACCS, PSI, UCD, GCAM"
       weight <- calcOutput("GDP",
-                           scenario = c("SSPs", "SDPs"),
+                           scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                            naming = "scenario",
                            average2020 = FALSE,
                            aggregate = FALSE) |>
@@ -177,7 +177,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       unit <- "vehkm/veh yr"
       description <- "Annual mileage on technology level. Sources: TRACCS, UCD"
       weight <- calcOutput("GDP",
-                           scenario = c("SSPs", "SDPs"),
+                           scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                            naming = "scenario",
                            average2020 = FALSE,
                            aggregate = FALSE) |>
@@ -302,7 +302,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       description <- "Load factor on technology level that states the tons/number of passengers in a vehicle.
                       Sources: TRACCS, GCAM"
       weight <- calcOutput("GDP",
-                           scenario = c("SSPs", "SDPs"),
+                           scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                            naming = "scenario",
                            average2020 = FALSE,
                            aggregate = FALSE) |>
@@ -363,7 +363,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       description <- "CAPEX for vehicle types that feature fleet tracking (cars, trucks and busses).
                       Sources: UCD, PSI"
       weight <- calcOutput("GDP",
-                           scenario = c("SSPs", "SDPs"),
+                           scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                            naming = "scenario",
                            average2020 = FALSE,
                            aggregate = FALSE) |>
@@ -408,7 +408,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       CAPEXraw <- rbind(PSIpurchaseCosts, CAPEXUCD4W, CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
       GDPpcMERmag <- calcOutput("GDPpc",
-                                scenario = c("SSPs", "SDPs"),
+                                scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                                 naming = "scenario",
                                 aggregate = FALSE,
                                 unit = mrdrivers::toolGetUnitDollar()) |>
@@ -455,7 +455,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       description <- "Non-fuel OPEX on technology level for vehicle types that feature fleet tracking
                      (cars, trucks, busses). Sources: UCD, PSI"
       weight <- calcOutput("GDP",
-                           scenario = c("SSPs", "SDPs"),
+                           scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                            naming = "scenario",
                            average2020 = FALSE,
                            aggregate = FALSE) |>
@@ -521,7 +521,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       description <- "CAPEX (purchase costs) for vehicle types that do not feature fleet tracking
                       (all other than cars, trucks and busses). Sources: UCD"
       weight <- calcOutput("GDP",
-                           scenario = c("SSPs", "SDPs"),
+                           scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                            naming = "scenario",
                            average2020 = FALSE,
                            aggregate = FALSE) |>
@@ -574,7 +574,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       CAPEXraw <- rbind(CAPEXUCD, data$CAPEXcombinedUCD, data$operatingSubsidyUCD)
 
       GDPpcMERmag <- calcOutput("GDPpc",
-                                scenario = c("SSPs", "SDPs"),
+                                scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                                 naming = "scenario",
                                 aggregate = FALSE,
                                 unit = mrdrivers::toolGetUnitDollar()) |>
@@ -628,7 +628,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       description <- "Non fuel OPEX on technology level for vehicle types that do not feature fleet tracking
                      (other than cars, trucks, busses). Sources: UCD, PSI"
       weight <- calcOutput("GDP",
-                           scenario = c("SSPs", "SDPs"),
+                           scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                            naming = "scenario",
                            average2020 = FALSE,
                            aggregate = FALSE) |>
@@ -717,7 +717,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
                       the motorized modes. Used to calculate the time value costs for passenger transport modes.
                       Sources: GCAM"
       weight <- calcOutput("GDP",
-                           scenario = c("SSPs", "SDPs"),
+                           scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                            naming = "scenario",
                            average2020 = FALSE,
                            aggregate = FALSE) |>
@@ -776,7 +776,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
                       Used to calculate the time value costs for passenger
                       transport modes. Sources: GCAM"
       weight <- calcOutput("GDP",
-                           scenario = c("SSPs", "SDPs"),
+                           scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                            naming = "scenario",
                            average2020 = FALSE,
                            aggregate = FALSE) |>
@@ -825,7 +825,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       description <- "Time value costs for passenger transport modes.
                       Sources: GCAM"
       weight <- calcOutput("GDP",
-                           scenario = c("SSPs", "SDPs"),
+                           scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                            naming = "scenario",
                            average2020 = FALSE,
                            aggregate = FALSE) |>
@@ -845,7 +845,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       setkey(valueOfTimeMultiplier, region, period, univocalName, technology)
 
       GDPpcMERmag <- calcOutput("GDPpc",
-                                scenario = c("SSPs", "SDPs"),
+                                scenario = c("SSPs", "SDPs", "SSP2IndiaDEAs"),
                                 naming = "scenario",
                                 aggregate = FALSE,
                                 unit = mrdrivers::toolGetUnitDollar()) |>
