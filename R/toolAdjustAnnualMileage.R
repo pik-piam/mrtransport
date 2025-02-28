@@ -44,8 +44,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
      by = c("period", "technology", "univocalName")]
   dt <- dt[period <= 2010, value := value[period == 2010], by = .(region, univocalName, variable, technology)]
 
-<<<<<<< Updated upstream
-=======
+
   #adjust outliers for scenarioMIP validation
   ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
   ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
@@ -57,7 +56,6 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
 
   dt[, mean_value := NULL]
 
->>>>>>> Stashed changes
   # b) Annual Mileage for Trucks is missing completely - insert assumptions made by Alois in 2022
   # (probably from ARIADNE)
   annualMileageTrucks <- fread(
