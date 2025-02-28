@@ -92,6 +92,9 @@ toolIEAharmonization <- function(...) {
     check[, check := (value / loadFactor) * enService * bn * MJtoEJ]
     check[, check := sum(check), by = c("region", "isBunk", "te", "period")][, diff := abs(check - feIEA)]
 
+    #There are no electric vehicles on the road before 2010
+    grouping_columns <- setdiff(names(enIntensity), c("feIEA", "harmFactor", "value" ))
+    enIntensity[technology %in% c("BEV", "Hybrid electric") & period > 2005, value:= value/harmFactor, by = grouping_columns]
     if (nrow(check[diff > 1e-2]) > 0) {
       stop("There is a problem regarding the Harmonization of the energy intensity data to match IEA energy balances
          final energy")
