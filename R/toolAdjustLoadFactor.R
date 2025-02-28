@@ -33,5 +33,17 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   dt[is.na(unit), unit := ifelse(univocalName %in% filter$trn_pass, "p/veh", "t/veh")]
   dt[is.na(variable), variable := "Load factor"]
 
+  # data until 2010 has weird spikes for some regions -> take 1990 value and interpolate
+  xdata <- unique(dt$period)
+  dt <- dt[period == 1990 | period > 2010]
+  dt <- rmndt::approx_dt(dt, xdata, "period", "value")
+
+  #adjust outliers for scenarioMIP validation
+  ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
+  ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
+  dt[, mean_value := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
+  dt[region %in% ISOcountriesMap[regionCode21 == "CAZ"]$countryCode & univocalName %in% c("Truck (7_5t)"), value := mean_value]
+  dt[, mean_value := NULL]
+
   return(dt)
 }
