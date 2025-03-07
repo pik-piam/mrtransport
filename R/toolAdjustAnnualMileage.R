@@ -10,7 +10,8 @@
 #' @return a quitte object
 
 toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments = TRUE) {
-  region <- value <- univocalName <- check <- unit <- variable <- annualMileage <- period <- technology <- . <- NULL
+  region <- value <- univocalName <- check <- unit <- variable <- annualMileage <- period <- technology <- meanValue <-
+    regionCode21 <- . <- NULL
 
   # 1: Adjustments made by Alois in consequence of the ARIADNE model intercomparison in 2022
   if (ariadneAdjustments) {
@@ -71,24 +72,25 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   dt[, value := ifelse(!is.na(annualMileage), annualMileage, value)][, annualMileage := NULL]
 
   # 3 adjustments for scenarioMIP validation
-  # a) adjust outliers to global mean 
+  # a) adjust outliers to global mean
   ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
   ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
-  dt[, mean_value := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
-  dt[region %in% ISOcountriesMap[regionCode21 %in% c("NES", "CHA")]$countryCode & univocalName %in% filter$trn_pass_road_LDV_4W,
-     value := mean_value]
+  dt[, meanValue := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
+  dt[region %in% ISOcountriesMap[regionCode21 %in% c("NES", "CHA")]$countryCode &
+       univocalName %in% filter$trn_pass_road_LDV_4W, value := meanValue]
   dt[region %in% ISOcountriesMap[regionCode21 %in% c("EWN", "ENC", "UKI", "NES")]$countryCode &
-       grepl("Bus", univocalName), value := mean_value]
+       grepl("Bus", univocalName), value := meanValue]
 
-  dt[, mean_value := NULL]
-  
-  # b) data until 2010 has weird spikes for some regions -> remove data between 1991 and 2009 and interpolate afterward to remove the spikes
-  data until 2010 has weird spikes -> take 1990 value and interpolate
+  dt[, meanValue := NULL]
+
+  # b) data until 2010 has weird spikes for some regions -> remove data between 1991 and 2009
+  # and interpolate afterward to remove the spikes
   xdata <- unique(dt$period)
   dt <- dt[period == 1990 | period > 2010]
   dt <- rmndt::approx_dt(dt, xdata, "period", "value")
 
-  # c) n the scenarioMIP validation we decided to only use constant annual mileage values until we have better data (this makes 3b obsolete)
+  # c) In the scenarioMIP validation we decided to only use constant annual mileage values
+  # until we have better data (this makes 3b obsolete)
   dt <- dt[, value := value[period == 2030], by = setdiff(names(dt), c("value", "period"))]
 
   return(dt)
