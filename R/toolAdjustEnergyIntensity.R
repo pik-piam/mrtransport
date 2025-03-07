@@ -109,18 +109,6 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   dt4W[is.na(value) & univocalName == "Large Car", value := enIntLargeCarSUV * 0.9][, enIntLargeCarSUV := NULL]
   dt <- rbind(dt[!univocalName %in% filter$trn_pass_road_LDV_4W], dt4W)
 
-  #adjust outliers for scenarioMIP validation
-  ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
-  ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
-  dt[, mean_value := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
-  dt[region %in% ISOcountriesMap[regionCode21 == "LAM"]$countryCode & univocalName %in% c("Compact Car")&
-     technology == "Gases", value := mean_value]
-  #dt[region %in% ISOcountriesMap[regionCode21 %in% c("CAZ", "LAM")]$countryCode & univocalName %in% c("Mini Car") &
-  #     technology == "BEV", value := mean_value]
-
-  dt[, mean_value := NULL]
-
-
   # e) Some non TRACCS countries ("ARE" "BHR" "IRN" "IRQ" "ISR" "JOR" "KWT" "LBN" "OMN" "PSE" "QAT" "SAU" "SYR" "YEM")
   # are missing data for Freight and Passenger Rail running on liquids. Average of other non TRACCS countries
   # is taken
@@ -140,6 +128,16 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   missingPassRailDataIDN <- dt[region %in% c("MYS") & univocalName == "Passenger Rail" & technology == "Electric"]
   missingPassRailDataIDN[, region := "IDN"]
   dt <- rbind(dt, missingPassRailDataIDN)
+
+  
+  # 4: adjustments for scenarioMIP validation: adjust outliers to global mean 
+  ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
+  ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
+  dt[, mean_value := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
+  dt[region %in% ISOcountriesMap[regionCode21 == "LAM"]$countryCode & univocalName %in% c("Compact Car")&
+     technology == "Gases", value := mean_value]
+     
+  dt[, mean_value := NULL]
 
   return(dt)
 }
