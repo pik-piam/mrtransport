@@ -39,7 +39,7 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   dt <- dt[period == 1990 | period > 2010]
   dt <- rmndt::approx_dt(dt, xdata, "period", "value")
 
-  #adjust outliers for scenarioMIP validation
+  # 3: adjustments for scenarioMIP validation adjust outliers to global mean 
   ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
   ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
   dt[, mean_value := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
