@@ -129,13 +129,13 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   missingPassRailDataIDN[, region := "IDN"]
   dt <- rbind(dt, missingPassRailDataIDN)
 
-  # 4: adjustments for scenarioMIP validation: adjust outliers to global mean 
+  # 4: adjustments for scenarioMIP validation: adjust outliers to global mean
   ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
   ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
   dt[, meanValue := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
   dt[region %in% ISOcountriesMap[regionCode21 == "LAM"]$countryCode & univocalName %in% c("Compact Car") &
-     technology == "Gases", value := meanValue]
-     
+       technology == "Gases", value := meanValue]
+
   dt[, meanValue := NULL]
 
   return(dt)
