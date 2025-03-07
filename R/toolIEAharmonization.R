@@ -11,7 +11,7 @@
 
 toolIEAharmonization <- function(...) {
   fe <- te <- period <- isBunk <- flow <- . <- feIEA <- region <- univocalName <-
-    value <- enService <- harmFactor <- check <- technology  <- NULL
+    value <- enService <- harmFactor <- check <- technology  <- groupingColumns <- NULL
 
   data <- list(...)
   harmonizationYears <- c(1990, 2005, 2010)

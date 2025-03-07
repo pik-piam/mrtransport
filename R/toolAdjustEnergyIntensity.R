@@ -16,7 +16,7 @@
 
 toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, ariadneAdjustments = TRUE) {
   region <- technology <- period <- value  <- region   <- TRACCS <-
-    enIntLargeCarSUV <- univocalName <- NULL
+    enIntLargeCarSUV <- univocalName <- meanValue <- regionCode21 <- NULL
 
   # To complete dataset and ensure consistency and actuality a number of fixes are applied on the raw source data
   # 1: PSI trends in energyitensity are applied to TRACCS car and trucks data [TRACCS data only available until 2010]
@@ -129,15 +129,14 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   missingPassRailDataIDN[, region := "IDN"]
   dt <- rbind(dt, missingPassRailDataIDN)
 
-  
   # 4: adjustments for scenarioMIP validation: adjust outliers to global mean 
   ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
   ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
-  dt[, mean_value := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
-  dt[region %in% ISOcountriesMap[regionCode21 == "LAM"]$countryCode & univocalName %in% c("Compact Car")&
-     technology == "Gases", value := mean_value]
+  dt[, meanValue := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
+  dt[region %in% ISOcountriesMap[regionCode21 == "LAM"]$countryCode & univocalName %in% c("Compact Car") &
+     technology == "Gases", value := meanValue]
      
-  dt[, mean_value := NULL]
+  dt[, meanValue := NULL]
 
   return(dt)
 }

@@ -11,7 +11,7 @@
 
 toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   period <- value <- region <- univocalName <- univocalName <- check <- unit  <- variable <-
-    mean_value <- regionCode21 <- NULL
+    meanValue <- regionCode21 <- NULL
 
   #1: Correct unrealisitc data
   #a) 3_5t load factor as provided by GCAM is unrealistically high
@@ -42,10 +42,10 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   # 3: adjustments for scenarioMIP validation adjust outliers to global mean 
   ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
   ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
-  dt[, mean_value := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
+  dt[, meanValue := mean(value, na.rm = TRUE), by = c("univocalName", "technology", "period")]
   dt[region %in% ISOcountriesMap[regionCode21 == "CAZ"]$countryCode & univocalName %in% c("Truck (7_5t)"),
-     value := mean_value]
-  dt[, mean_value := NULL]
+     value := meanValue]
+  dt[, meanValue := NULL]
 
   return(dt)
 }
