@@ -138,5 +138,10 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
 
   dt[, meanValue := NULL]
 
+  # 5: data until 2005 is fixed to not impact changes in lifetime in the fleet calculation (in edgeT)
+  xdata <- unique(dt$period)
+  dt <- dt[period == 1990 | period > 2005]
+  dt <- rmndt::approx_dt(dt, xdata, "period", "value")
+
   return(dt)
 }
