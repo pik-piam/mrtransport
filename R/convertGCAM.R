@@ -19,7 +19,7 @@ convertGCAM <- function(x, subtype) {
   region <- NULL
 
   GCAM2iso <- fread(system.file("extdata", "isoGCAM.csv", package = "mrtransport"))
-  gdp <- calcOutput("GDP", scenario = "SSP2", naming = "scenario", aggregate = FALSE)[, getYears(x), ]
+  gdp <- calcOutput("GDP", scenario = "SSP2", aggregate = FALSE)[, getYears(x), ]
   getItems(x, dim = 1) <- gsub("_", " ", getItems(x, dim = 1), fixed = TRUE)
 
   if (subtype == "histESdemand") {
