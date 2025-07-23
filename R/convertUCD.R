@@ -9,10 +9,9 @@
 #' a <- readSource("UCD")
 #' }
 #' @author Johanna Hoppe, Alois Dirnaichner
-#' @seealso \code{\link{readSource}}
+#' @seealso [madrat::readSource()]
 #' @importFrom data.table fread
 #' @importFrom magclass getItems getSets getItems<- getSets<-
-#' @export
 #'
 convertUCD <- function(x, subtype) {
 

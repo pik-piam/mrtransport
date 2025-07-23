@@ -9,11 +9,10 @@
 #' a <- readSource("GCAM", subtype = "esDemand")
 #' }
 #' @author Johanna Hoppe, Alois Dirnaichner
-#' @seealso \code{\link{readSource}}
+#' @seealso [madrat::readSource()]
 #' @import data.table
 #' @importFrom magclass getYears getItems getSets getItems<- getSets<-
 #' @importFrom rmndt magpie2dt
-#' @export
 #'
 convertGCAM <- function(x, subtype) {
   region <- NULL
