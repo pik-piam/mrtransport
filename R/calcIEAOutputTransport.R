@@ -17,6 +17,9 @@ calcIEAOutputTransport <- function() {
   # read in data and convert from ktoe to EJ
   data <- readSource("IEA", subtype = "EnergyBalances") * 4.1868e-5
 
+  # apply IEA data postprocessing
+  data <- toolFixIEAdataForIndustrySubsectors(data, fixing = TRUE)
+
   ieamatch <- toolGetMapping(type = "sectoral", name = "structuremappingIO_outputs.csv",
                              where = "mrcommons")
 
@@ -60,6 +63,6 @@ calcIEAOutputTransport <- function() {
 
   return(list(
     x = reminditems, weight = NULL, unit = "EJ",
-    description = "IEA SE Output Data based on 2022 edition of IEA World Energy Balances"
+    description = "IEA SE Output Data based on 2024 edition of IEA World Energy Balances"
   ))
 }
