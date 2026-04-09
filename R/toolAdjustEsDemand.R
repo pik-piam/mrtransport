@@ -60,7 +60,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   #   CEIC: https://www.ceicdata.com/en/china/no-of-motor-vehicle/cn-no-of-motor-vehicle-truck-heavy
   #   Data/RegionalData/compiling_CHA_data_heavy_duty_vehicles.xlsx (cells V17:V21, CHA)
   #   Also for Data/RegionalData/compiling_JPN_data_heavy_duty_vehicles.xlsx
-  #   India specific sources can be`generally found in: /p/projects/edget/adjustmentDataFiles/IND_validation
+  #   India specific sources can be`generally found in: /p/projects/edget/adjustmentDataFiles/IND_validation/ValidationSheets/TrucksValidation.xlsx
   #   Niti Aayog, RMI (2022): https://www.niti.gov.in/sites/default/files/2023-02/ZETReport09092022.pdf
   #   Niti Aayog, RMI (2019): https://www.niti.gov.in/sites/default/files/2021-06/FreightReportNationalLevel.pdf
 
