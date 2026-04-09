@@ -182,7 +182,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   dt[univocalName %in% carTypes & region == "CHN" & period == 2006, value := 1.7 * value]
   dt[univocalName %in% carTypes & region == "CHN" & period <= 2005, value := 1.5   * value]
 
-  ############ end of new CHA stuff from Robert
+  ############ end of new CHA stuff from Robert (& Jarusch for IND)
 
   # plausibilityFix_USA #plausibilityFix_Truck #plausibilityFix_Freight
   dt[region %in% c("USA", "PRI", "UMI", "VIR"), value := ifelse(univocalName == "Truck (26t)",

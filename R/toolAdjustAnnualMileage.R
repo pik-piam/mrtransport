@@ -79,9 +79,13 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   dt[, value := ifelse(!is.na(annualMileage), annualMileage, value)][, annualMileage := NULL]
 
   # c) Mar26 new adjustments for Trucks in India based analysis in /p/projects/edget/adjustmentDataFiles/IND_validation
-  # Sources for 7_5t: CSTEP & ICCT: 30-50k km/yr, Phadke et al. 2019: 50+k km/yr --> assumption: 45k km/yr
-  # CSTEP: ##################
-  anMilChangesIND <- c("Truck (7_5t)" = 45000)
+  # Sources for light-medium trucks: CSTEP: 50k, ICCT: 30-70k (RM1-3 trucks), Phadke et al. 2019: 50k km/yr
+  # Assumptions: 7_5t: 45k km/yr, 18t 60 km/yr
+  # CSTEP: https://cstep.in/wp-content/uploads/2025/09/Heavy-duty-high-impact_Mitigating-heavy-commercial-vehicle-emissions-in-India-1.pdf
+  # ICCT: https://theicct.org/wp-content/uploads/2023/06/India-HDT-fuel-efficiency_FINAL.pdf
+  # Phadke: https://eta-publications.lbl.gov/sites/default/files/electric_trucks_in_india_-_final_nov7.pdf
+
+  anMilChangesIND <- c("Truck (7_5t)" = 45000, "Truck (18t)" = 60000)
   dt[region == "IND" & univocalName %in% names(anMilChangesIND), value := anMilChangesIND[univocalName]]
 
   # d) We do not have vintage tracking for the rest of the modes -> insert zeros
