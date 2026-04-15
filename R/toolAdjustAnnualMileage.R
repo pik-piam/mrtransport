@@ -59,9 +59,10 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value),
      by = c("period", "technology", "univocalName")]
 
-  # missing Rickshaw data in India, with a first of estimate. To be refined in the future
-  # https://docs.wbcsd.org/2019/12/WBCSD_India_Business_Guide_to_EV_Adoption.pdf (2019)
-  dt[region == "IND" & univocalName == "Rickshaw", value := 15000]
+  # Missing Rickshaw data in India, assumption: 20k km/yr based on CEEW (30k in Table3) 
+  # And that E-Ricksaws might have a lower annual mileage
+  # CEEW (2025): https://www.ceew.in/sites/default/files/cost-of-ownership-for-different-vehicle-segments-fuels-and-powertrains.pdf 
+  dt[region == "IND" & univocalName == "Rickshaw", value := 20000]
   dt <- dt[period <= 2010, value := value[period == 2010], by = .(region, univocalName, variable, technology)]
 
   # b) Annual Mileage for Trucks is missing completely - insert assumptions made by Alois in 2022
@@ -78,7 +79,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   dt <- merge.data.table(dt, annualMileageTrucks, by = "univocalName", all.x = TRUE, allow.cartesian = TRUE)
   dt[, value := ifelse(!is.na(annualMileage), annualMileage, value)][, annualMileage := NULL]
 
-  # c) Mar26 new adjustments for Trucks in India based analysis in /p/projects/edget/adjustmentDataFiles/IND_validation
+  # c) New adjustments for Trucks in India based analysis in /p/projects/edget/adjustmentDataFiles/IND_validation
   # Sources for light-medium trucks: CSTEP: 50k, ICCT: 30-70k (RM1-3 trucks), Phadke et al. 2019: 50k km/yr
   # Assumptions: 7_5t: 45k km/yr, 18t 60 km/yr
   # CSTEP: https://cstep.in/wp-content/uploads/2025/09/Heavy-duty-high-impact_Mitigating-heavy-commercial-vehicle-emissions-in-India-1.pdf
