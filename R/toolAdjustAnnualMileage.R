@@ -59,7 +59,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value),
      by = c("period", "technology", "univocalName")]
 
-  # Missing Rickshaw data in India, assumption: 2k5 km/yr based on CEEW (30k in Table3) 
+  # Missing Rickshaw data in India, assumption: 25k km/yr based on CEEW (30k in Table3) 
   # And that E-Ricksaws might have a lower annual mileage
   # CEEW (2025): https://www.ceew.in/sites/default/files/cost-of-ownership-for-different-vehicle-segments-fuels-and-powertrains.pdf 
   dt[region == "IND" & univocalName == "Rickshaw", value := 25000]
