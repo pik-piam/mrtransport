@@ -56,13 +56,16 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   # still producing reasonable 2010/2015 truck numbers given other input data
   # constraints. Should be updated to real-world values once other inputs improve.
   #
-  # Sources:
+  # Source can be found in: 
+  #   
   #   CEIC: https://www.ceicdata.com/en/china/no-of-motor-vehicle/cn-no-of-motor-vehicle-truck-heavy
   #   Data/RegionalData/compiling_CHA_data_heavy_duty_vehicles.xlsx (cells V17:V21, CHA)
   #   Also for Data/RegionalData/compiling_JPN_data_heavy_duty_vehicles.xlsx
   #   India specific sources can be`generally found in: /p/projects/edget/adjustmentDataFiles/IND_validation/ValidationSheets/TrucksValidation.xlsx
   #   Niti Aayog, RMI (2022): https://www.niti.gov.in/sites/default/files/2023-02/ZETReport09092022.pdf
   #   Niti Aayog, RMI (2019): https://www.niti.gov.in/sites/default/files/2021-06/FreightReportNationalLevel.pdf
+  # Alternatively: /p/projects/edget/adjustmentDataFiles/IND_validation/additionalLiterature/FleetComposition
+
 
   REGIONS_TO_FIX <- c("CHN", "HKG", "MAC", "JPN", "IND")
   TRUCK_SIZES    <- c("Truck (0-3_5t)", "Truck (7_5t)", "Truck (18t)", "Truck (26t)", "Truck (40t)")
