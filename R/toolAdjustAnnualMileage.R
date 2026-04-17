@@ -62,7 +62,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # Missing Rickshaw data in India, assumption: 25k km/yr based on CEEW (30k in Table3) 
   # And that E-Ricksaws might have a lower annual mileage
   # CEEW (2025): https://www.ceew.in/sites/default/files/cost-of-ownership-for-different-vehicle-segments-fuels-and-powertrains.pdf
-  # Alternatively: /p/projects/edget/adjustmentDataFiles/IND_validation/additionalLiterature/AnnualMileage/3W_AnnualMileage_CEEW_India.pdf
+  # Also stored in: /p/projects/edget/adjustmentDataFiles/IND_validation/additionalLiterature/AnnualMileage/3W_AnnualMileage_CEEW_India.pdf
   dt[region == "IND" & univocalName == "Rickshaw", value := 25000]
   dt <- dt[period <= 2010, value := value[period == 2010], by = .(region, univocalName, variable, technology)]
 
@@ -86,7 +86,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # CSTEP: https://cstep.in/wp-content/uploads/2025/09/Heavy-duty-high-impact_Mitigating-heavy-commercial-vehicle-emissions-in-India-1.pdf
   # ICCT: https://theicct.org/wp-content/uploads/2023/06/India-HDT-fuel-efficiency_FINAL.pdf
   # Phadke: https://eta-publications.lbl.gov/sites/default/files/electric_trucks_in_india_-_final_nov7.pdf
-  # Alternatively: /p/projects/edget/adjustmentDataFiles/IND_validation/additionalLiterature/AnnualMileage
+  # also stored in: /p/projects/edget/adjustmentDataFiles/IND_validation/additionalLiterature/AnnualMileage
 
 
   anMilChangesIND <- c("Truck (7_5t)" = 45000, "Truck (18t)" = 60000)
