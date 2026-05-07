@@ -82,7 +82,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
 
   # c) New adjustments for Trucks in India based analysis in /p/projects/edget/adjustmentDataFiles/IND_validation
   # Sources for light-medium trucks: CSTEP: 50k, ICCT: 30-70k (RM1-3 trucks), Phadke et al. 2019: 50k km/yr
-  # Assumptions: 7_5t: 45k km/yr, 18t 60 km/yr
+  # Assumptions: 7_5t: 45k km/yr, 18t 60k km/yr
   # CSTEP: https://cstep.in/wp-content/uploads/2025/09/Heavy-duty-high-impact_Mitigating-heavy-commercial-vehicle-emissions-in-India-1.pdf
   # ICCT: https://theicct.org/wp-content/uploads/2023/06/India-HDT-fuel-efficiency_FINAL.pdf
   # Phadke: https://eta-publications.lbl.gov/sites/default/files/electric_trucks_in_india_-_final_nov7.pdf
