@@ -59,10 +59,10 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value),
      by = c("period", "technology", "univocalName")]
 
-  # Missing Rickshaw data in India, assumption: 25k km/yr based on CEEW (30k in Table3) 
+  # Missing Rickshaw data in India, assumption: 25k km/yr based on CEEW (30k in Table3)
   # And that E-Ricksaws might have a lower annual mileage
-  # CEEW (2025): https://www.ceew.in/sites/default/files/cost-of-ownership-for-different-vehicle-segments-fuels-and-powertrains.pdf
-  # Also stored in: /p/projects/edget/adjustmentDataFiles/IND_validation/additionalLiterature/AnnualMileage/3W_AnnualMileage_CEEW_India.pdf
+  # CEEW (2025): ceew.in/sites/default/files/cost-of-ownership-for-different-vehicle-segments-fuels-and-powertrains.pdf
+  # Also: edget/adjustmentDataFiles/IND_validation/additionalLiterature/AnnualMileage/3W_AnnualMileage_CEEW_India.pdf
   dt[region == "IND" & univocalName == "Rickshaw", value := 25000]
   dt <- dt[period <= 2010, value := value[period == 2010], by = .(region, univocalName, variable, technology)]
 
@@ -83,7 +83,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # c) New adjustments for Trucks in India based analysis in /p/projects/edget/adjustmentDataFiles/IND_validation
   # Sources for light-medium trucks: CSTEP: 50k, ICCT: 30-70k (RM1-3 trucks), Phadke et al. 2019: 50k km/yr
   # Assumptions: 7_5t: 45k km/yr, 18t 60k km/yr
-  # CSTEP: https://cstep.in/wp-content/uploads/2025/09/Heavy-duty-high-impact_Mitigating-heavy-commercial-vehicle-emissions-in-India-1.pdf
+  # CSTEP: hhtps://cstep.in/wp-content/uploads/2025/09/Heavy-duty-high-impact_Mitigating-heavy-commercial-vehicle
   # ICCT: https://theicct.org/wp-content/uploads/2023/06/India-HDT-fuel-efficiency_FINAL.pdf
   # Phadke: https://eta-publications.lbl.gov/sites/default/files/electric_trucks_in_india_-_final_nov7.pdf
   # also stored in: /p/projects/edget/adjustmentDataFiles/IND_validation/additionalLiterature/AnnualMileage
