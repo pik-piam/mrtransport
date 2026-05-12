@@ -18,7 +18,7 @@ calcIEAOutputTransport <- function() {
   data <- readSource("IEA", subtype = "EnergyBalances") * 4.1868e-5
 
   # apply IEA data postprocessing
-  data <- toolFixIEAdataForIndustrySubsectors(data, fixing = TRUE)
+  data <- toolFixIEAdataForIndustrySubsectors(data)
 
   ieamatch <- toolGetMapping(type = "sectoral", name = "structuremappingIO_outputs.csv",
                              where = "mrcommons")
