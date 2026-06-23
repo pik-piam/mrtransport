@@ -121,6 +121,11 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   # Step 5: Convert target vehicle shares → target ES shares
   # ES share ∝ vehicle share × ES per vehicle. Normalise within each region.
 
+  #test whether row dimension matches: REGIONS_TO_FIX x TRUCK_SIZES = 5 x 5 = 25 rows
+  if (nrow(targetVehicleShares) != nrow(annualTkmPerVehicle)) {
+    stop("Mismatch in number of rows between target vehicle shares and annual tkm per vehicle data.")
+  }
+
   targetESshares <- merge(targetVehicleShares, annualTkmPerVehicle,
                           by = c("region", "univocalName"))
 
