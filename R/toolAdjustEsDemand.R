@@ -73,8 +73,8 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   # These are shares of *vehicle count*, not ES. ES shares are derived below
   # by weighting by annual tkm per vehicle (mileage × load factor).
   targetVehicleShares <- data.table(
-    univocalName = rep(TRUCK_SIZES, 4),
-    region       = rep(REGIONS_TO_FIX, each = 5),
+    univocalName = rep(TRUCK_SIZES, length(TRUCK_SIZES)),
+    region       = rep(REGIONS_TO_FIX, each = length(TRUCK_SIZES)),
     value        = c(
       rep(c(76, 13, 5, 3, 3), 3),  # CHN, HKG, MAC
       c(88,  9, 1, 1, 1),       # JPN
@@ -120,6 +120,11 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
 
   # Step 5: Convert target vehicle shares → target ES shares
   # ES share ∝ vehicle share × ES per vehicle. Normalise within each region.
+
+  #test whether row dimension matches: REGIONS_TO_FIX x TRUCK_SIZES = 5 x 5 = 25 rows
+  if (nrow(targetVehicleShares) != nrow(annualTkmPerVehicle)) {
+    stop("Mismatch in number of rows between target vehicle shares and annual tkm per vehicle data.")
+  }
 
   targetESshares <- merge(targetVehicleShares, annualTkmPerVehicle,
                           by = c("region", "univocalName"))
