@@ -1,7 +1,6 @@
 # Input data generation for the EDGE-Transport model
 
-R package **mrtransport**, version **0.14.2**
-
+R package **mrtransport**, version **0.16.1**
    [![R build status](https://github.com/pik-piam/mrtransport/workflows/check/badge.svg)](https://github.com/pik-piam/mrtransport/actions) [![codecov](https://codecov.io/gh/pik-piam/mrtransport/branch/master/graph/badge.svg)](https://app.codecov.io/gh/pik-piam/mrtransport) [![r-universe](https://pik-piam.r-universe.dev/badges/mrtransport)](https://pik-piam.r-universe.dev/builds)
 
 ## Purpose and Functionality
@@ -39,17 +38,15 @@ In case of questions / problems please contact Johanna Hoppe <johanna.hoppe@pik-
 
 To cite package **mrtransport** in publications use:
 
-Hoppe J, Muessel J, Hagen A, Dirnaichner A (2026). "mrtransport: Input data generation for the EDGE-Transport model." Version: 0.14.2, <https://github.com/pik-piam/mrtransport>.
+Hoppe J, Muessel J, Hagen A, Dirnaichner A (2026). "mrtransport: Input data generation for the EDGE-Transport model - Version 0.16.1."
 
 A BibTeX entry for LaTeX users is
 
  ```latex
 @Misc{,
-  title = {mrtransport: Input data generation for the EDGE-Transport model},
+  title = {mrtransport: Input data generation for the EDGE-Transport model - Version 0.16.1},
   author = {Johanna Hoppe and Jarusch Muessel and Alex K. Hagen and Alois Dirnaichner},
-  date = {2026-05-22},
+  date = {2026-06-13},
   year = {2026},
-  url = {https://github.com/pik-piam/mrtransport},
-  note = {Version: 0.14.2},
 }
 ```
