@@ -17,7 +17,7 @@ Roxygen: list(markdown = TRUE)
 Depends:
     madrat (>= 3.7.1),
     mrdrivers (>= 2.0.0),
-    mrcommonsenergy (>= 0.3.1)
+    mrcommonsenergy (>= 0.3.3)
 Imports:
     data.table,
     dplyr,
@@ -33,5 +33,5 @@ Imports:
     tidyselect,
     utils,
     zoo
-Date: 2026-06-24
+Date: 2026-06-27
 Config/roxygen2/version: 8.0.0
