@@ -15,6 +15,9 @@ toolIEAharmonization <- function(...) {
 
   data <- list(...)
   harmonizationYears <- c(1990, 2005, 2010)
+  # While we harmonize for all harmonizationYears, energy intensities >2005 might differ
+  # from the initial harmonized values: Due to a lack of data intenisites were near zero for electric vehicles.
+  # So we reversed the harmonization for such electric road vehicles in 2010.
 
   # Load IEA energy balances data for harmonization [unit: EJ]
   IEAbalMag <- calcOutput(type = "IEAOutputTransport", aggregate = FALSE)
