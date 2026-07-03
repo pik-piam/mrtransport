@@ -11,19 +11,23 @@
 
 toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments = TRUE) {
   region <- value <- univocalName <- check <- unit <- variable <- annualMileage <- period <- technology <- meanValue <-
-    regionCode21 <- . <- NULL
+    regionCode21 <- regionCode12 <- . <- NULL
 
   ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
   ISOcountriesMap <- fread(ISOcountriesMap, skip = 0)
 
   # 1: Adjustments made by Johanna in consequence of the ARIADNE model intercomparison in 2026:
-  #    Introducing an annual mileage reduction due to the covid pandemic for EUR countries to match rising vehicle stock reported by EU pocketbook data even with demand dip.
-  #    source that documents annual mileage dip due to covid-pandemic: Odyssee-Mure "after a sharp decrease in 2020 in most countries (-13% at EU level)"
-  #    For now we do not assume a mileage recovery in the years after 2020 (as reported by Odyssee-Mure), because we do no cover the energy service demand
-  #    dynamics yet sufficiently (increases again after 2022).
-  #    To get closer to the reported vehicle stock increase (EU pocket book data) we keep the annual mileage reduction
+  # Introducing an annual mileage reduction due to the covid pandemic for EUR countries to match rising vehicle stock
+  # reported by EU pocketbook data even with demand dip.
+  # source that documents annual mileage dip due to covid-pandemic: Odyssee-Mure "after a sharp decrease in 2020 in
+  # most countries (-13% at EU level)"
+  # For now we do not assume a mileage recovery in the years after 2020 (as reported by Odyssee-Mure), because we
+  # do no cover the energy service demand
+  # dynamics yet sufficiently (increases again after 2022).
+  # To get closer to the reported vehicle stock increase (EU pocket book data) we keep the annual mileage reduction
   if (ariadneAdjustments) {
-    dt[period >= 2020 & region %in% ISOcountriesMap[regionCode12 == "EUR"]$countryCode & univocalName %in% filter$trn_pass_road_LDV_4W, value := value * 0.87]
+    dt[period >= 2020 & region %in% ISOcountriesMap[regionCode12 == "EUR"
+       ]$countryCode & univocalName %in% filter$trn_pass_road_LDV_4W, value := value * 0.87]
   }
   # 2: Assume missing data
   # a) Some modes and technologies are missing an annual mileage
@@ -42,10 +46,11 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   dt <- dt[!is.na(check)]
   # update variable and unit for introduced NAs
   dt[, unit := mileageUnit][, variable := "Annual mileage"][, check := NULL]
-  # By averaging the annual mileage over gases and liquids vehicles to fill gaps for BEVs, BEVs get a higher annual mileage than the ICE cars
+  # By averaging the annual mileage over gases and liquids vehicles to fill gaps for BEVs, BEVs get a higher
+  # annual mileage than the ICE cars
   # Fixing that only for EUR countries for now
-  dt[region %in% ISOcountriesMap[regionCode12 == "EUR"]$countryCode, value := ifelse(is.na(value), value[technology == "Liquids"], value),
-     by = c("period", "univocalName", "region")]
+  dt[region %in% ISOcountriesMap[regionCode12 == "EUR"]$countryCode,
+     value := ifelse(is.na(value), value[technology == "Liquids"], value), by = c("period", "univocalName", "region")]
 
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value),
      by = c("period", "univocalName", "region")]
@@ -54,27 +59,43 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   dt[, value := ifelse(is.na(value), mean(value, na.rm = TRUE), value),
      by = c("period", "technology", "univocalName")]
 
-  #missing Rickshaw data in India, with a first of estimate. To be refined in the future
-  #https://docs.wbcsd.org/2019/12/WBCSD_India_Business_Guide_to_EV_Adoption.pdf (2019)
-  dt[region == "IND" & univocalName == "Rickshaw", value := 15000]
+  # Missing Rickshaw data in India, assumption: 25k km/yr based on CEEW (30k in Table3)
+  # And that E-Ricksaws might have a lower annual mileage
+  # CEEW (2025): ceew.in/sites/default/files/cost-of-ownership-for-different-vehicle-segments-fuels-and-powertrains.pdf
+  # Also: edget/adjustmentDataFiles/IND_validation/additionalLiterature/AnnualMileage/3W_AnnualMileage_CEEW_India.pdf
+  dt[region == "IND" & univocalName == "Rickshaw", value := 25000]
   dt <- dt[period <= 2010, value := value[period == 2010], by = .(region, univocalName, variable, technology)]
 
   # b) Annual Mileage for Trucks is missing completely - insert assumptions made by Alois in 2022
   # (probably from ARIADNE)
   annualMileageTrucks <- fread(
-      text = "univocalName, annualMileage
+                               text = "univocalName, annualMileage
               Truck (0-3_5t), 21500
               Truck (7_5t), 34500
               Truck (18t), 53000
               Truck (26t), 74000
               Truck (40t), 136500")
+
+
   dt <- merge.data.table(dt, annualMileageTrucks, by = "univocalName", all.x = TRUE, allow.cartesian = TRUE)
   dt[, value := ifelse(!is.na(annualMileage), annualMileage, value)][, annualMileage := NULL]
 
-  # c) We do not have vintage tracking for the rest of the modes -> insert zeros
+  # c) New adjustments for Trucks in India based analysis in /p/projects/edget/adjustmentDataFiles/IND_validation
+  # Sources for light-medium trucks: CSTEP: 50k, ICCT: 30-70k (RM1-3 trucks), Phadke et al. 2019: 50k km/yr
+  # Assumptions: 7_5t: 45k km/yr, 18t 60k km/yr
+  # CSTEP: hhtps://cstep.in/wp-content/uploads/2025/09/Heavy-duty-high-impact_Mitigating-heavy-commercial-vehicle
+  # ICCT: https://theicct.org/wp-content/uploads/2023/06/India-HDT-fuel-efficiency_FINAL.pdf
+  # Phadke: https://eta-publications.lbl.gov/sites/default/files/electric_trucks_in_india_-_final_nov7.pdf
+  # also stored in: /p/projects/edget/adjustmentDataFiles/IND_validation/additionalLiterature/AnnualMileage
+
+
+  anMilChangesIND <- c("Truck (7_5t)" = 45000, "Truck (18t)" = 60000)
+  dt[region == "IND" & univocalName %in% names(anMilChangesIND), value := anMilChangesIND[univocalName]]
+
+  # d) We do not have vintage tracking for the rest of the modes -> insert zeros
   # Later on it would be great to top up this data
   missingAnnualMileageData <- fread(
-              text = "univocalName, annualMileage
+                                    text = "univocalName, annualMileage
               International Aviation, 0
               Domestic Aviation, 0
               Passenger Rail, 0

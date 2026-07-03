@@ -21,7 +21,7 @@ calcIEAOutputTransport <- function() {
   data <- toolFixIEAdataForIndustrySubsectors(data)
 
   ieamatch <- toolGetMapping(type = "sectoral", name = "structuremappingIO_outputs.csv",
-                             where = "mrcommons")
+                             where = "mrcommonsenergy")
 
   target <- c("REMINDitems_in", "REMINDitems_out", "REMINDitems_tech", "iea_product", "iea_flows")
 
