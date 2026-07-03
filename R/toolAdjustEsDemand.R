@@ -23,6 +23,20 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   dt[is.na(value), variable := "ES"]
   dt <- merge.data.table(dt, mapIso2region, by = "region", all.x = TRUE, allow.cartesian = TRUE)
 
+  # plausibilityFix_IND #plausibilityFix_Pass #plausibilityFix_Freight
+  # Scale India 2010 energy service demand up to plausible totals.
+  # Sources for the target values are:p/projects/edget/adjustmentDataFiles/IND_validation/July26/Literature
+  # /03_Paladugula.pdf and
+  # /10_ceewGCAM_outlook.pdf
+  # Note that I used the upper bound because our Energy Intensities beyond 2010 lead to higher FE than the IEA projects
+  targetPassES2010    <- 5200  # billion pkm
+  targetFreightES2010 <- 2000  # billion tkm
+  dt[region == "IND" & period %in% c(2005, 2010) & univocalName %in% filter$trn_pass,
+     value := value * targetPassES2010 / sum(value, na.rm = TRUE)]
+  dt[region == "IND" & period %in% c(2005, 2010) & univocalName %in% filter$trn_freight,
+     value := value * targetFreightES2010 / sum(value, na.rm = TRUE)]
+
+
   # 1: Some Truck types, Rail, alternative technologies and active modes are lacking energy service demand data
   # The missing modes get a zero demand for now. After the regional aggregation, the zero demand remains only
   # for alternative technologies
