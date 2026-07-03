@@ -29,8 +29,8 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   # /03_Paladugula.pdf and
   # /10_ceewGCAM_outlook.pdf
   # Note that I used the upper bound because our Energy Intensities beyond 2010 lead to higher FE than the IEA projects
-  targetPassES2010    <- 5300  # billion pkm
-  targetFreightES2010 <- 2000  # billion tkm
+  targetPassES2010    <- 5400  # billion pkm
+  targetFreightES2010 <- 2300  # billion tkm
   pass_sm2010 <- dt[region == "IND" & period %in% c(2010) & univocalName %in% filter$trn_pass,
      sum(value, na.rm = TRUE)]
   freight_sm2010 <- dt[region == "IND" & period %in% c(2010) & univocalName %in% filter$trn_freight,
