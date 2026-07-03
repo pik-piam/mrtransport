@@ -11,6 +11,7 @@
 #'
 #' @importFrom rlang .data
 #' @importFrom magclass getNames getNames<- setNames dimSums mbind
+#' @importFrom mrcommonsenergy toolFixIeaDataForIndustrySubsectors
 #'
 calcIEAOutputTransport <- function() {
 
@@ -18,7 +19,7 @@ calcIEAOutputTransport <- function() {
   data <- readSource("IEA", subtype = "EnergyBalances") * 4.1868e-5
 
   # apply IEA data postprocessing
-  data <- toolFixIEAdataForIndustrySubsectors(data)
+  data <- toolFixIeaDataForIndustrySubsectors(data)
 
   ieamatch <- toolGetMapping(type = "sectoral", name = "structuremappingIO_outputs.csv",
                              where = "mrcommonsenergy")
