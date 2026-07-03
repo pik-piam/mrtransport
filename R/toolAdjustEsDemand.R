@@ -29,12 +29,17 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   # /03_Paladugula.pdf and
   # /10_ceewGCAM_outlook.pdf
   # Note that I used the upper bound because our Energy Intensities beyond 2010 lead to higher FE than the IEA projects
-  targetPassES2010    <- 5200  # billion pkm
+  targetPassES2010    <- 5300  # billion pkm
   targetFreightES2010 <- 2000  # billion tkm
+  pass_sm2010 <- dt[region == "IND" & period %in% c(2010) & univocalName %in% filter$trn_pass,
+     sum(value, na.rm = TRUE)]
+  freight_sm2010 <- dt[region == "IND" & period %in% c(2010) & univocalName %in% filter$trn_freight,
+     sum(value, na.rm = TRUE)]
+
   dt[region == "IND" & period %in% c(2005, 2010) & univocalName %in% filter$trn_pass,
-     value := value * targetPassES2010 / sum(value, na.rm = TRUE)]
+     value := value * targetPassES2010 / pass_sm2010]
   dt[region == "IND" & period %in% c(2005, 2010) & univocalName %in% filter$trn_freight,
-     value := value * targetFreightES2010 / sum(value, na.rm = TRUE)]
+     value := value * targetFreightES2010 / freight_sm2010]
 
 
   # 1: Some Truck types, Rail, alternative technologies and active modes are lacking energy service demand data
