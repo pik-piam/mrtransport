@@ -18,6 +18,9 @@ calcIEAOutputTransport <- function() {
   # read in data and convert from ktoe to EJ
   data <- readSource("IEA", subtype = "EnergyBalances") * 4.1868e-5
 
+  # apply IEA data postprocessing
+  data <- toolFixIeaDataForIndustrySubsectors(data)
+
   ieamatch <- toolGetMapping(type = "sectoral", name = "structuremappingIO_outputs.csv",
                              where = "mrcommonsenergy")
 
