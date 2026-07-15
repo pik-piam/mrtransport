@@ -39,15 +39,17 @@ In case of questions / problems please contact Johanna Hoppe <johanna.hoppe@pik-
 
 To cite package **mrtransport** in publications use:
 
-Hoppe J, Muessel J, Hagen A, Dirnaichner A (2026). "mrtransport: Input data generation for the EDGE-Transport model - Version 0.16.4."
+Hoppe J, Muessel J, Hagen A, Dirnaichner A (2026). "mrtransport: Input data generation for the EDGE-Transport model." Version: 0.16.4, <https://github.com/pik-piam/mrtransport>.
 
 A BibTeX entry for LaTeX users is
 
  ```latex
 @Misc{,
-  title = {mrtransport: Input data generation for the EDGE-Transport model - Version 0.16.4},
+  title = {mrtransport: Input data generation for the EDGE-Transport model},
   author = {Johanna Hoppe and Jarusch Muessel and Alex K. Hagen and Alois Dirnaichner},
-  date = {2026-07-03},
+  date = {2026-07-15},
   year = {2026},
+  url = {https://github.com/pik-piam/mrtransport},
+  note = {Version: 0.16.4},
 }
 ```

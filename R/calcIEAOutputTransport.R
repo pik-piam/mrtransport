@@ -11,15 +11,10 @@
 #'
 #' @importFrom rlang .data
 #' @importFrom magclass getNames getNames<- setNames dimSums mbind
-#' @importFrom mrcommonsenergy toolFixIeaDataForIndustrySubsectors
 #'
 calcIEAOutputTransport <- function() {
 
-  # read in data and convert from ktoe to EJ
-  data <- readSource("IEA", subtype = "EnergyBalances") * 4.1868e-5
-
-  # apply IEA data postprocessing
-  data <- toolFixIeaDataForIndustrySubsectors(data)
+  data <- calcOutput("IeaEnergyBalances", ieaVersion = "default", aggregate = FALSE)
 
   ieamatch <- toolGetMapping(type = "sectoral", name = "structuremappingIO_outputs.csv",
                              where = "mrcommonsenergy")
