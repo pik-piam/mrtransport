@@ -18,7 +18,7 @@ calcIEAOutputTransport <- function() {
   data <- readSource("IEA", subtype = "EnergyBalances") * 4.1868e-5
 
   ieamatch <- toolGetMapping(type = "sectoral", name = "structuremappingIO_outputs.csv",
-                             where = "mrcommons")
+                             where = "mrcommonsenergy")
 
   target <- c("REMINDitems_in", "REMINDitems_out", "REMINDitems_tech", "iea_product", "iea_flows")
 

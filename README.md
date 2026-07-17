@@ -1,8 +1,8 @@
 # Input data generation for the EDGE-Transport model
 
-R package **mrtransport**, version **0.14.0**
+R package **mrtransport**, version **0.16.4**
 
-[![CRAN status](https://www.r-pkg.org/badges/version/mrtransport)](https://cran.r-project.org/package=mrtransport) [![R build status](https://github.com/pik-piam/mrtransport/workflows/check/badge.svg)](https://github.com/pik-piam/mrtransport/actions) [![codecov](https://codecov.io/gh/pik-piam/mrtransport/branch/master/graph/badge.svg)](https://app.codecov.io/gh/pik-piam/mrtransport) [![r-universe](https://pik-piam.r-universe.dev/badges/mrtransport)](https://pik-piam.r-universe.dev/builds)
+   [![R build status](https://github.com/pik-piam/mrtransport/workflows/check/badge.svg)](https://github.com/pik-piam/mrtransport/actions) [![codecov](https://codecov.io/gh/pik-piam/mrtransport/branch/master/graph/badge.svg)](https://app.codecov.io/gh/pik-piam/mrtransport) [![r-universe](https://pik-piam.r-universe.dev/badges/mrtransport)](https://pik-piam.r-universe.dev/builds)
 
 ## Purpose and Functionality
 
@@ -21,13 +21,13 @@ The additional repository can be made available permanently by adding the line a
 
 After that the most recent version of the package can be installed using `install.packages`:
 
-```r 
+```r
 install.packages("mrtransport")
 ```
 
 Package updates can be installed using `update.packages` (make sure that the additional repository has been added before running that command):
 
-```r 
+```r
 update.packages()
 ```
 
@@ -39,17 +39,15 @@ In case of questions / problems please contact Johanna Hoppe <johanna.hoppe@pik-
 
 To cite package **mrtransport** in publications use:
 
-Hoppe J, Muessel J, Hagen A, Dirnaichner A (2026). "mrtransport: Input data generation for the EDGE-Transport model." Version: 0.14.0, <https://github.com/pik-piam/mrtransport>.
+Hoppe J, Muessel J, Hagen A, Dirnaichner A (2026). "mrtransport: Input data generation for the EDGE-Transport model - Version 0.16.4."
 
 A BibTeX entry for LaTeX users is
 
  ```latex
 @Misc{,
-  title = {mrtransport: Input data generation for the EDGE-Transport model},
+  title = {mrtransport: Input data generation for the EDGE-Transport model - Version 0.16.4},
   author = {Johanna Hoppe and Jarusch Muessel and Alex K. Hagen and Alois Dirnaichner},
-  date = {2026-03-18},
+  date = {2026-07-03},
   year = {2026},
-  url = {https://github.com/pik-piam/mrtransport},
-  note = {Version: 0.14.0},
 }
 ```
