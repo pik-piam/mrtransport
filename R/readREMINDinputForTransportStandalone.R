@@ -4,7 +4,7 @@
 #' @param subtype Either "fuelCosts" or "esDemand"
 #'
 readREMINDinputForTransportStandalone <- function(subtype) {
-  gdxPath <- file.path("v1.2", "fulldata.gdx")
+  gdxPath <- file.path("v1.3", "fulldata.gdx")
 
   if (subtype == "fuelCosts") {
     out <- gdx::readGDX(gdxPath, "pm_FEPrice",
