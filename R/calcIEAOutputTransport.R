@@ -9,7 +9,6 @@
 #' @return IEA data as MAgPIE object aggregated to country level
 #' @author Falk Benke
 #'
-#' @importFrom rlang .data
 #' @importFrom magclass getNames getNames<- setNames dimSums mbind
 #'
 calcIEAOutputTransport <- function() {
