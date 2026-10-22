@@ -70,13 +70,13 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   # 26t    15.0 t: mean of TERI (2024) survey (16.2-25 t: 13 t; above 25 t: 19 t, net) and GIZ and TERI (2022)
   #                (16-25 t: 10.3 t; 25-40 t: 18.4 t, net)
   # 40t    19.0 t: TERI (2024) survey above 25 t (19 t net) and GIZ and TERI (2022) above 40 t (27 t x 0.735)
-  # Values correspond to: B-LF-01 to 05 in
-  # .../IND_validation/data/truck_validation/estimates/energyLoadMileage_bounds.csv
+  # Values correspond to: B-LF-01 to 05
+  # in .../IND_validation/data/truck_validation/estimates/energyLoadMileage_bounds.csv
   # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector, Table 4.3 (field survey of goods
   #     vehicles, 2023); SourceID: S01; src07_TERI_2024_energyTransitionRoadmap.pdf
   #   GIZ and TERI (2022), Freight Greenhouse Gas Calculator, methodology report; SourceID: S14;
-  #     trucks/T14_GIZ_TERI_2022_freightGHGcalculator.pdf
+  #     file trucks/T14_GIZ_TERI_2022_freightGHGcalculator.pdf
   loadFactorIND <- c("Truck (0-3_5t)" = 0.7, "Truck (7_5t)" = 5.0, "Truck (18t)" = 8.7,
                      "Truck (26t)" = 15.0, "Truck (40t)" = 19.0)
   dt[region == "IND" & univocalName %in% names(loadFactorIND), value := loadFactorIND[univocalName]]

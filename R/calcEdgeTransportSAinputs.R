@@ -248,7 +248,7 @@ calcEdgeTransportSAinputs <- function(subtype, SSPscen = "SSP2", IEAharm = TRUE)
       loadFactor <- magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "loadFactor",
                                          warnNA = FALSE, aggregate = FALSE))
       annualMileage <- magpie2dt(calcOutput(type = "EdgeTransportSAinputs", subtype = "annualMileage",
-                                         warnNA = FALSE, aggregate = FALSE))
+                                            warnNA = FALSE, aggregate = FALSE))
 
       # Inter- and extrapolate all data to model input data years
       data <- list(esDemandGCAM     = esDemandGCAM,

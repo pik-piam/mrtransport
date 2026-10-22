@@ -130,7 +130,7 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
   #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
   #     Transport; SourceID: S26; trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf and
-  #     trucks/T26_CEEW_2025_vehicleOwnershipCosts_annexure.pdf
+  #     file trucks/T26_CEEW_2025_vehicleOwnershipCosts_annexure.pdf
   # Note: CEEW's 3W-P are auto-rickshaws (L5) without the low-speed e-rickshaws, which make most electric
   # three-wheeler sales. Three-wheelers are bought new for commercial use, so no GDP factor (step 6).
   ceew3W <- c("2024" = 2.38, "2030" = 2.55) / mean(c(1.77, 1.93, 1.97))

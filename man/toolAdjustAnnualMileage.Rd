@@ -17,11 +17,24 @@ univocalNames}
 \item{ariadneAdjustments}{switch on and off adjustments according to ARIADNE model intercomparison in 2022}
 }
 \value{
-a quitte object
+a quitte object with the adjusted annual mileage in vehicle-km per vehicle and year
 }
 \description{
-Perform parameter specific adjustments on the input data
+Fills gaps in the raw annual mileage (TRACCS, UCD) and sets values for single regions and modes.
+}
+\details{
+India (IND)
+\itemize{
+\item Trucks (step 2c): Means of published Indian fleet values replace previous specific assumptions and global
+benchmarks (2b)
+\item Cars (after step 3a): 13,500 km/yr for all car classes, derived from 36,500 pkm per car and year and 2.7
+passengers per car. Previous estimates resulted in 2010 car stock well above literature values.
+\item Passenger three-wheelers ("Rickshaw", step 2a): 26,200 km/yr, mean of TERI & CEEW
+\item Code comments give the source of each number, with multiple resources in
+/p/projects/edget/adjustmentDataFiles/IND_validation/.
+\item and local copies of pdfs in .../Input/papers/
+}
 }
 \author{
-Johanna Hoppe
+Johanna Hoppe, Jarusch Muessel
 }

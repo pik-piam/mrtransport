@@ -90,14 +90,14 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   # Split above 3.5 t: cumulative sales FY 2013-14 to 2019-20 by segment (published: CEEW (2025), Fig. 1), with
   #   12-20 t at 0.41 of the 12-25 t segment (mean of ICCT's FY 2013-14, 2017-18 and 2019-20 values)
   # Cross-check: with IND LF and AM these shares give 3.4 % of tkm in 0-3.5t trucks (estimate B-TS-01)
-  # Values correspond to: B-ST-01 to 05 in
-  # .../IND_validation/data/truck_validation/estimates/fleetComposition_bounds.csv
+  # Values correspond to: B-ST-01 to 05
+  # in .../IND_validation/data/truck_validation/estimates/fleetComposition_bounds.csv
   # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
   #   TERI (2020), Road Map for Electrification of Urban Freight in India (Part I); SourceID: S19;
-  #     trucks/T19_TERI_2020_urbanFreightElectrification.pdf
+  #     file trucks/T19_TERI_2020_urbanFreightElectrification.pdf
   #   CEEW (2025), India's Road to Zero-emission Trucking; SourceID: S03; src08_CEEW_2025_zeroEmissionTrucking.pdf
   #   NITI Aayog and RMI (2022), Transforming Trucking in India; SourceID: S05;
-  #     trucks/T05_NITI_RMI_2022_zeroEmissionTrucks.pdf
+  #     file trucks/T05_NITI_RMI_2022_zeroEmissionTrucks.pdf
   #   ICCT (2015, 2019, 2021b), Market analysis of heavy-duty vehicles in India; SourceID: S18, S21, S17;
   #     trucks/T18_ICCT_2015_HDVmarket.pdf, T21_ICCT_2019_HDVmarket.pdf, T17_ICCT_2021_HDVmarket.pdf
 
@@ -275,7 +275,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   #
   # 7a: Remove factor 1.4 on all IND demand in 2005 and 2010, replaced by the 2010 targets of 7b.
   # Old code: dt[region == "IND" & period %in% c(2005, 2010) & univocalName %in% c(filter$trn_pass, filter$trn_freight),
-  #    value := value * 1.4] 
+  #    value := value * 1.4]
 
   # 7b: Road, shipping and aviation demand in 2005-2010
   #
@@ -300,8 +300,8 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   # 2,903 billion pkm: bus share 47.6 % (TERI (2024), Figure 5.8, chart) x 6,098 (TERI's 2019-20 road total)
   # 1.033: growth of the registered bus fleet 2009-2019 (TERI (2024), Table 1.2, from MoRTH)
   # Assumption: pkm per bus constant since 2010
-  # Other published shares for more recent years: CEEW (2022), 2020: 25 %; IEA ETP 2017, 2014: 34 %; ITDP and UC Davis (2023),
-  # urban, 2015: 37 %
+  # Other published shares for more recent years: CEEW (2022), 2020: 25 %; IEA ETP 2017, 2014: 34 %;
+  # ITDP and UC Davis (2023), urban, 2015: 37 %
   #
   # Domestic aviation: 18 billion pkm in 2005 and 44 in 2010 (GCAM: 21 and 35); 1990 keeps GCAM's value
   # Published: DGCA, Handbook on Civil Aviation Statistics, as charted in TERI (2024), Figure 2.4 (2010: chart

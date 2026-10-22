@@ -82,7 +82,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;
   #     src07_TERI_2024_energyTransitionRoadmap.pdf
   #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
-  #     Transport; SourceID: S26; trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf
+  #     Transport; SourceID: S26; file trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf
   dt[region == "IND" & univocalName == "Rickshaw", value := 26200]
   dt <- dt[period <= 2010, value := value[period == 2010], by = .(region, univocalName, variable, technology)]
 
@@ -108,8 +108,8 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # 18t    48,600: mean of TERI (2024) survey (12-16.2 t: 42,208) and CSTEP (2022) Fig. 2 (16 t: 55,000)
   # 26t    64,200: mean of CSTEP (2022) Fig. 2 (25 t: 65,500) and TERI (2024) survey (HGV classes: 62,199, 64,906)
   # 40t    63,700: mean of CSTEP (2022) Fig. 2 (40.2 t: 62,500) and TERI (2024) survey (above 25 t: 64,906)
-  # Values correspond to: B-AM-01 to 05 in
-  # .../IND_validation/data/truck_validation/estimates/energyLoadMileage_bounds.csv
+  # Values correspond to: B-AM-01 to 05
+  # in .../IND_validation/data/truck_validation/estimates/energyLoadMileage_bounds.csv
   # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector, Table 4.3 (field survey of goods
   #     vehicles, 2023); SourceID: S01; src07_TERI_2024_energyTransitionRoadmap.pdf

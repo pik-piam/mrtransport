@@ -17,11 +17,22 @@ toolAdjustLoadFactor(dt, completeData, TRACCScountries, filter)
 univocalNames}
 }
 \value{
-a quitte object
+a quitte object with the adjusted load factors in p/veh (passenger modes) and t/veh (freight modes)
 }
 \description{
-Perform parameter specific adjustments on the input data
+Corrects and fills gaps in the raw load factors (TRACCS, GCAM) and sets values for single regions and modes.
+}
+\details{
+India (IND)
+\itemize{
+\item Trucks (step 4): Payloads net of empty running from Indian survey data replace the global values
+\item Passenger three-wheelers ("Rickshaw", step 5): 2.5 passengers, survey occupancy of TERI minus an assumed share
+of empty driving
+\item Code comments give the source and status of each number, with local copies in
+/p/projects/edget/adjustmentDataFiles/IND_validation/.
+\item All India-specific pdfs are in .../Input/papers/
+}
 }
 \author{
-Johanna Hoppe
+Johanna Hoppe, Jarusch Muessel
 }

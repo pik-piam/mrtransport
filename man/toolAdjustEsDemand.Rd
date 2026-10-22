@@ -13,17 +13,35 @@ toolAdjustEsDemand(dt, mapIso2region, completeData, filter, histSourceData)
 
 \item{completeData}{All combinations of region, period, univocalName and technology in EDGE-T decision tree}
 
-\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated}
-
-\item{histSourceData}{the full source data containing the annual mileage and load factor
+\item{filter}{list of filters for specific branches in the upper decision tree, containing all associated
 univocalNames}
+
+\item{histSourceData}{the full source data containing the annual mileage and load factor; their 2010 Liquids
+values turn the target truck vehicle shares of step 3 into tkm shares}
 }
 \value{
-a quitte object
+a quitte object with the adjusted energy service demand in billion pkm/yr and billion tkm/yr
 }
 \description{
-Perform parameter specific adjustments on the input data
+Fills gaps in the raw historical energy service demand (GCAM, TRACCS, Eurostat) and corrects implausible values
+for single regions and modes.
+}
+\details{
+India (IND)
+\itemize{
+\item Truck size split (step 3): Vehicle shares derived from Indian stock and sales data replace previous assumptions
+\item Bus share (step 7b): 54.5 \% of passenger road pkm in 2010, derived from TERI; replaces a factor 1/2 in step 4
+\item Road demand (step 7b): published 2010 totals (TERI, IEA) for passenger road and road freight, applied to
+2005-2010; replace a factor 1.4 on all IND demand (step 7a)
+\item Domestic shipping and aviation (step 7b): published 2010 activity (RITES, DGCA)
+\item Road demand 1990 (step 7c): computed so that the 1990 IEA harmonization factor equals the 2005 one; not an
+estimate of the 1990 activity
+\item Check (step 7d): warns when the aviation intensity factor of toolAdjustEnergyIntensity() no longer fits
+\item Code comments give the source and status of each number, with local copies in
+/p/projects/edget/adjustmentDataFiles/IND_validation/.
+\item All India-specific pdfs are in .../Input/papers/
+}
 }
 \author{
-Johanna Hoppe
+Johanna Hoppe, Jarusch Muessel
 }

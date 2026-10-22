@@ -105,9 +105,9 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   #   NITI Aayog and RMI (2021), Fast Tracking Freight in India; SourceID: S02;
   #     src02_NITI_RMI_2021_fastTrackingFreight.pdf
   #   CATF (2022), Transport Sector GHG Reduction for India; SourceID: S11;
-  #     trucks/T11_CATF_2022_indiaTransportGHG.pdf
+  #     file trucks/T11_CATF_2022_indiaTransportGHG.pdf
   #   CSTEP (2022), The Potential to Electrify Freight Transportation in India; SourceID: S15;
-  #     trucks/T15_CSTEP_2022_electrifyFreight.pdf
+  #     file trucks/T15_CSTEP_2022_electrifyFreight.pdf
   trucksIND <- data.table(univocalName = c("Truck (0-3_5t)", "Truck (7_5t)", "Truck (18t)", "Truck (26t)",
                                            "Truck (40t)"),
                           target   = c(2.6, 4.8, 6.4, 10.5, 11.6),
@@ -160,9 +160,9 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector, Table 4.2 (field survey of passenger
   #     vehicles, 2023); SourceID: S01; src07_TERI_2024_energyTransitionRoadmap.pdf
   #   LBNL and ICCT (2017), Improved heavy-duty vehicle fuel efficiency in India; SourceID: S24;
-  #     trucks/T24_LBNL_ICCT_2017_HDVfuelEfficiency.pdf
+  #     file trucks/T24_LBNL_ICCT_2017_HDVfuelEfficiency.pdf
   #   Shakti (2017), Improving bus fuel efficiency through fleet inspection and maintenance practices;
-  #     SourceID: S25; trucks/T25_Shakti_2017_busFuelEfficiency.pdf
+  #     SourceID: S25; file trucks/T25_Shakti_2017_busFuelEfficiency.pdf
   #   No local copy: IPCC (2006), 2006 IPCC Guidelines for National Greenhouse Gas Inventories, Vol. 2, Ch. 1,
   #     Table 1.2 (p. 1.18); BIS, IS 2796:2017 (petrol) and IS 1460:2017 (diesel), BS VI, density limits as listed
   #     in HPCL's MS/HSD BS-VI specification sheet

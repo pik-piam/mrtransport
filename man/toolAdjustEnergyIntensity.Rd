@@ -25,11 +25,24 @@ univocalNames}
 \item{ariadneAdjustments}{optional parameter adjustements according to ARIADNE model intercomparison in 2022}
 }
 \value{
-a quitte object
+a quitte object with the adjusted raw energy intensities in MJ/vehkm, from 2005 on (earlier years are
+set to the 2005 values in step 5)
 }
 \description{
-Perform parameter specific adjustments on the input data
+Applies trends, corrections and gap fills to the raw energy intensities (TRACCS, GCAM, PSI) and sets values for
+single regions and modes.
+}
+\details{
+India (IND)
+\itemize{
+\item Trucks (step 2b): Ratios between classes from published Indian fleet values replace PSI's European ratios
+\item Domestic aviation (step 2c): factor 0.53, so that the harmonized 2010 fuel use equals the IEA's
+\item Cars, two-, three-wheelers and buses (step 2d): Liquids scaled to Indian survey fuel economy in 2010
+\item Code comments give the source and status of each number, with local copies in
+/p/projects/edget/adjustmentDataFiles/IND_validation/.
+\item All India-specific pdfs are in .../Input/papers/
+}
 }
 \author{
-Johanna Hoppe
+Johanna Hoppe, Jarusch Muessel
 }

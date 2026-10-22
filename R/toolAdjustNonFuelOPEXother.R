@@ -127,9 +127,9 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filt
   # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
   #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
   #     Transport; SourceID: S26; trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf and
-  #     trucks/T26_CEEW_2025_vehicleOwnershipCosts_annexure.pdf
-  ceewMaintenance <- c(EV = 0.42, ICE = mean(c(0.61, 0.61, 0.64)))                       # INR/km
-  ceewInsurance <- 0.01 * c(EV = 2.38, ICE = mean(c(1.77, 1.93, 1.97))) * 1e5 / 33000    # INR/km
+  #     file trucks/T26_CEEW_2025_vehicleOwnershipCosts_annexure.pdf
+  ceewMaintenance <- c(EV = 0.42, ICE = mean(c(0.61, 0.61, 0.64)))                       # in INR/km
+  ceewInsurance <- 0.01 * c(EV = 2.38, ICE = mean(c(1.77, 1.93, 1.97))) * 1e5 / 33000    # in INR/km
   ceewOPEX <- ceewMaintenance + ceewInsurance
   ratio3W <- ceewOPEX[["EV"]] / ceewOPEX[["ICE"]]
   liquids3W <- dt[univocalName == "Rickshaw" & technology == "Liquids", .(region, period, technology = "BEV",
