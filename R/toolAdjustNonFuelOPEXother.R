@@ -1,7 +1,16 @@
 #' Perform parameter specific adjustments on the input data
 #'
+#' Fills gaps in the raw non-fuel OPEX of vehicle types without fleet tracking and sets values for single regions and
+#' modes.
 #'
-#' @author Johanna Hoppe
+#' @details India (IND)
+#' - Passenger three-wheelers ("Rickshaw", step 4): Liquids from UCD's Indian three-wheeler (toolPrepareUCD()); BEV =
+#'   Liquids x EV/ICE ratio of maintenance plus insurance from CEEW (2025c)
+#' - Code comments give the source and status of each number, with local copies in
+#'   /p/projects/edget/adjustmentDataFiles/IND_validation/.
+#' - All India-specific pdfs are in .../Input/papers/
+#'
+#' @author Johanna Hoppe, Jarusch Muessel
 #' @param dt calculated raw data without adjustments
 #' @param ISOcountries list of iso countries
 #' @param yrs temporal resolution of EDGE-T model
@@ -14,7 +23,7 @@
 
 toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filter) {
   value <- . <- region  <- univocalName <- check <- unit  <- variable <-
-    period <- technology <- NULL
+    period <- technology <- liquids <- NULL
 
   # 1: Aggregate different non fuel OPEX types
   dt <- dt[, .(value = sum(value)), by = c("region", "period", "univocalName", "technology", "unit")]
@@ -105,12 +114,29 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filt
   missingMoped[, value := twoW50][, twoW50 := NULL]
   missingMoped[is.na(value), value := twoW250][, twoW250 := NULL]
 
-  missing3W <- merge.data.table(missing3W, twoW250, by = c("region", "technology", "period"), all.x = TRUE)
-  missing3W <- merge.data.table(missing3W, twoW50, by = c("region", "technology", "period"), all.x = TRUE)
-  missing3W <- merge.data.table(missing3W, twoWmoped, by = c("region", "technology", "period"), all.x = TRUE)
-  missing3W[, value := twoW250][, twoW250 := NULL]
-  missing3W[is.na(value), value := twoW50][, twoW50 := NULL]
-  missing3W[is.na(value), value := twoWmoped][, twoWmoped := NULL]
+  # Rickshaw (passenger three-wheelers, IND only) #plausibilityFix_IND #plausibilityFix_Pass
+  # Liquids: UCD's Indian three-wheelers (see toolPrepareUCD()), 0.0062 US$2017/vehkm in all years
+  # BEV: Liquids x EV/ICE ratio of maintenance plus insurance, as UCD has no electric three-wheeler.
+  # Derived: ratio = (maintenance + insurance)_EV / (maintenance + insurance)_ICE in INR/km, for passenger
+  # three-wheelers (3W-P); no currency conversion needed, as only the ratio is used
+  # Maintenance EV 0.42, ICE petrol 0.61, diesel 0.61, CNG 0.64 INR/km (published: CEEW (2025c), Table 5)
+  # Insurance 1 % of the purchase price per year (EV 2.38, ICE 1.77, 1.93, 1.97 INR lakh; published: CEEW (2025c),
+  # Annexure 1) over CEEW's 33,000 km/yr (not the model's 26,200, to stay consistent within CEEW)
+  # -> EV 0.49, ICE 0.68 INR/km (unweighted ICE means), ratio 0.73
+  # Battery replacement left out, as CEEW gives no number for it (assumption)
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
+  #     Transport; SourceID: S26; trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf and
+  #     trucks/T26_CEEW_2025_vehicleOwnershipCosts_annexure.pdf
+  ceewMaintenance <- c(EV = 0.42, ICE = mean(c(0.61, 0.61, 0.64)))                       # INR/km
+  ceewInsurance <- 0.01 * c(EV = 2.38, ICE = mean(c(1.77, 1.93, 1.97))) * 1e5 / 33000    # INR/km
+  ceewOPEX <- ceewMaintenance + ceewInsurance
+  ratio3W <- ceewOPEX[["EV"]] / ceewOPEX[["ICE"]]
+  liquids3W <- dt[univocalName == "Rickshaw" & technology == "Liquids", .(region, period, technology = "BEV",
+                                                                          liquids = value)]
+  missing3W <- merge.data.table(missing3W, liquids3W, by = c("region", "technology", "period"), all.x = TRUE)
+  missing3W[, value := liquids * ratio3W][, liquids := NULL]
+  if (anyNA(missing3W$value)) stop("Rickshaw non-fuel OPEX: Liquids are missing")
 
 
   missing2_3W <- rbind(missing50, missing250, missingMoped, missing3W)

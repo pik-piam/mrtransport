@@ -22,8 +22,19 @@ univocalNames}
 a quitte object
 }
 \description{
-Perform parameter specific adjustments on the input data
+Fills gaps in the raw non-fuel OPEX of vehicle types without fleet tracking and sets values for single regions and
+modes.
+}
+\details{
+India (IND)
+\itemize{
+\item Passenger three-wheelers ("Rickshaw", step 4): Liquids from UCD's Indian three-wheeler (toolPrepareUCD()); BEV =
+Liquids x EV/ICE ratio of maintenance plus insurance from CEEW (2025c)
+\item Code comments give the source and status of each number, with local copies in
+/p/projects/edget/adjustmentDataFiles/IND_validation/.
+\item All India-specific pdfs are in .../Input/papers/
+}
 }
 \author{
-Johanna Hoppe
+Johanna Hoppe, Jarusch Muessel
 }

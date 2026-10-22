@@ -1,7 +1,15 @@
 #' Perform parameter specific adjustments on the input data
 #'
+#' Fills gaps in the raw CAPEX of vehicle types without fleet tracking and sets values for single regions and modes.
 #'
-#' @author Johanna Hoppe
+#' @details India (IND)
+#' - Passenger three-wheelers ("Rickshaw", step 5): Liquids from UCD's Indian three-wheeler (toolPrepareUCD()); BEV =
+#'   Liquids x BEV/ICE price ratio from CEEW (2025c), before 2024 following UCD's Indian motorcycles
+#' - Code comments give the source and status of each number, with local copies in
+#'   /p/projects/edget/adjustmentDataFiles/IND_validation/.
+#' - All India-specific pdfs are in .../Input/papers/
+#'
+#' @author Johanna Hoppe, Jarusch Muessel
 #' @param dt calculated raw data without adjustments
 #' @param ISOcountries list of iso countries
 #' @param yrs temporal resolution of EDGE-T model
@@ -15,7 +23,7 @@
 
 toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, filter) {
   variable <- . <- value     <- technology <- gdppc <-
-    period <- region <- univocalName <- unit <- check  <- NULL
+    period <- region <- univocalName <- unit <- check  <- ratio2W <- ratio2W2024 <- ratio <- liquids <- NULL
 
   # 1: Aggregate different CAPEX types
   dt <- dt[, .(value = sum(value)), by = c("region",  "period", "univocalName", "technology",  "unit")]
@@ -109,12 +117,36 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   missingMoped[, value := twoW50][, twoW50 := NULL]
   missingMoped[is.na(value), value := twoW250][, twoW250 := NULL]
 
-  missing3W <- merge.data.table(missing3W, twoW250, by = c("region", "technology", "period"), all.x = TRUE)
-  missing3W <- merge.data.table(missing3W, twoW50, by = c("region", "technology", "period"), all.x = TRUE)
-  missing3W <- merge.data.table(missing3W, twoWmoped, by = c("region", "technology", "period"), all.x = TRUE)
-  missing3W[, value := twoW250][, twoW250 := NULL]
-  missing3W[is.na(value), value := twoW50][, twoW50 := NULL]
-  missing3W[is.na(value), value := twoWmoped][, twoWmoped := NULL]
+  # Rickshaw (passenger three-wheelers, IND only) #plausibilityFix_IND #plausibilityFix_Pass
+  # Liquids: UCD's Indian three-wheelers (see toolPrepareUCD()), 0.015 US$2017/vehkm in all years
+  # BEV: Liquids x BEV/ICE ratio, since UCD has no electric three-wheeler.
+  # From 2024, derived: ratio = EV price / mean ICE price, for passenger three-wheelers (3W-P), INR lakh before taxes
+  # and subsidies (published: CEEW (2025c), Annexure 1); no currency conversion needed, as only the ratio is used
+  # EV price: 2.38 (2024) and 2.55 (from 2030; CEEW gives no reason for the rise)
+  # ICE price: mean 1.89 of petrol 1.77, diesel 1.93 and CNG 1.97 (Rickshaw has one ICE technology, Liquids)
+  # -> 1.26 (2024), 1.35 (from 2030), linear in between
+  # Before 2024 (assumption, no Indian three-wheeler series): UCD's BEV/ICE ratio of Indian motorcycles (50-250cc),
+  # scaled to 1.26 in 2024 -> 2.5 (2005), 2.1 (2010), 1.3 (2020)
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
+  #     Transport; SourceID: S26; trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf and
+  #     trucks/T26_CEEW_2025_vehicleOwnershipCosts_annexure.pdf
+  # Note: CEEW's 3W-P are auto-rickshaws (L5) without the low-speed e-rickshaws, which make most electric
+  # three-wheeler sales. Three-wheelers are bought new for commercial use, so no GDP factor (step 6).
+  ceew3W <- c("2024" = 2.38, "2030" = 2.55) / mean(c(1.77, 1.93, 1.97))
+  ratio3W <- twoW50[region %in% missing3W$region,
+                    .(ratio2W = twoW50[technology == "BEV"] / twoW50[technology == "Liquids"]),
+                    by = c("region", "period")]
+  ratio3W[, ratio2W2024 := approx(period, ratio2W, xout = 2024)$y, by = "region"]
+  ratio3W[, ratio := ifelse(period < 2024, ceew3W[["2024"]] * ratio2W / ratio2W2024,
+                            approx(c(2024, 2030), ceew3W, xout = pmin(pmax(period, 2024), 2030))$y)]
+  ratio3W <- ratio3W[, .(region, period, technology = "BEV", ratio)]
+  liquids3W <- dt[univocalName == "Rickshaw" & technology == "Liquids", .(region, period, technology = "BEV",
+                                                                          liquids = value)]
+  missing3W <- merge.data.table(missing3W, ratio3W, by = c("region", "technology", "period"), all.x = TRUE)
+  missing3W <- merge.data.table(missing3W, liquids3W, by = c("region", "technology", "period"), all.x = TRUE)
+  missing3W[, value := liquids * ratio][, c("liquids", "ratio") := NULL]
+  if (anyNA(missing3W$value)) stop("Rickshaw CAPEX: Liquids or the BEV ratio are missing")
 
   missing2_3W <- rbind(missing50, missing250, missingMoped, missing3W)
   missing2_3W[, unit := unique(dt[!(is.na(value))]$unit)][, variable := "Capital costs (total)"]
