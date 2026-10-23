@@ -305,6 +305,8 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   #   person: the level of China at India's 2019 income (2006-07: 770-870 pkm per person of intercity road travel
   #   plus about 250 of urban buses; NBS) and of the EU (about 990), below the US (1,737, with school buses)
   #   (note A35 in .../IND_validation/data/validationEstimates.xlsx)
+  # Since note A39 (NITI's own 2020 road split) the workbook's 2020 bus pkm are 1,567 (2-4-wheelers 3,330);
+  #   1,187 is kept (1,133 on that basis, -4.6 %)
   # 1.033: growth of the registered bus fleet 2009-2019 (TERI (2024), Table 1.2, from MoRTH)
   # Assumption: pkm per bus constant since 2010
   # Not used: TERI's 2019-20 bus pkm (2,903 billion, 47.6 % of its model's road total 6,098; about 2,100 pkm per
@@ -314,7 +316,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   #
   # Domestic aviation: 18 billion pkm in 2005 and 44 in 2010 (GCAM: 21 and 35); 1990 keeps GCAM's value
   # Published: DGCA, Handbook on Civil Aviation Statistics, as charted in TERI (2024), Figure 2.4 (2010: chart
-  # reading)
+  # reading); DGCA via MoSPI (2010), Infrastructure Statistics, Table 5.0: 18.0 (2005), 41.7 (2008), 37.7 (2009)
   #
   # Values correspond to: notes and source numbers in .../IND_validation/data/validationEstimates.xlsx
   # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
@@ -326,6 +328,8 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   #     src02_NITI_RMI_2021_fastTrackingFreight.pdf
   #   Raghuram (2021), Challenges to Sustainable Road Freight Transport in India (slides quoting RITES (2009), Total
   #     Transport System Study); workbook source 60; Raghuram_challenges_sustainable_Road_Freight.pdf
+  #   MoSPI (2010), Infrastructure Statistics 2010, Chapter 5 (Air Transport), Table 5.0, from DGCA;
+  #     MoSPI_2010_infrastructureStatistics_ch5_airTransport.pdf
   #   CEEW (2022), India Transport Energy Outlook; workbook source 10; src10_CEEW_2022_transportEnergyOutlook.pdf
   #   Paladugula et al. (2018), A multi-model assessment of energy and emissions for India's transportation sector
   #     through 2050; workbook source 3; src03_Paladugula_2018_multiModelAssessment.pdf
@@ -366,14 +370,16 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   #   for 2005-2010, as Delhi's buses run on CNG since 2002)
   # Why: the IEA harmonization (toolIEAharmonization()) scales gases and liquids separately. With GCAM's gas share
   #   the gas factor was about 0.5: a CNG bus needed 0.46 x the energy of a diesel bus per vkm, although its
-  #   spark-ignition engine is less efficient than a diesel. The liquids factor carried the other side: the diesel bus pkm were too few (about 1,030 billion,
+  #   spark-ignition engine is less efficient than a diesel. The liquids factor carried the other side: the diesel
+  #   bus pkm were too few (about 1,030 billion,
   #   PPAC's diesel use of buses gives 1,070-1,330 at a load factor of 37), so every IND liquids intensity was about
   #   2 % too high.
   # Note: the IEA's transport gas also feeds CNG 3-wheelers (28 % of the registered passenger 3W), cars (7 %) and
   #   taxis (19 %, TERI (2024), p. 38); EDGE-T has no gas 3W and GCAM almost no gas cars, so all IND gas lands on
   #   buses and small trucks. A CNG bus then needs about 1.5 x the energy of a diesel bus per vkm (upper end).
-  # Sources: TERI (2024) as above; PPAC (2013-14), All India Study on Sectoral Demand of Diesel and Petrol
-  #   (cross-check, truck source S23 in .../IND_validation/data/truck_validation/estimates/sources.csv)
+  # Sources: TERI (2024) as above; Nielsen for PPAC (2013), All India Study on Sectoral Demand of Diesel and Petrol
+  #   (survey 2012-13: buses 9.55 % of diesel sales; report not online, shares as reported in the press; its
+  #   2020-21 successor is truck source S23 in .../IND_validation/data/truck_validation/estimates/sources.csv)
   cngShareBusIND <- 0.04
   dt[region == "IND" & period >= 2005 & univocalName == "Bus",
      value := sum(value) * ifelse(technology == "Gases", cngShareBusIND,
