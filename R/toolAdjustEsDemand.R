@@ -5,10 +5,12 @@
 #'
 #' @details India (IND)
 #' - Truck size split (step 3): Vehicle shares derived from Indian stock and sales data replace previous assumptions
-#' - Bus share (step 7b): 54.5 % of passenger road pkm in 2010, derived from TERI; replaces a factor 1/2 in step 4
-#' - Road demand (step 7b): published 2010 totals (TERI, IEA) for passenger road and road freight, applied to
-#'   2005-2010; replace a factor 1.4 on all IND demand (step 7a)
+#' - Bus demand (step 7b): 1,187 billion pkm in 2010 (40.4 % of passenger road pkm), derived from India's pre-COVID
+#'   bus use benchmarked against China at the same income; replaces a factor 1/2 in step 4
+#' - Road demand (step 7b): passenger road = buses + 2-4-wheelers (1,753 billion pkm, as before); road freight from
+#'   the IEA's published 2010 total; applied to 2005-2010; replace a factor 1.4 on all IND demand (step 7a)
 #' - Domestic shipping and aviation (step 7b): published 2010 activity (RITES, DGCA)
+#' - Bus technologies (step 7b): 4 % of the 2005-2010 bus pkm on gas (CNG share of the registered buses, TERI)
 #' - Road demand 1990 (step 7c): computed so that the 1990 IEA harmonization factor equals the 2005 one; not an
 #'   estimate of the 1990 activity
 #' - Check (step 7d): warns when the aviation intensity factor of toolAdjustEnergyIntensity() no longer fits
@@ -279,9 +281,11 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
 
   # 7b: Road, shipping and aviation demand in 2005-2010
   #
-  # Passenger road (bus, cars, 2W, 3W): 3,852 billion pkm in 2010
-  # Published: TERI (2024), Figure 2.2 (FY 2009-10)
-  # Other published 2010 values: NITI Aayog (2026) 2,964; CEEW (2022) 1,782; Paladugula et al. (2018) 2,000-5,800
+  # Passenger road (bus, cars, 2W, 3W): 2,940 billion pkm in 2010 = buses 1,187 + 2-4-wheelers 1,753 (below)
+  # 2-4-wheelers: 1,753 billion pkm, kept from the earlier derivation (TERI (2024), Figure 2.2, 3,852 for FY 2009-10,
+  # minus a bus share of 54.5 %); with it, the 2010 car and two-wheeler stocks match the published ones
+  # (car mileage, toolAdjustAnnualMileage())
+  # Other published 2010 values: CEEW (2022) 1,782; Paladugula et al. (2018) 2,000-5,800
   #
   # Road freight (all truck classes): 1,082 billion tkm in 2010
   # Published: IEA, World Energy Outlook 2025, historical data (historical.mif);
@@ -294,14 +298,19 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   # Derived: 89.5 billion tkm in 2007-08 (published: RITES (2009), quoted in Raghuram (2021)) grown at 6.5 %/yr
   # (assumption: the rate of the 2020 value, note A2) -> lead's to good results: FE 0.036 EJ, close to IEA's 0.034 EJ
   #
-  # Bus share: 54.5 % of passenger road pkm in 2010
-  # Derived: bus pkm 2019-20 combined with bus fleet growth:
-  # 2,903 / 1.033^10 / 3,852 = 54.5 % #2020-bus-ES / (bus-fleet growth)^10 / 2010-total-ES
-  # 2,903 billion pkm: bus share 47.6 % (TERI (2024), Figure 5.8, chart) x 6,098 (TERI's 2019-20 road total)
+  # Buses: 1,187 billion pkm in 2010 (40.4 % of passenger road pkm)
+  # Derived: pre-COVID bus pkm (2019-20) taken back with the bus fleet growth:
+  # 1,642 / 1.033^10 = 1,187 #2020-bus-ES / (bus-fleet growth)^10
+  # 1,642 billion pkm: bus share 32 % of road pkm with the 2-4-wheelers' 3,490 billion pkm, about 1,170 pkm per
+  #   person: the level of China at India's 2019 income (2006-07: 770-870 pkm per person of intercity road travel
+  #   plus about 250 of urban buses; NBS) and of the EU (about 990), below the US (1,737, with school buses)
+  #   (note A35 in .../IND_validation/data/validationEstimates.xlsx)
   # 1.033: growth of the registered bus fleet 2009-2019 (TERI (2024), Table 1.2, from MoRTH)
   # Assumption: pkm per bus constant since 2010
-  # Other published shares for more recent years: CEEW (2022), 2020: 25 %; IEA ETP 2017, 2014: 34 %;
-  # ITDP and UC Davis (2023), urban, 2015: 37 %
+  # Not used: TERI's 2019-20 bus pkm (2,903 billion, 47.6 % of its model's road total 6,098; about 2,100 pkm per
+  #   person, twice China's level at the same income; 54.5 % in 2010 until 2026-10-23); CEEW (2022), 2020: 25 %
+  #   of a road total under half of the others
+  # Other published shares: IEA ETP 2017, 2014: 34 %; ITDP and UC Davis (2023), urban, 2015: 37 %
   #
   # Domestic aviation: 18 billion pkm in 2005 and 44 in 2010 (GCAM: 21 and 35); 1990 keeps GCAM's value
   # Published: DGCA, Handbook on Civil Aviation Statistics, as charted in TERI (2024), Figure 2.4 (2010: chart
@@ -322,16 +331,22 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   #     through 2050; workbook source 3; src03_Paladugula_2018_multiModelAssessment.pdf
   #   ITDP and UC Davis (2023), Compact Cities Electrified: India; workbook source 6;
   #     src06_ITDP_UCD_2023_compactCitiesElectrified.pdf
+  #   National Bureau of Statistics of China, China Statistical Yearbook 2010, Table 16-2 (passenger-km by mode,
+  #     2005-2009) and 2009, Table 10-11 (urban public transport, 2008); workbook sources 80 and 81 (web pages)
+  #   BTS (2026), Pocket Guide to Transportation, Table 2-1 (US); Eurostat (2024) EU modal split; workbook
+  #     sources 40 and 52
   #   Datasets without a PDF: IEA (2025), World Energy Outlook 2025, and IEA (2017), Energy Technology Perspectives
   #     2017, in historical.mif of the edgeTransport input data; DGCA (read in TERI (2024), Figure 2.4)
   # Note: The IEA harmonization scales all IND liquids modes by one factor per year, so 2010 activity that is too
   # low or too high moves the intensity of every mode. A bus pkm needs a quarter to a third of the fuel of a car or
   # 2W pkm, so the bus share moves that factor too. The aviation intensity factor of toolAdjustEnergyIntensity()
   # (step 2c) is set for the activity here; the check in 7d warns when it no longer fits.
-  passRoadIND2010 <- 3852  # billion pkm, TERI (2024)
+  busPkmIND2010   <- 1187  # billion pkm, derived: pre-COVID bus pkm taken back with the fleet growth
+  ldvPkmIND2010   <- 1753  # billion pkm, 2-4-wheelers, kept from the earlier derivation from TERI (2024)
+  passRoadIND2010 <- busPkmIND2010 + ldvPkmIND2010
+  busShareIND2010 <- busPkmIND2010 / passRoadIND2010
   truckTkmIND2010 <- 1082  # billion tkm, IEA WEO 2025 historical road freight
   shipTkmIND2010  <- 105   # billion tkm, RITES (2009) 2007-08 value grown at 6.5 %/yr
-  busShareIND2010 <- 0.545 # buses in passenger road pkm, derived from TERI (2024)
   airPkmIND       <- c("2005" = 18, "2010" = 44) # billion pkm, DGCA via TERI (2024), Figure 2.4
   busIND <- dt[region == "IND" & period == 2010 & univocalName == "Bus", sum(value)]
   ldvIND <- dt[region == "IND" & period == 2010 & univocalName %in% setdiff(filter$trn_pass_road, "Bus"), sum(value)]
@@ -345,6 +360,25 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
      value := value * shipTkmIND2010 / sum(value)]
   dt[region == "IND" & period %in% c(2005, 2010) & univocalName == "Domestic Aviation",
      value := value * airPkmIND[as.character(period)] / sum(value), by = "period"]
+
+  # Bus technologies in 2005-2010: 4 % of bus pkm on gas (CNG), the rest on liquids (GCAM: 13 % on gas in 2010)
+  # Published: CNG buses are 4 % of the registered buses (TERI (2024), p. 38, VAHAN registrations up to 2024; used
+  #   for 2005-2010, as Delhi's buses run on CNG since 2002)
+  # Why: the IEA harmonization (toolIEAharmonization()) scales gases and liquids separately. With GCAM's gas share
+  #   the gas factor was about 0.5: a CNG bus needed 0.46 x the energy of a diesel bus per vkm, although its
+  #   spark-ignition engine is less efficient than a diesel. The liquids factor carried the other side: the diesel bus pkm were too few (about 1,030 billion,
+  #   PPAC's diesel use of buses gives 1,070-1,330 at a load factor of 37), so every IND liquids intensity was about
+  #   2 % too high.
+  # Note: the IEA's transport gas also feeds CNG 3-wheelers (28 % of the registered passenger 3W), cars (7 %) and
+  #   taxis (19 %, TERI (2024), p. 38); EDGE-T has no gas 3W and GCAM almost no gas cars, so all IND gas lands on
+  #   buses and small trucks. A CNG bus then needs about 1.5 x the energy of a diesel bus per vkm (upper end).
+  # Sources: TERI (2024) as above; PPAC (2013-14), All India Study on Sectoral Demand of Diesel and Petrol
+  #   (cross-check, truck source S23 in .../IND_validation/data/truck_validation/estimates/sources.csv)
+  cngShareBusIND <- 0.04
+  dt[region == "IND" & period >= 2005 & univocalName == "Bus",
+     value := sum(value) * ifelse(technology == "Gases", cngShareBusIND,
+                                  (1 - cngShareBusIND) * value / sum(value[technology != "Gases"])),
+     by = "period"]
 
   # 7c: Road demand in 1990 (passenger road and trucks; rail, aviation and shipping keep GCAM's values)
   # One factor, computed so that the 1990 liquids harmonization factor equals the 2005 one (1.28 on 2026-10-21)

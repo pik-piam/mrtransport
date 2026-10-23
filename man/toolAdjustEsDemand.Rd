@@ -30,10 +30,12 @@ for single regions and modes.
 India (IND)
 \itemize{
 \item Truck size split (step 3): Vehicle shares derived from Indian stock and sales data replace previous assumptions
-\item Bus share (step 7b): 54.5 \% of passenger road pkm in 2010, derived from TERI; replaces a factor 1/2 in step 4
-\item Road demand (step 7b): published 2010 totals (TERI, IEA) for passenger road and road freight, applied to
-2005-2010; replace a factor 1.4 on all IND demand (step 7a)
+\item Bus demand (step 7b): 1,187 billion pkm in 2010 (40.4 \% of passenger road pkm), derived from India's pre-COVID
+bus use benchmarked against China at the same income; replaces a factor 1/2 in step 4
+\item Road demand (step 7b): passenger road = buses + 2-4-wheelers (1,753 billion pkm, as before); road freight from
+the IEA's published 2010 total; applied to 2005-2010; replace a factor 1.4 on all IND demand (step 7a)
 \item Domestic shipping and aviation (step 7b): published 2010 activity (RITES, DGCA)
+\item Bus technologies (step 7b): 4 \% of the 2005-2010 bus pkm on gas (CNG share of the registered buses, TERI)
 \item Road demand 1990 (step 7c): computed so that the 1990 IEA harmonization factor equals the 2005 one; not an
 estimate of the 1990 activity
 \item Check (step 7d): warns when the aviation intensity factor of toolAdjustEnergyIntensity() no longer fits

@@ -6,6 +6,7 @@
 #' - Trucks (step 4): Payloads net of empty running from Indian survey data replace the global values
 #' - Passenger three-wheelers ("Rickshaw", step 5): 2.5 passengers, survey occupancy of TERI minus an assumed share
 #'   of empty driving
+#' - Buses (step 6): 37 passengers, passenger-km per bus-km of the State Road Transport Undertakings (MoRTH)
 #' - Code comments give the source and status of each number, with local copies in
 #'   /p/projects/edget/adjustmentDataFiles/IND_validation/.
 #' - All India-specific pdfs are in .../Input/papers/
@@ -96,6 +97,21 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   #   CEEW (2025b), How Will India's Vehicle Ownership Grow? A District-level Outlook to 2050; SourceID: S20;
   #     src01_CEEW_2025_vehicleOwnership.pdf
   dt[region == "IND" & univocalName == "Rickshaw", value := 2.5]
+
+  # 6: Buses in India #plausibilityFix_IND #plausibilityFix_Pass
+  # Set after the regional means in step 3, so that they do not change other regions.
+  # 37 passengers for all technologies and years (GCAM: 47.5)
+  # Derived: LF = passenger-km performed / bus-km of the 58 State Road Transport Undertakings (SRTUs), 2019-20:
+  # 593.13 billion pkm / (151,802 buses x 291.38 km per bus and day x 365) = 36.7 (published inputs: MoRTH (2023),
+  # Table 1.2: 59,313 crore pkm performed, occupancy 74.03 %, fleet held 1,51,802, vehicle productivity 291.38)
+  # The SRTUs are the only published Indian bus operating statistics (about 7 % of the registered buses; private
+  # stage and contract carriages assumed to load alike). GCAM's 47.5 gave about a fifth too little bus fuel per pkm.
+  # Note: with the bus demand of toolAdjustEsDemand() (step 7b) this sets the 2010 bus fuel, and so the IEA
+  # harmonization factor of all IND liquids modes; the bus cost per pkm rises with it.
+  # Sources:
+  #   MoRTH (2023), Review of the Performance of State Road Transport Undertakings for 2019-20 to 2021-22, Table 1.2;
+  #     workbook source 84 in .../IND_validation/data/validationEstimates.xlsx
+  dt[region == "IND" & univocalName == "Bus", value := 37]
 
   return(dt)
 }

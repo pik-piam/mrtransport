@@ -28,6 +28,7 @@ India (IND)
 \item Trucks (step 4): Payloads net of empty running from Indian survey data replace the global values
 \item Passenger three-wheelers ("Rickshaw", step 5): 2.5 passengers, survey occupancy of TERI minus an assumed share
 of empty driving
+\item Buses (step 6): 37 passengers, passenger-km per bus-km of the State Road Transport Undertakings (MoRTH)
 \item Code comments give the source and status of each number, with local copies in
 /p/projects/edget/adjustmentDataFiles/IND_validation/.
 \item All India-specific pdfs are in .../Input/papers/
