@@ -29,6 +29,8 @@ India (IND)
 \item Passenger three-wheelers ("Rickshaw", step 5): 2.5 passengers, survey occupancy of TERI minus an assumed share
 of empty driving
 \item Buses (step 6): 37 passengers, passenger-km per bus-km of the State Road Transport Undertakings (MoRTH)
+\item Cars and two-wheelers (step 7): 2.7 passengers for all car classes (GCAM's class values raised the mean with
+the SUV share), 1.3 for two-wheelers, Indian survey values
 \item Code comments give the source and status of each number, with local copies in
 /p/projects/edget/adjustmentDataFiles/IND_validation/.
 \item All India-specific pdfs are in .../Input/papers/

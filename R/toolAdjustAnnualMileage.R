@@ -151,7 +151,8 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # Derived: AM in vkm = AM in pkm / LF
   # 36,500 pkm per car and year (derived in note A12, sheet "DifferencesToLiterature" in
   # .../IND_validation/data/validationEstimates.xlsx)
-  # 2.7 passengers per car (published: TERI (2024), Table 4.2)
+  # 2.7 passengers per car (published: TERI (2024), Table 4.2), the load factor of all IND car classes
+  # (toolAdjustLoadFactor(), step 7)
   # Road demand of toolAdjustEsDemand() gave 16 million cars in 2010 (published: 10 million, CEEW (2025b)).
   # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;

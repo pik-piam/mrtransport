@@ -121,34 +121,39 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
      value := value * scalingIND[univocalName]]
 
   # 2c: Domestic aviation in India #plausibilityFix_IND #plausibilityFix_Pass
-  # Derived factor: 0.52 for all years, Liquids (before 3a, so Liquids & hydrogen aircrafts keep their ratio)
+  # Derived factor: 0.54 for all years, Liquids (before 3a, so Liquids & hydrogen aircrafts keep their ratio)
   # GCAM's intensity (3.23 MJ/pkm in 2010) multiplied with 44 billion pkm (published: DGCA via TERI (2024),
   # Figure 2.4; set in toolAdjustEsDemand()) gives 1.56 times the IEA's fuel use, 1.8 times after the harmonization,
   # which took fuel from road.
   # The harmonization scales all IND liquids modes by one factor, so it keeps each mode's share of the
   # FE; domestic aviation's share must therefore equal its IEA share (2010):
-  # factor = (IEA_domAv / FE_domAv) x (FE_other / (IEA_total - IEA_domAv)) = (0.091 / 0.142) x (2.06 / 2.523) = 0.52
-  # (0.53 with FE_other = 2.091 until 2026-10-23, when the 2010 bus demand (toolAdjustEsDemand(), step 7b) and the bus load factor
+  # factor = (IEA_domAv / FE_domAv) x (FE_other / (IEA_total - IEA_domAv)) = (0.091 / 0.142) x (2.11 / 2.523) = 0.54
+  # (FE_other estimated: 2.06 x 1.023 for the car and two-wheeler load factors of 2026-10-25 (toolAdjustLoadFactor(),
+  # step 7), from the 2010 fuel shares of the inputs of 2026-10-23; the check in toolAdjustEsDemand(), step 7d,
+  # confirms it; 0.52 with FE_other = 2.06 before;
+  # 0.53 with FE_other = 2.091 until 2026-10-23, when the 2010 bus demand (toolAdjustEsDemand(), step 7b) and the bus load factor
   # (toolAdjustLoadFactor(), step 6) were changed; 0.51 with FE_other = 2.01 until the bus CNG share (step 7b) moved bus pkm
   # from gas to diesel the same day)
   # IEA_domAv 0.091 EJ (flow DOMESAIR), IEA_total 2.614 EJ (liquids without bunkers)
   # FE_domAv = 3.23 MJ/pkm x 44 billion pkm
   # FE_other: raw FE of all other IND liquids modes sum(ES x intensity / LF), also built in
   # toolAdjustEsDemand() (step 7d) and used for the harmonization
-  # -> harmonization factor about 1.23 (was 1.21), harmonized intensity about 2.1 MJ/pkm
+  # -> harmonization factor about 1.20 (1.23 before the load factors of 2026-10-25), harmonized intensity about
+  # 2.1 MJ/pkm
   # Sources:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;
   #     /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/src07_TERI_2024_energyTransitionRoadmap.pdf
   #   IEA World Energy Balances 2024; /p/projects/rd3mod/inputdata/sources/IEA/IEA-Energy-Balances-2024/worldbig.csv
   #     (via calcOutput("IEAOutputTransport"))
-  dt[region == "IND" & univocalName == "Domestic Aviation" & technology == "Liquids", value := value * 0.52]
+  dt[region == "IND" & univocalName == "Domestic Aviation" & technology == "Liquids", value := value * 0.54]
 
   # 2d: Cars, two-wheelers, three-wheelers and buses in India #plausibilityFix_IND #plausibilityFix_Pass
   # 2023 survey values used for all years, Liquids only (CNG, hybrids and BEV unchanged)
   # GCAM's 2010 values (vkm-weighted) are above Indian fuel economy: cars 2.9 MJ/vehkm, 2W 0.72, 3W 1.48; buses
   # 4.97 are below.
   # Derived: one factor per group, so that 2010 vkm-weighted mean equal = target value; ratios between car classes
-  # and the trend over time come from GCAM. Weights: 2010 vkm shares.
+  # and the trend over time come from GCAM. Weights: 2010 vkm shares, pkm / load factor (cars: 2.7 for all classes
+  # since 2026-10-25, toolAdjustLoadFactor(), step 7; with GCAM's class load factors 23.9 / 51.7 / 9.9 / 14.5).
   # Targets in MJ/vehkm = energy density (MJ/l) / fuel economy (km/l)
   # Energy density = net calorific value (published: IPCC (2006)) x density (published: IS 2796, IS 1460):
   # petrol 32.0 MJ/l = 44.3 MJ/kg x 0.72 kg/l
@@ -173,7 +178,7 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
                                          "Motorcycle (50-250cc)", "Rickshaw", "Bus"),
                         group    = c("cars", "cars", "cars", "cars", "2W", "2W", "3W", "bus"),
                         target   = c(1.9, 1.9, 1.9, 1.9, 0.63, 0.63, 1.39, 7.7),
-                        vkmShare = c(23.9, 51.7, 9.9, 14.5, 16.6, 83.4, 100, 100))
+                        vkmShare = c(20.9, 52.2, 8.7, 18.3, 16.6, 83.4, 100, 100))
   passIND <- merge(passIND, dt[region == "IND" & period == 2010 & technology == "Liquids",
                                .(univocalName, raw = value)], by = "univocalName")
   if (nrow(passIND) != 8) stop("IND passenger road energy intensities (Liquids, 2010) are incomplete")

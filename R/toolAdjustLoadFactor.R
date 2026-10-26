@@ -7,6 +7,8 @@
 #' - Passenger three-wheelers ("Rickshaw", step 5): 2.5 passengers, survey occupancy of TERI minus an assumed share
 #'   of empty driving
 #' - Buses (step 6): 37 passengers, passenger-km per bus-km of the State Road Transport Undertakings (MoRTH)
+#' - Cars and two-wheelers (step 7): 2.7 passengers for all car classes (GCAM's class values raised the mean with
+#'   the SUV share), 1.3 for two-wheelers, Indian survey values
 #' - Code comments give the source and status of each number, with local copies in
 #'   /p/projects/edget/adjustmentDataFiles/IND_validation/.
 #' - All India-specific pdfs are in .../Input/papers/
@@ -112,6 +114,31 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   #   MoRTH (2023), Review of the Performance of State Road Transport Undertakings for 2019-20 to 2021-22, Table 1.2;
   #     workbook source 84 in .../IND_validation/data/validationEstimates.xlsx
   dt[region == "IND" & univocalName == "Bus", value := 37]
+
+  # 7: Cars and two-wheelers in India #plausibilityFix_IND #plausibilityFix_Pass
+  # Set after the regional means in step 3, so that they do not change other regions.
+  # 2.7 passengers for all car classes, 1.3 for two-wheelers, all technologies and years
+  # Cars: GCAM's values differ by class (2010: mini and compact cars 2.43, falling to 2.0 by 2050; subcompact 2.81,
+  # rising to 3.0; large car and SUV 3.5), so the mean load factor of the car fleet rose with the SUV share (2.75 in
+  # 2020, 2.92 in 2050) without Indian evidence for it. 2.7 (published: TERI (2024), Table 4.2; 2.6 for private
+  # cars and 2.8 for taxis, NITI Aayog (2026), Table A.2) is also the value behind the annual mileage of 13,500 km
+  # (36,500 pkm / 2.7, toolAdjustAnnualMileage()). The cost per pkm changes by class (2020): large car and SUV +30 %,
+  # mini and compact cars -14 %, subcompact cars +3 %.
+  # Two-wheelers: GCAM's 1.4 is above the Indian values: 1.2 (NITI Aayog (2026), Table A.2), 1 within and 1-2
+  # between cities (TERI (2024), Table 4.2), 1.5 (CEEW (2022), p. 8); 1.3 is their middle. pkm per two-wheeler and
+  # year: 1.3 x 8,478 km = 11,000 (10,600 in note A12, sheet "DifferencesToLiterature" in
+  # .../IND_validation/data/validationEstimates.xlsx).
+  # stock = pkm / (LF x AM): two-wheelers +8 %, cars about +2 % in 2020 and +8 % in 2050.
+  # Note: the 2010 fuel of both groups enters the harmonization factor of all IND liquids modes and the domestic
+  # aviation factor (toolAdjustEnergyIntensity(), step 2c); the car vkm shares there (step 2d) follow these values.
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;
+  #     src07_TERI_2024_energyTransitionRoadmap.pdf
+  #   NITI Aayog (2026), Scenarios Towards Viksit Bharat and Net Zero, Sectoral Insights: Transport;
+  #     workbook source 15; src15_NITI_2026_viksitBharat_vol3Transport.pdf
+  #   CEEW (2022), India Transport Energy Outlook; workbook source 10; src10_CEEW_2022_transportEnergyOutlook.pdf
+  dt[region == "IND" & univocalName %in% filter$trn_pass_road_LDV_4W, value := 2.7]
+  dt[region == "IND" & univocalName %in% filter$trn_pass_road_LDV_2W, value := 1.3]
 
   return(dt)
 }
