@@ -36,7 +36,7 @@ single regions and modes.
 India (IND)
 \itemize{
 \item Trucks (step 2b): Ratios between classes from published Indian fleet values replace PSI's European ratios
-\item Domestic aviation (step 2c): factor 0.52, so that the harmonized 2010 fuel use equals the IEA's
+\item Domestic aviation (step 2c): factor 0.54, so that the harmonized 2010 fuel use equals the IEA's
 \item Cars, two-, three-wheelers and buses (step 2d): Liquids scaled to Indian survey fuel economy in 2010
 \item Code comments give the source and status of each number, with local copies in
 /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.

@@ -131,9 +131,9 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   # (FE_other estimated: 2.06 x 1.023 for the car and two-wheeler load factors of 2026-10-25 (toolAdjustLoadFactor(),
   # step 7), from the 2010 fuel shares of the inputs of 2026-10-23; the check in toolAdjustEsDemand(), step 7d,
   # confirms it; 0.52 with FE_other = 2.06 before;
-  # 0.53 with FE_other = 2.091 until 2026-10-23, when the 2010 bus demand (toolAdjustEsDemand(), step 7b) and the bus load factor
-  # (toolAdjustLoadFactor(), step 6) were changed; 0.51 with FE_other = 2.01 until the bus CNG share (step 7b) moved bus pkm
-  # from gas to diesel the same day)
+  # 0.53 with FE_other = 2.091 until 2026-10-23, when the 2010 bus demand (toolAdjustEsDemand(), step 7b) and
+  # the bus load factor (toolAdjustLoadFactor(), step 6) were changed; 0.51 with FE_other = 2.01 until the bus
+  # CNG share (step 7b) moved bus pkm from gas to diesel the same day)
   # IEA_domAv 0.091 EJ (flow DOMESAIR), IEA_total 2.614 EJ (liquids without bunkers)
   # FE_domAv = 3.23 MJ/pkm x 44 billion pkm
   # FE_other: raw FE of all other IND liquids modes sum(ES x intensity / LF), also built in
@@ -142,7 +142,7 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   # 2.1 MJ/pkm
   # Sources:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;
-  #     .../IND_validation/27-10-2026/Input/papers/src07_TERI_2024_energyTransitionRoadmap.pdf
+  #     file src07_TERI_2024_energyTransitionRoadmap.pdf in IND_validation/27-10-2026/Input/papers
   #   IEA World Energy Balances 2024; /p/projects/rd3mod/inputdata/sources/IEA/IEA-Energy-Balances-2024/worldbig.csv
   #     (via calcOutput("IEAOutputTransport"))
   dt[region == "IND" & univocalName == "Domestic Aviation" & technology == "Liquids", value := value * 0.54]
