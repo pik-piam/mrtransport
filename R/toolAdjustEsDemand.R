@@ -15,7 +15,7 @@
 #'   estimate of the 1990 activity
 #' - Check (step 7d): warns when the aviation intensity factor of toolAdjustEnergyIntensity() no longer fits
 #' - Code comments give the source and status of each number, with local copies in
-#'   /p/projects/edget/adjustmentDataFiles/IND_validation/.
+#'   /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 #' - All India-specific pdfs are in .../Input/papers/
 #'
 #' @author Johanna Hoppe, Jarusch Muessel
@@ -53,7 +53,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
 
   # 2: Add some base demand for Cycle & Walk (2%)
   # IND: not applied, as GCAM's walking and cycling are not zero (1,203 billion pkm in 2010; published: 1,200,
-  # CEEW (2022), source 10 in .../IND_validation/data/validationEstimates.xlsx)
+  # CEEW (2022), source 10 in .../IND_validation/27-10-2026/data/validationEstimates.xlsx)
   dt[, demldv := sum(value), by = c("period", "region")]
   dt[univocalName == "Cycle" & value == 0, value := demldv * 0.01]
   dt[univocalName == "Walk" & value == 0, value := demldv * 0.002]
@@ -93,8 +93,8 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   #   12-20 t at 0.41 of the 12-25 t segment (mean of ICCT's FY 2013-14, 2017-18 and 2019-20 values)
   # Cross-check: with IND LF and AM these shares give 3.4 % of tkm in 0-3.5t trucks (estimate B-TS-01)
   # Values correspond to: B-ST-01 to 05
-  # in .../IND_validation/data/truck_validation/estimates/fleetComposition_bounds.csv
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # in .../IND_validation/27-10-2026/data/truck_validation/estimates/fleetComposition_bounds.csv
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   TERI (2020), Road Map for Electrification of Urban Freight in India (Part I); SourceID: S19;
   #     file trucks/T19_TERI_2020_urbanFreightElectrification.pdf
   #   CEEW (2025), India's Road to Zero-emission Trucking; SourceID: S03; src08_CEEW_2025_zeroEmissionTrucking.pdf
@@ -304,7 +304,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   # 1,642 billion pkm: bus share 32 % of road pkm with the 2-4-wheelers' 3,490 billion pkm, about 1,170 pkm per
   #   person: the level of China at India's 2019 income (2006-07: 770-870 pkm per person of intercity road travel
   #   plus about 250 of urban buses; NBS) and of the EU (about 990), below the US (1,737, with school buses)
-  #   (note A35 in .../IND_validation/data/validationEstimates.xlsx)
+  #   (note A35 in .../IND_validation/27-10-2026/data/validationEstimates.xlsx)
   # Since note A39 (NITI's own 2020 road split) the workbook's 2020 bus pkm are 1,567 (2-4-wheelers 3,330);
   #   1,187 is kept (1,133 on that basis, -4.6 %)
   # 1.033: growth of the registered bus fleet 2009-2019 (TERI (2024), Table 1.2, from MoRTH)
@@ -318,8 +318,8 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   # Published: DGCA, Handbook on Civil Aviation Statistics, as charted in TERI (2024), Figure 2.4 (2010: chart
   # reading); DGCA via MoSPI (2010), Infrastructure Statistics, Table 5.0: 18.0 (2005), 41.7 (2008), 37.7 (2009)
   #
-  # Values correspond to: notes and source numbers in .../IND_validation/data/validationEstimates.xlsx
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # Values correspond to: notes and source numbers in .../IND_validation/27-10-2026/data/validationEstimates.xlsx
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;
   #     src07_TERI_2024_energyTransitionRoadmap.pdf
   #   NITI Aayog (2026), Scenarios Towards Viksit Bharat and Net Zero, Sectoral Insights: Transport (Vol. 3);
@@ -327,7 +327,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   #   NITI Aayog and RMI (2021), Fast Tracking Freight in India; SourceID: S02;
   #     src02_NITI_RMI_2021_fastTrackingFreight.pdf
   #   Raghuram (2021), Challenges to Sustainable Road Freight Transport in India (slides quoting RITES (2009), Total
-  #     Transport System Study); workbook source 60; Raghuram_challenges_sustainable_Road_Freight.pdf
+  #     Transport System Study); workbook source 60; src60_Raghuram_2021_challengesSustainableRoadFreight.pdf
   #   MoSPI (2010), Infrastructure Statistics 2010, Chapter 5 (Air Transport), Table 5.0, from DGCA;
   #     MoSPI_2010_infrastructureStatistics_ch5_airTransport.pdf
   #   CEEW (2022), India Transport Energy Outlook; workbook source 10; src10_CEEW_2022_transportEnergyOutlook.pdf
@@ -379,7 +379,8 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   #   buses and small trucks. A CNG bus then needs about 1.5 x the energy of a diesel bus per vkm (upper end).
   # Sources: TERI (2024) as above; Nielsen for PPAC (2013), All India Study on Sectoral Demand of Diesel and Petrol
   #   (survey 2012-13: buses 9.55 % of diesel sales; report not online, shares as reported in the press; its
-  #   2020-21 successor is truck source S23 in .../IND_validation/data/truck_validation/estimates/sources.csv)
+  #   2020-21 successor is truck source S23 in
+  #   .../IND_validation/27-10-2026/data/truck_validation/estimates/sources.csv)
   cngShareBusIND <- 0.04
   dt[region == "IND" & period >= 2005 & univocalName == "Bus",
      value := sum(value) * ifelse(technology == "Gases", cngShareBusIND,

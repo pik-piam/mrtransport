@@ -39,7 +39,7 @@ India (IND)
 \item Domestic aviation (step 2c): factor 0.52, so that the harmonized 2010 fuel use equals the IEA's
 \item Cars, two-, three-wheelers and buses (step 2d): Liquids scaled to Indian survey fuel economy in 2010
 \item Code comments give the source and status of each number, with local copies in
-/p/projects/edget/adjustmentDataFiles/IND_validation/.
+/p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 \item All India-specific pdfs are in .../Input/papers/
 }
 }

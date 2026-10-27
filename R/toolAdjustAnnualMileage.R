@@ -9,7 +9,7 @@
 #'   passengers per car. Previous estimates resulted in 2010 car stock well above literature values.
 #' - Passenger three-wheelers ("Rickshaw", step 2a): 26,200 km/yr, mean of TERI & CEEW
 #' - Code comments give the source of each number, with multiple resources in
-#'   /p/projects/edget/adjustmentDataFiles/IND_validation/.
+#'   /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 #' - and local copies of pdfs in .../Input/papers/
 #'
 #' @author Johanna Hoppe, Jarusch Muessel
@@ -78,7 +78,7 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # (the report's text says more than 60 km between and 70 km within cities);
   # 2. CEEW (2025c), Table 3: 100 km per day, 33,000 km/yr
   # stock = pkm / (LF x AM) in 2010 is ca. 3.1 million (published: 2.5 million, TERI (2024))
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;
   #     src07_TERI_2024_energyTransitionRoadmap.pdf
   #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
@@ -109,8 +109,8 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # 26t    64,200: mean of CSTEP (2022) Fig. 2 (25 t: 65,500) and TERI (2024) survey (HGV classes: 62,199, 64,906)
   # 40t    63,700: mean of CSTEP (2022) Fig. 2 (40.2 t: 62,500) and TERI (2024) survey (above 25 t: 64,906)
   # Values correspond to: B-AM-01 to 05
-  # in .../IND_validation/data/truck_validation/estimates/energyLoadMileage_bounds.csv
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # in .../IND_validation/27-10-2026/data/truck_validation/estimates/energyLoadMileage_bounds.csv
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector, Table 4.3 (field survey of goods
   #     vehicles, 2023); SourceID: S01; src07_TERI_2024_energyTransitionRoadmap.pdf
   #   CSTEP (2022), The Potential to Electrify Freight Transportation
@@ -150,11 +150,11 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
   # 13,500 km/yr for all car classes and technologies.
   # Derived: AM in vkm = AM in pkm / LF
   # 36,500 pkm per car and year (derived in note A12, sheet "DifferencesToLiterature" in
-  # .../IND_validation/data/validationEstimates.xlsx)
+  # .../IND_validation/27-10-2026/data/validationEstimates.xlsx)
   # 2.7 passengers per car (published: TERI (2024), Table 4.2), the load factor of all IND car classes
   # (toolAdjustLoadFactor(), step 7)
   # Road demand of toolAdjustEsDemand() gave 16 million cars in 2010 (published: 10 million, CEEW (2025b)).
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;
   #     src07_TERI_2024_energyTransitionRoadmap.pdf
   #   CEEW (2025b), How Will India's Vehicle Ownership Grow? A District-level Outlook to 2050; SourceID: S20;

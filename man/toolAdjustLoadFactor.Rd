@@ -32,7 +32,7 @@ of empty driving
 \item Cars and two-wheelers (step 7): 2.7 passengers for all car classes (GCAM's class values raised the mean with
 the SUV share), 1.3 for two-wheelers, Indian survey values
 \item Code comments give the source and status of each number, with local copies in
-/p/projects/edget/adjustmentDataFiles/IND_validation/.
+/p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 \item All India-specific pdfs are in .../Input/papers/
 }
 }

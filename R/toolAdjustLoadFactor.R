@@ -10,7 +10,7 @@
 #' - Cars and two-wheelers (step 7): 2.7 passengers for all car classes (GCAM's class values raised the mean with
 #'   the SUV share), 1.3 for two-wheelers, Indian survey values
 #' - Code comments give the source and status of each number, with local copies in
-#'   /p/projects/edget/adjustmentDataFiles/IND_validation/.
+#'   /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 #' - All India-specific pdfs are in .../Input/papers/
 #'
 #' @author Johanna Hoppe, Jarusch Muessel
@@ -74,8 +74,8 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   #                (16-25 t: 10.3 t; 25-40 t: 18.4 t, net)
   # 40t    19.0 t: TERI (2024) survey above 25 t (19 t net) and GIZ and TERI (2022) above 40 t (27 t x 0.735)
   # Values correspond to: B-LF-01 to 05
-  # in .../IND_validation/data/truck_validation/estimates/energyLoadMileage_bounds.csv
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # in .../IND_validation/27-10-2026/data/truck_validation/estimates/energyLoadMileage_bounds.csv
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector, Table 4.3 (field survey of goods
   #     vehicles, 2023); SourceID: S01; src07_TERI_2024_energyTransitionRoadmap.pdf
   #   GIZ and TERI (2022), Freight Greenhouse Gas Calculator, methodology report; SourceID: S14;
@@ -93,7 +93,7 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   # 25 % empty driving between fares (assumption: 20-30 %, to be confirmed)
   # stock = pkm / (LF x AM) in 2010 is ca. 3.3 million with 2.5, 4.5 million with GCAM's 1.88 (published: 2.5
   # million, TERI (2024); 4 million, CEEW (2025b))
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;
   #     src07_TERI_2024_energyTransitionRoadmap.pdf
   #   CEEW (2025b), How Will India's Vehicle Ownership Grow? A District-level Outlook to 2050; SourceID: S20;
@@ -112,7 +112,7 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   # harmonization factor of all IND liquids modes; the bus cost per pkm rises with it.
   # Sources:
   #   MoRTH (2023), Review of the Performance of State Road Transport Undertakings for 2019-20 to 2021-22, Table 1.2;
-  #     workbook source 84 in .../IND_validation/data/validationEstimates.xlsx
+  #     workbook source 84 in .../IND_validation/27-10-2026/data/validationEstimates.xlsx
   dt[region == "IND" & univocalName == "Bus", value := 37]
 
   # 7: Cars and two-wheelers in India #plausibilityFix_IND #plausibilityFix_Pass
@@ -127,11 +127,11 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   # Two-wheelers: GCAM's 1.4 is above the Indian values: 1.2 (NITI Aayog (2026), Table A.2), 1 within and 1-2
   # between cities (TERI (2024), Table 4.2), 1.5 (CEEW (2022), p. 8); 1.3 is their middle. pkm per two-wheeler and
   # year: 1.3 x 8,478 km = 11,000 (10,600 in note A12, sheet "DifferencesToLiterature" in
-  # .../IND_validation/data/validationEstimates.xlsx).
+  # .../IND_validation/27-10-2026/data/validationEstimates.xlsx).
   # stock = pkm / (LF x AM): two-wheelers +8 %, cars about +2 % in 2020 and +8 % in 2050.
   # Note: the 2010 fuel of both groups enters the harmonization factor of all IND liquids modes and the domestic
   # aviation factor (toolAdjustEnergyIntensity(), step 2c); the car vkm shares there (step 2d) follow these values.
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;
   #     src07_TERI_2024_energyTransitionRoadmap.pdf
   #   NITI Aayog (2026), Scenarios Towards Viksit Bharat and Net Zero, Sectoral Insights: Transport;

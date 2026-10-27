@@ -6,7 +6,7 @@
 #' - Passenger three-wheelers ("Rickshaw", step 5): Liquids from UCD's Indian three-wheeler (toolPrepareUCD()); BEV =
 #'   Liquids x BEV/ICE price ratio from CEEW (2025c), before 2024 following UCD's Indian motorcycles
 #' - Code comments give the source and status of each number, with local copies in
-#'   /p/projects/edget/adjustmentDataFiles/IND_validation/.
+#'   /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 #' - All India-specific pdfs are in .../Input/papers/
 #'
 #' @author Johanna Hoppe, Jarusch Muessel
@@ -127,7 +127,7 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   # -> 1.26 (2024), 1.35 (from 2030), linear in between
   # Before 2024 (assumption, no Indian three-wheeler series): UCD's BEV/ICE ratio of Indian motorcycles (50-250cc),
   # scaled to 1.26 in 2024 -> 2.5 (2005), 2.1 (2010), 1.3 (2020)
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
   #     Transport; SourceID: S26; trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf and
   #     file trucks/T26_CEEW_2025_vehicleOwnershipCosts_annexure.pdf

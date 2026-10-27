@@ -7,7 +7,7 @@
 #' - Passenger three-wheelers ("Rickshaw", step 4): Liquids from UCD's Indian three-wheeler (toolPrepareUCD()); BEV =
 #'   Liquids x EV/ICE ratio of maintenance plus insurance from CEEW (2025c)
 #' - Code comments give the source and status of each number, with local copies in
-#'   /p/projects/edget/adjustmentDataFiles/IND_validation/.
+#'   /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 #' - All India-specific pdfs are in .../Input/papers/
 #'
 #' @author Johanna Hoppe, Jarusch Muessel
@@ -124,7 +124,7 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filt
   # Annexure 1) over CEEW's 33,000 km/yr (not the model's 26,200, to stay consistent within CEEW)
   # -> EV 0.49, ICE 0.68 INR/km (unweighted ICE means), ratio 0.73
   # Battery replacement left out, as CEEW gives no number for it (assumption)
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
   #     Transport; SourceID: S26; trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf and
   #     file trucks/T26_CEEW_2025_vehicleOwnershipCosts_annexure.pdf

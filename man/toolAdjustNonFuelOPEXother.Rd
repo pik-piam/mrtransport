@@ -31,7 +31,7 @@ India (IND)
 \item Passenger three-wheelers ("Rickshaw", step 4): Liquids from UCD's Indian three-wheeler (toolPrepareUCD()); BEV =
 Liquids x EV/ICE ratio of maintenance plus insurance from CEEW (2025c)
 \item Code comments give the source and status of each number, with local copies in
-/p/projects/edget/adjustmentDataFiles/IND_validation/.
+/p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 \item All India-specific pdfs are in .../Input/papers/
 }
 }

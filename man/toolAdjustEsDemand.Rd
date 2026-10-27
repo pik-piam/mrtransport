@@ -40,7 +40,7 @@ the IEA's published 2010 total; applied to 2005-2010; replace a factor 1.4 on al
 estimate of the 1990 activity
 \item Check (step 7d): warns when the aviation intensity factor of toolAdjustEnergyIntensity() no longer fits
 \item Code comments give the source and status of each number, with local copies in
-/p/projects/edget/adjustmentDataFiles/IND_validation/.
+/p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 \item All India-specific pdfs are in .../Input/papers/
 }
 }

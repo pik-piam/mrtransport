@@ -5,10 +5,10 @@
 #'
 #' @details India (IND)
 #' - Trucks (step 2b): Ratios between classes from published Indian fleet values replace PSI's European ratios
-#' - Domestic aviation (step 2c): factor 0.52, so that the harmonized 2010 fuel use equals the IEA's
+#' - Domestic aviation (step 2c): factor 0.54, so that the harmonized 2010 fuel use equals the IEA's
 #' - Cars, two-, three-wheelers and buses (step 2d): Liquids scaled to Indian survey fuel economy in 2010
 #' - Code comments give the source and status of each number, with local copies in
-#'   /p/projects/edget/adjustmentDataFiles/IND_validation/.
+#'   /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 #' - All India-specific pdfs are in .../Input/papers/
 #'
 #' @author Johanna Hoppe, Jarusch Muessel
@@ -98,8 +98,8 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   # Weights: 2020 vkm shares 39.1 / 12.6 / 7.4 / 29.2 / 11.7 %, derived (stock share x annual mileage); equal to
   # the model's 2010 vkm shares, as stock shares, load factors and mileages are the same 2020 values
   # Values correspond to: B-EI-01 to 05 in .../energyLoadMileage_bounds.csv and B-VS-01 to 05 in
-  # .../fleetComposition_bounds.csv, both in .../IND_validation/data/truck_validation/estimates/
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # .../fleetComposition_bounds.csv, both in .../IND_validation/27-10-2026/data/truck_validation/estimates/
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector, Table 4.3 (field survey of goods
   #     vehicles, 2023); SourceID: S01; src07_TERI_2024_energyTransitionRoadmap.pdf
   #   NITI Aayog and RMI (2021), Fast Tracking Freight in India; SourceID: S02;
@@ -142,7 +142,7 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   # 2.1 MJ/pkm
   # Sources:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector; SourceID: S01;
-  #     /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/src07_TERI_2024_energyTransitionRoadmap.pdf
+  #     .../IND_validation/27-10-2026/Input/papers/src07_TERI_2024_energyTransitionRoadmap.pdf
   #   IEA World Energy Balances 2024; /p/projects/rd3mod/inputdata/sources/IEA/IEA-Energy-Balances-2024/worldbig.csv
   #     (via calcOutput("IEAOutputTransport"))
   dt[region == "IND" & univocalName == "Domestic Aviation" & technology == "Liquids", value := value * 0.54]
@@ -164,7 +164,7 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   # 3W    1.39: petrol 23, diesel 26 km/l
   # Bus   7.7:  4.67 km/l (published: LBNL and ICCT (2017), Table 9, 16.2 t transit bus)
   # Bus cross-check: APSRTC fleet 5.2 km/l (6.9 MJ/vehkm; Shakti (2017)); 25 t buses 9.7 MJ/vehkm
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/Input/papers/:
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
   #   TERI (2024), Roadmap for India's Energy Transition in the Transport Sector, Table 4.2 (field survey of passenger
   #     vehicles, 2023); SourceID: S01; src07_TERI_2024_energyTransitionRoadmap.pdf
   #   LBNL and ICCT (2017), Improved heavy-duty vehicle fuel efficiency in India; SourceID: S24;
