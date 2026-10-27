@@ -47,7 +47,7 @@ A BibTeX entry for LaTeX users is
 @Misc{,
   title = {mrtransport: Input data generation for the EDGE-Transport model},
   author = {Johanna Hoppe and Jarusch Muessel and Alex K. Hagen and Alois Dirnaichner},
-  date = {2026-10-22},
+  date = {2026-10-21},
   year = {2026},
   url = {https://github.com/pik-piam/mrtransport},
   note = {Version: 0.19.0},
