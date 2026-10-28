@@ -5,8 +5,11 @@
 #'
 #' @details India (IND)
 #' - Trucks (step 2b): Ratios between classes from published Indian fleet values replace PSI's European ratios
-#' - Domestic aviation (step 2c): factor 0.54, so that the harmonized 2010 fuel use equals the IEA's
+#' - Domestic aviation (step 2c): factor 0.54, so that the harmonized 2010 fuel use equals the IEA's; after 2010 a
+#'   further factor falling to 0.75 in 2019, so that 2019 equals the IEA's fuel use over DGCA's activity
 #' - Cars, two-, three-wheelers and buses (step 2d): Liquids scaled to Indian survey fuel economy in 2010
+#' - Trucks (step 2e): trend after 2020 -1 %/yr from 2023 to 2050 instead of PSI's European trend
+#' - BEV cars and two-wheelers (step 3h): scaled to Indian real-world values in 2025
 #' - Code comments give the source and status of each number, with local copies in
 #'   /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
 #' - All India-specific pdfs are in .../Input/papers/
@@ -146,6 +149,23 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   #   IEA World Energy Balances 2024; /p/projects/rd3mod/inputdata/sources/IEA/IEA-Energy-Balances-2024/worldbig.csv
   #     (via calcOutput("IEAOutputTransport"))
   dt[region == "IND" & univocalName == "Domestic Aviation" & technology == "Liquids", value := value * 0.54]
+  # After 2010: factor falling linearly from 1 (2010) to 0.75 (2019), 0.75 afterwards; GCAM's trend continues on top
+  # GCAM's intensity falls by 1.5 %/yr, the IEA's fuel use over DGCA's activity by 4.4 %/yr (2.07 MJ/pkm in 2010,
+  # 1.38 in 2019: higher seat load factors, newer aircraft); without the factor the harmonized 2019 value is
+  # 1.83 MJ/pkm (+33 %)
+  # Derived: 0.75 = 1.38 / 1.83; 1.38 MJ/pkm = IEA_domAv 2019 0.189 EJ (4,515 ktoe) / 137 billion pkm (published:
+  # DGCA via TERI (2024), 2019-20, Figure 2.4 and Section 8.1); 1.83 MJ/pkm = harmonized 2010 value 2.09 with GCAM's
+  # trend to 2019
+  # Cross-check: ITF (2021) 1.35 MJ/pkm for India's passenger aviation (2018); 0.74 with the run's own 2019 activity
+  # (2020 / 0.87 = 140 billion pkm)
+  # The inputs carry 2015 and 2020 (factors 0.86 and 0.75), so EDGE-T's 2019 interpolates to 1.42 MJ/pkm (+3 %)
+  # 2010 is unchanged, so are the harmonization (2010 factor carried forward) and the check in toolAdjustEsDemand(),
+  # step 7d; hydrogen aircraft follow (3a)
+  # Sources: TERI (2024) and IEA World Energy Balances 2024 as above;
+  #   ITF (2021), Decarbonising India's Transport System; workbook source 74;
+  #     src74_ITF_2021_decarbonisingIndiaTransport.pdf
+  dt[region == "IND" & univocalName == "Domestic Aviation" & technology == "Liquids" & period > 2010,
+     value := value * pmax(0.75, 1 - 0.25 * (period - 2010) / 9)]
 
   # 2d: Cars, two-wheelers, three-wheelers and buses in India #plausibilityFix_IND #plausibilityFix_Pass
   # 2023 survey values used for all years, Liquids only (CNG, hybrids and BEV unchanged)
@@ -186,6 +206,33 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
   scalingPassIND <- setNames(passIND$scaling, passIND$univocalName)
   dt[region == "IND" & univocalName %in% names(scalingPassIND) & technology == "Liquids",
      value := value * scalingPassIND[univocalName]]
+
+  # 2e: Trend of the truck intensities in India #plausibilityFix_IND #plausibilityFix_Truck #plausibilityFix_Freight
+  # Liquids and Gases from 2020 on, one trend for both (the Gases / Liquids ratio stays at its 2020 value; BEV and
+  # FCEV keep PSI's trend); the 2010 values of 2b, and with them the harmonization, are unchanged
+  # PSI's trend is that of European regional-delivery trucks under the EU's CO2 standards: new trucks -20 % (26t, 40t)
+  # to -27 % (0-3_5t) from 2020 to 2030, -32 to -38 % by 2050. India's first fuel consumption standard for heavy-duty
+  # vehicles (from 12 t) applies since 1 April 2023, a minimum requirement that does not exploit the potential of
+  # existing technology (ICCT 2023); no further phase is notified.
+  # Assumption (own argument, a current-policy path): new-truck intensity of 2020 held to 2023, then -1 %/yr to 2050
+  # (-24 %), constant afterwards (as PSI's after 2050). The published values bracket it: 0 %/yr (the 2023 standard
+  # only), 2 %/yr (ICCT (2024b)'s business-as-usual assumption under further standards: -14 % by model year 2030,
+  # -34 % by 2040); cost-effective technology packages cut per-vehicle fuel use by 20-30 % (LBNL and ICCT 2017).
+  # EDGE-T applies the values to new vehicles; the fleet follows with its vintages.
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
+  #   ICCT (2023), Heavy-duty trucks in India: technology potential and cost-effectiveness of fuel-efficiency
+  #     technologies in the 2025-2030 time frame; SourceID: S04; file trucks/T04_ICCT_2023_indiaHDT_fuelEfficiency.pdf
+  #   ICCT (2024b), Total cost of ownership parity between battery electric trucks and diesel trucks in India;
+  #     SourceID: S09; file trucks/T09_ICCT_2024_TCO_HDV.pdf
+  #   LBNL and ICCT (2017), Improved heavy-duty vehicle fuel efficiency in India; SourceID: S24;
+  #     file trucks/T24_LBNL_ICCT_2017_HDVfuelEfficiency.pdf
+  trendTruckIND <- function(period) 0.99^(pmin(pmax(period, 2023), 2050) - 2023)
+  if (nrow(dt[region == "IND" & univocalName %in% names(scalingIND) & technology %in% c("Liquids", "Gases") &
+                period == 2020]) != 10) {
+    stop("IND truck energy intensities (Liquids, Gases, 2020) are incomplete")
+  }
+  dt[region == "IND" & univocalName %in% names(scalingIND) & technology %in% c("Liquids", "Gases") & period >= 2020,
+     value := value[period == 2020] * trendTruckIND(period), by = c("univocalName", "technology")]
 
   # 3: Assume missing data
   # a) Hydrogen airplanes are not covered by our datasources
@@ -254,6 +301,37 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
                                   technology %in% c("BEV") & region %in% dt[univocalName == "Rickshaw"]$region]
   alternativeRickshawTech[, univocalName := "Rickshaw"]
   dt <- rbind(dt, alternativeRickshawTech)
+
+  # h) BEV cars and two-wheelers in India #plausibilityFix_IND #plausibilityFix_Pass
+  # After 3g, so that the rickshaw keeps the motorcycle's BEV value from before this step (it fits, see 3g)
+  # The source values (vkm-weighted, 2025) are above Indian real-world values: cars 0.79 MJ/vehkm (1.4 times),
+  # 2W 0.20 (2 times)
+  # Derived: one factor per group for all years, so that the 2025 vkm-weighted mean equals the target value; ratios
+  # between the classes and the trend over time come from the source data; weights as in 2d
+  # Targets in MJ/vehkm = 3.6 MJ/kWh / (km/kWh), mean of the published values, one per source; neither source states
+  # whether charging losses are included, none are added (as in the bus and 3W cross-checks of 3b and 3g):
+  # Cars  0.56: CEEW (2025c) Table 2, car 7.0 and SUV 5.0 km/kWh, weighted with the Large Car and SUV vkm share
+  #             (0.55); NITI Aayog (2026) Table A.3, 4W 6.25 km/kWh (0.58)
+  # 2W    0.10: CEEW (2025c) 38 km/kWh (0.095); NITI Aayog (2026) 33 km/kWh (0.11)
+  # CEEW's values are real-world fuel economy of vehicles on sale (reviewers such as Autocar India), NITI's from
+  # literature and expert consultation
+  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
+  #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
+  #     Transport; SourceID: S26; file trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf
+  #   NITI Aayog (2026), Scenarios Towards Viksit Bharat and Net Zero, Sectoral Insights: Transport (Vol. 3),
+  #     Annexure A; SourceID: S22; src15_NITI_2026_viksitBharat_vol3Transport.pdf
+  bevIND <- data.table(univocalName = c("Mini Car", "Subcompact Car", "Compact Car", "Large Car and SUV", "Moped",
+                                        "Motorcycle (50-250cc)"),
+                       group    = c("cars", "cars", "cars", "cars", "2W", "2W"),
+                       target   = c(0.56, 0.56, 0.56, 0.56, 0.10, 0.10),
+                       vkmShare = c(20.9, 52.2, 8.7, 18.3, 16.6, 83.4))
+  bevIND <- merge(bevIND, dt[region == "IND" & period == 2025 & technology == "BEV", .(univocalName, raw = value)],
+                  by = "univocalName")
+  if (nrow(bevIND) != 6) stop("IND BEV energy intensities of cars and two-wheelers (2025) are incomplete")
+  bevIND[, scaling := target * sum(vkmShare) / sum(vkmShare * raw), by = "group"]
+  scalingBevIND <- setNames(bevIND$scaling, bevIND$univocalName)
+  dt[region == "IND" & univocalName %in% names(scalingBevIND) & technology == "BEV",
+     value := value * scalingBevIND[univocalName]]
 
   # 4: adjustments for scenarioMIP validation: adjust outliers to global mean
   ISOcountriesMap <- system.file("extdata", "regionmappingISOto21to12.csv", package = "mrtransport", mustWork = TRUE)
