@@ -3,12 +3,11 @@
 #' Fills gaps in the raw non-fuel OPEX of vehicle types without fleet tracking and sets values for single regions and
 #' modes.
 #'
-#' @details India (IND)
-#' - Passenger three-wheelers ("Rickshaw", step 4): Liquids from UCD's Indian three-wheeler (toolPrepareUCD()); BEV =
-#'   Liquids x EV/ICE ratio of maintenance plus insurance from CEEW (2025c)
-#' - Code comments give the source and status of each number, with local copies in
-#'   /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
-#' - All India-specific pdfs are in .../Input/papers/
+#' @details India (IND), values by assumption ID from the EDGETassumptions source ([toolGetAssumption()])
+#' - Passenger three-wheelers ("Rickshaw", step 4, A09-A12): Liquids from UCD's Indian three-wheeler
+#'   (toolPrepareUCD()); BEV = Liquids x EV/ICE ratio of maintenance plus insurance from CEEW (2025c)
+#' - Status, derivation and sources of each value are in the table, references and PDF paths in README.txt of the
+#'   source.
 #'
 #' @author Johanna Hoppe, Jarusch Muessel
 #' @param dt calculated raw data without adjustments
@@ -115,21 +114,13 @@ toolAdjustNonFuelOPEXother <- function(dt, ISOcountries, yrs, completeData, filt
   missingMoped[is.na(value), value := twoW250][, twoW250 := NULL]
 
   # Rickshaw (passenger three-wheelers, IND only) #plausibilityFix_IND #plausibilityFix_Pass
-  # Liquids: UCD's Indian three-wheelers (see toolPrepareUCD()), 0.0062 US$2017/vehkm in all years
-  # BEV: Liquids x EV/ICE ratio of maintenance plus insurance, as UCD has no electric three-wheeler.
-  # Derived: ratio = (maintenance + insurance)_EV / (maintenance + insurance)_ICE in INR/km, for passenger
-  # three-wheelers (3W-P); no currency conversion needed, as only the ratio is used
-  # Maintenance EV 0.42, ICE petrol 0.61, diesel 0.61, CNG 0.64 INR/km (published: CEEW (2025c), Table 5)
-  # Insurance 1 % of the purchase price per year (EV 2.38, ICE 1.77, 1.93, 1.97 INR lakh; published: CEEW (2025c),
-  # Annexure 1) over CEEW's 33,000 km/yr (not the model's 26,200, to stay consistent within CEEW)
-  # -> EV 0.49, ICE 0.68 INR/km (unweighted ICE means), ratio 0.73
-  # Battery replacement left out, as CEEW gives no number for it (assumption)
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
-  #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
-  #     Transport; SourceID: S26; trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf and
-  #     file trucks/T26_CEEW_2025_vehicleOwnershipCosts_annexure.pdf
-  ceewMaintenance <- c(EV = 0.42, ICE = mean(c(0.61, 0.61, 0.64)))                       # in INR/km
-  ceewInsurance <- 0.01 * c(EV = 2.38, ICE = mean(c(1.77, 1.93, 1.97))) * 1e5 / 33000    # in INR/km
+  # A09-A12: BEV = Liquids (UCD) x EV/ICE ratio of maintenance plus insurance per km (CEEW), all years
+  ceewMaintenance <- c(EV = toolGetAssumption("A10", technology = "BEV")[["Rickshaw"]],
+                       ICE = mean(toolGetAssumption("A10", by = "variable", technology = "Liquids")))   # in INR/km
+  ceewInsurance <- toolGetAssumption("A11")[["Rickshaw"]] *
+    c(EV = toolGetAssumption("A09", by = "period", technology = "BEV")[["2024"]],
+      ICE = mean(toolGetAssumption("A09", by = "variable", technology = "Liquids"))) *
+    1e5 / toolGetAssumption("A12")[["Rickshaw"]]                                                         # in INR/km
   ceewOPEX <- ceewMaintenance + ceewInsurance
   ratio3W <- ceewOPEX[["EV"]] / ceewOPEX[["ICE"]]
   liquids3W <- dt[univocalName == "Rickshaw" & technology == "Liquids", .(region, period, technology = "BEV",

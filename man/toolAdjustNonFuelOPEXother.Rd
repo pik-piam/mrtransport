@@ -26,13 +26,12 @@ Fills gaps in the raw non-fuel OPEX of vehicle types without fleet tracking and 
 modes.
 }
 \details{
-India (IND)
+India (IND), values by assumption ID from the EDGETassumptions source (\code{\link[=toolGetAssumption]{toolGetAssumption()}})
 \itemize{
-\item Passenger three-wheelers ("Rickshaw", step 4): Liquids from UCD's Indian three-wheeler (toolPrepareUCD()); BEV =
-Liquids x EV/ICE ratio of maintenance plus insurance from CEEW (2025c)
-\item Code comments give the source and status of each number, with local copies in
-/p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
-\item All India-specific pdfs are in .../Input/papers/
+\item Passenger three-wheelers ("Rickshaw", step 4, A09-A12): Liquids from UCD's Indian three-wheeler
+(toolPrepareUCD()); BEV = Liquids x EV/ICE ratio of maintenance plus insurance from CEEW (2025c)
+\item Status, derivation and sources of each value are in the table, references and PDF paths in README.txt of the
+source.
 }
 }
 \author{

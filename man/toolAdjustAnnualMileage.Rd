@@ -23,16 +23,15 @@ a quitte object with the adjusted annual mileage in vehicle-km per vehicle and y
 Fills gaps in the raw annual mileage (TRACCS, UCD) and sets values for single regions and modes.
 }
 \details{
-India (IND)
+India (IND), values by assumption ID from the EDGETassumptions source (\code{\link[=toolGetAssumption]{toolGetAssumption()}})
 \itemize{
-\item Trucks (step 2c): Means of published Indian fleet values replace previous specific assumptions and global
+\item Trucks (step 2c, A07): Means of published Indian fleet values replace previous specific assumptions and global
 benchmarks (2b)
-\item Cars (after step 3a): 13,500 km/yr for all car classes, derived from 36,500 pkm per car and year and 2.7
-passengers per car. Previous estimates resulted in 2010 car stock well above literature values.
-\item Passenger three-wheelers ("Rickshaw", step 2a): 26,200 km/yr, mean of TERI & CEEW
-\item Code comments give the source of each number, with multiple resources in
-/p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
-\item and local copies of pdfs in .../Input/papers/
+\item Cars (after step 3a, A08): one value for all car classes, derived from pkm per car and year and the car load
+factor (A04). Previous estimates resulted in 2010 car stock well above literature values.
+\item Passenger three-wheelers ("Rickshaw", step 2a, A06): mean of TERI & CEEW
+\item Status, derivation and sources of each value are in the table, references and PDF paths in README.txt of the
+source.
 }
 }
 \author{

@@ -2,12 +2,11 @@
 #'
 #' Fills gaps in the raw CAPEX of vehicle types without fleet tracking and sets values for single regions and modes.
 #'
-#' @details India (IND)
-#' - Passenger three-wheelers ("Rickshaw", step 5): Liquids from UCD's Indian three-wheeler (toolPrepareUCD()); BEV =
-#'   Liquids x BEV/ICE price ratio from CEEW (2025c), before 2024 following UCD's Indian motorcycles
-#' - Code comments give the source and status of each number, with local copies in
-#'   /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
-#' - All India-specific pdfs are in .../Input/papers/
+#' @details India (IND), values by assumption ID from the EDGETassumptions source ([toolGetAssumption()])
+#' - Passenger three-wheelers ("Rickshaw", step 5, A09): Liquids from UCD's Indian three-wheeler (toolPrepareUCD());
+#'   BEV = Liquids x BEV/ICE price ratio from CEEW (2025c), before 2024 following UCD's Indian motorcycles
+#' - Status, derivation and sources of each value are in the table, references and PDF paths in README.txt of the
+#'   source.
 #'
 #' @author Johanna Hoppe, Jarusch Muessel
 #' @param dt calculated raw data without adjustments
@@ -118,22 +117,9 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
   missingMoped[is.na(value), value := twoW250][, twoW250 := NULL]
 
   # Rickshaw (passenger three-wheelers, IND only) #plausibilityFix_IND #plausibilityFix_Pass
-  # Liquids: UCD's Indian three-wheelers (see toolPrepareUCD()), 0.015 US$2017/vehkm in all years
-  # BEV: Liquids x BEV/ICE ratio, since UCD has no electric three-wheeler.
-  # From 2024, derived: ratio = EV price / mean ICE price, for passenger three-wheelers (3W-P), INR lakh before taxes
-  # and subsidies (published: CEEW (2025c), Annexure 1); no currency conversion needed, as only the ratio is used
-  # EV price: 2.38 (2024) and 2.55 (from 2030; CEEW gives no reason for the rise)
-  # ICE price: mean 1.89 of petrol 1.77, diesel 1.93 and CNG 1.97 (Rickshaw has one ICE technology, Liquids)
-  # -> 1.26 (2024), 1.35 (from 2030), linear in between
-  # Before 2024 (assumption, no Indian three-wheeler series): UCD's BEV/ICE ratio of Indian motorcycles (50-250cc),
-  # scaled to 1.26 in 2024 -> 2.5 (2005), 2.1 (2010), 1.3 (2020)
-  # Sources, in /p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/Input/papers/:
-  #   CEEW (2025c), What Drives Vehicle Ownership Costs in India? A Segment-wise Analysis for India's Road
-  #     Transport; SourceID: S26; trucks/T26_CEEW_2025_vehicleOwnershipCosts.pdf and
-  #     file trucks/T26_CEEW_2025_vehicleOwnershipCosts_annexure.pdf
-  # Note: CEEW's 3W-P are auto-rickshaws (L5) without the low-speed e-rickshaws, which make most electric
-  # three-wheeler sales. Three-wheelers are bought new for commercial use, so no GDP factor (step 6).
-  ceew3W <- c("2024" = 2.38, "2030" = 2.55) / mean(c(1.77, 1.93, 1.97))
+  # A09: BEV = Liquids (UCD) x EV/mean ICE price, linear 2024-2030; before 2024 UCD's Indian motorcycle ratio
+  ceew3W <- toolGetAssumption("A09", by = "period", technology = "BEV") /
+    mean(toolGetAssumption("A09", by = "variable", technology = "Liquids"))
   ratio3W <- twoW50[region %in% missing3W$region,
                     .(ratio2W = twoW50[technology == "BEV"] / twoW50[technology == "Liquids"]),
                     by = c("region", "period")]

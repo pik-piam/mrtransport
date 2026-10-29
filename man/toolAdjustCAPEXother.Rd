@@ -27,13 +27,12 @@ a quitte object
 Fills gaps in the raw CAPEX of vehicle types without fleet tracking and sets values for single regions and modes.
 }
 \details{
-India (IND)
+India (IND), values by assumption ID from the EDGETassumptions source (\code{\link[=toolGetAssumption]{toolGetAssumption()}})
 \itemize{
-\item Passenger three-wheelers ("Rickshaw", step 5): Liquids from UCD's Indian three-wheeler (toolPrepareUCD()); BEV =
-Liquids x BEV/ICE price ratio from CEEW (2025c), before 2024 following UCD's Indian motorcycles
-\item Code comments give the source and status of each number, with local copies in
-/p/projects/edget/adjustmentDataFiles/IND_validation/27-10-2026/.
-\item All India-specific pdfs are in .../Input/papers/
+\item Passenger three-wheelers ("Rickshaw", step 5, A09): Liquids from UCD's Indian three-wheeler (toolPrepareUCD());
+BEV = Liquids x BEV/ICE price ratio from CEEW (2025c), before 2024 following UCD's Indian motorcycles
+\item Status, derivation and sources of each value are in the table, references and PDF paths in README.txt of the
+source.
 }
 }
 \author{
