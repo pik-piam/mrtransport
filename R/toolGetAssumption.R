@@ -8,12 +8,13 @@
 #' @return named numeric vector of the values, named by column `by`
 #' @details Source: EDGETassumptions v1 (README.txt in the source folder).
 #' @author Jarusch Muessel
-#' @importFrom madrat readSource
 toolGetAssumption <- function(id, by = "univocalName", ...) {
   tab <- readSource("EDGETassumptions", subtype = "v1", convert = FALSE)
   rows <- tab[tab$id == id, ]
   if (nrow(rows) == 0) stop("toolGetAssumption: no rows for ID ", id)
   filters <- list(...)
+  unknown <- setdiff(names(filters), names(tab))
+  if (length(unknown)) stop("toolGetAssumption: unknown columns: ", paste(unknown, collapse = ", "))
   for (col in names(filters)) rows <- rows[rows[[col]] == filters[[col]], ]
   if (nrow(rows) == 0) stop("toolGetAssumption: no rows for ID ", id, " after filtering")
   if (anyDuplicated(rows[[by]])) stop("toolGetAssumption: names by '", by, "' not unique for ID ", id)
