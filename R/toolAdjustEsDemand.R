@@ -1,19 +1,37 @@
 #' Perform parameter specific adjustments on the input data
 #'
+#' Fills gaps in the raw historical energy service demand (GCAM, TRACCS, Eurostat) and corrects implausible values
+#' for single regions and modes.
 #'
-#' @author Johanna Hoppe
+#' @details India (IND), values by assumption ID from the EDGETassumptions source ([toolGetAssumption()])
+#' - Truck size split (step 3, A21): Vehicle shares derived from Indian stock and sales data replace previous
+#'   assumptions
+#' - Bus demand (step 7b, A22): 2010 bus pkm derived from India's pre-COVID bus use benchmarked against China at the
+#'   same income; replaces a factor 1/2 in step 4
+#' - Road demand (step 7b, A23, A24): passenger road = buses + 2-4-wheelers (as before); road freight from the IEA's
+#'   published 2010 total; applied to 2005-2010; replace a factor 1.4 on all IND demand (step 7a)
+#' - Domestic shipping and aviation (step 7b, A25, A26): published 2010 activity (RITES, DGCA)
+#' - Bus technologies (step 7b, A27): share of the 2005-2010 bus pkm on gas (CNG share of the registered buses, TERI)
+#' - Road demand 1990 (step 7c): computed so that the 1990 IEA harmonization factor equals the 2005 one; not an
+#'   estimate of the 1990 activity
+#' - Check (step 7d): warns when the aviation intensity factor of toolAdjustEnergyIntensity() no longer fits
+#' - Status, derivation and sources of each value are in the table, references and PDF paths in README.txt of the
+#'   source.
+#'
+#' @author Johanna Hoppe, Jarusch Muessel
 #' @param dt calculated raw data without adjustments
 #' @param mapIso2region map iso countries to regions
 #' @param completeData All combinations of region, period, univocalName and technology in EDGE-T decision tree
 #' @param filter list of filters for specific branches in the upper decision tree, containing all associated
-#' @param histSourceData the full source data containing the annual mileage and load factor
 #' univocalNames
-#' @return a quitte object
+#' @param histSourceData the full source data containing the annual mileage and load factor; their 2010 Liquids
+#' values turn the target truck vehicle shares of step 3 into tkm shares
+#' @return a quitte object with the adjusted energy service demand in billion pkm/yr and billion tkm/yr
 
 toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSourceData) {
   variable <- period  <- unit <- value <-  demldv <- regionCode21 <- technology <- valueNew <- . <-
     regionCode12 <- region <- univocalName <- oldES <- totalES <- targetES <- ESshare <- ESperVeh <-
-    loadFactor <- allZero <- annualMileage <- scaling <- NULL
+    loadFactor <- allZero <- annualMileage <- scaling <- te <- flow <- fe <- enIntensity <- NULL
 
   dt <- merge.data.table(dt, completeData[period <= 2010],
                          by = c("region", "period", "univocalName", "technology"), all = TRUE)
@@ -34,6 +52,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
 
 
   # 2: Add some base demand for Cycle & Walk (2%)
+  # IND: not applied, as GCAM's walking and cycling are not zero (EDGETassumptions README, section 7)
   dt[, demldv := sum(value), by = c("period", "region")]
   dt[univocalName == "Cycle" & value == 0, value := demldv * 0.01]
   dt[univocalName == "Walk" & value == 0, value := demldv * 0.002]
@@ -42,35 +61,33 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   dt[, demldv := NULL]
 
 
-  # 3: Correct truck size ES splits for CHA and JPN
+  # 3: Correct truck size ES splits for CHN/HKG/MAC, JPN and IND
   # #plausibilityFix_CHN #plausibilityFix_JPN #plausibilityFix_IND #plausibilityFix_Truck #plausibilityFix_Freight
   #
   # Original GCAM input data has implausible truck size distributions:
   #   - CHN/HKG/MAC: 95% of ES in 0-3.5t trucks (should be ~64% per CEIC data)
   #   - JPN: 99.999% in 0-3.5t trucks (heavy-duty trucks essentially missing)
-  #   - IND: 55% in 0-3.5t trucks (should be ~35%) and 0% for Trucks between 7.5t and 40t (should be ~25%)
+  #   - IND: 55% in 0-3.5t trucks and 0% for Trucks between 7.5t and 40t
   #
   # Real-world target vehicle share (% of vehicle count, not % of tonne-km) used here:
   #   CHN/HKG/MAC: 0-3.5t=76%, 7.5t=13%, 18t=5%, 26t=3%, 40t=3%
   #   JPN:         0-3.5t=88%, 7.5t=9%,  18t=1%, 26t=1%, 40t=1%
-  #   IND:         0-3.5t=42%, 7.5t=29%, 18t=21%, 26t=6%, 40t=2%
+  #   IND:         A21 (see below)
   #
-  # These are compromise values: closer to real-world than GCAM defaults, but
+  # CHN/HKG/MAC and JPN: these are compromise values: closer to real-world than GCAM defaults, but
   # still producing reasonable 2010/2015 truck numbers given other input data
   # constraints. Should be updated to real-world values once other inputs improve.
   # Source can be found in:
   #   CEIC: https://www.ceicdata.com/en/china/no-of-motor-vehicle/cn-no-of-motor-vehicle-truck-heavy
   #   Data/RegionalData/compiling_CHA_data_heavy_duty_vehicles.xlsx (cells V17:V21, CHA)
   #   Also for Data/RegionalData/compiling_JPN_data_heavy_duty_vehicles.xlsx
-  #   India specific sources can be generally found in:
-  #   /p/projects/edget/adjustmentDataFiles/IND_validation/ValidationSheets/TrucksValidation.xlsx
-  #   Niti Aayog, RMI (2022): https://www.niti.gov.in/sites/default/files/2023-02/ZETReport09092022.pdf
-  #   Niti Aayog, RMI (2019): https://www.niti.gov.in/sites/default/files/2021-06/FreightReportNationalLevel.pdf
-  # Alternatively: /p/projects/edget/adjustmentDataFiles/IND_validation/additionalLiterature/FleetComposition
-
+  #
+  # A21 (IND): vehicle shares from Indian stock and sales data, 2020 values used for 2010
 
   REGIONS_TO_FIX <- c("CHN", "HKG", "MAC", "JPN", "IND")
   TRUCK_SIZES    <- c("Truck (0-3_5t)", "Truck (7_5t)", "Truck (18t)", "Truck (26t)", "Truck (40t)")
+  vehicleSharesIND <- toolGetAssumption("A21")[TRUCK_SIZES]
+  if (anyNA(vehicleSharesIND)) stop("IND truck vehicle shares (A21) are incomplete")
 
   # Step 1: Define target vehicle count shares by size
   # These are shares of *vehicle count*, not ES. ES shares are derived below
@@ -81,7 +98,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
     value        = c(
       rep(c(76, 13, 5, 3, 3), 3),  # CHN, HKG, MAC
       c(88,  9, 1, 1, 1),       # JPN
-      c(40, 35, 12, 10, 3)     # IND
+      unname(vehicleSharesIND)  # IND (A21)
     )
   )
 
@@ -217,10 +234,10 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   dt[period <= 2010 & regionCode21 == "CHN" & univocalName %in% filter$trn_freight_road, value := value * 3]
 
   # 4: Demand level corrections, adjusting to ETP demands
-  # #plausibilityFix_CHN #plausibilityFix_Bus #plausibilityFix_Pass #plausibilityFix_IND
+  # #plausibilityFix_CHN #plausibilityFix_Bus #plausibilityFix_Pass
   # #plausibilityFix_OAS #plausibilityFix_NEU #plausibilityFix_MEA
+  # IND: the former factor 1/2 is replaced by the bus share in step 7b.
   dt[regionCode21 == "CHA" & univocalName == "Bus", value := value / 2.5]
-  dt[regionCode21 == "IND" & univocalName == "Bus", value := value / 2]
   dt[regionCode21 == "OAS" & univocalName == "Bus", value := value / 5]
   dt[regionCode12 == "NEU" & univocalName == "Bus", value := value / 2]
   dt[regionCode21 == "MEA" & univocalName == "Bus", value := value / 2]
@@ -238,23 +255,81 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
   dt[region == "DEU" & univocalName %in% filter$trn_freight, value := value * 620 / 587]
   dt[, c("countryName", "regionCode21", "regionCode12", "check") := NULL]
 
-  # plausibilityFix_IND #plausibilityFix_Pass #plausibilityFix_Freight
-  # Scale India 2010 energy service demand up to plausible totals.
-  # Sources for the target values are:p/projects/edget/adjustmentDataFiles/IND_validation/July26/Literature
-  # /03_Paladugula.pdf and
-  # /10_ceewGCAM_outlook.pdf
-  # Note that I used the upper bound because our Energy Intensities beyond 2010 lead to higher FE than the IEA projects
-  # targetPassES2010    <- 5400   billion pkm
-  # targetFreightES2010 <- 2300   billion tkm
-  # pass_sm2010 <- dt[region == "IND" & period %in% c(2010) & univocalName %in% filter$trn_pass,
-  #   sum(value, na.rm = TRUE)]
-  # freight_sm2010 <- dt[region == "IND" & period %in% c(2010) & univocalName %in% filter$trn_freight,
-  #  sum(value, na.rm = TRUE)]
+  # 7: Historical activity in India (IND): 2010 targets, 1990 road demand and the check of the aviation factor
+  # #plausibilityFix_IND #plausibilityFix_Pass #plausibilityFix_Truck #plausibilityFix_Freight
+  #
+  # 7a: Remove factor 1.4 on all IND demand in 2005 and 2010, replaced by the 2010 targets of 7b.
+  # Old code: dt[region == "IND" & period %in% c(2005, 2010) & univocalName %in% c(filter$trn_pass, filter$trn_freight),
+  #    value := value * 1.4]
 
-  dt[region == "IND" & period %in% c(2005, 2010) & univocalName %in% filter$trn_pass,
-     value := value * 1.4] #targetPassES2010 / pass_sm2010]
-  dt[region == "IND" & period %in% c(2005, 2010) & univocalName %in% filter$trn_freight,
-     value := value * 1.4] #* targetFreightES2010 / freight_sm2010]
+  # 7b: Road, shipping and aviation demand in 2005-2010
+  # A22-A26: 2010 targets for buses, 2-4-wheelers, trucks and domestic shipping, 2005 and 2010 for domestic aviation
+  busPkmIND2010   <- toolGetAssumption("A22")[["Bus"]]                # billion pkm
+  ldvPkmIND2010   <- toolGetAssumption("A23")[["trn_pass_road_LDV"]]  # billion pkm, 2-4-wheelers
+  passRoadIND2010 <- busPkmIND2010 + ldvPkmIND2010
+  busShareIND2010 <- busPkmIND2010 / passRoadIND2010
+  truckTkmIND2010 <- toolGetAssumption("A24")[["trn_freight_road"]]   # billion tkm
+  shipTkmIND2010  <- toolGetAssumption("A25")[["Domestic Ship"]]      # billion tkm
+  airPkmIND       <- toolGetAssumption("A26", by = "period")          # billion pkm, 2005 and 2010
+  busIND <- dt[region == "IND" & period == 2010 & univocalName == "Bus", sum(value)]
+  ldvIND <- dt[region == "IND" & period == 2010 & univocalName %in% setdiff(filter$trn_pass_road, "Bus"), sum(value)]
+  dt[region == "IND" & univocalName == "Bus",
+     value := value * busShareIND2010 / (1 - busShareIND2010) * ldvIND / busIND]
+  dt[region == "IND" & period >= 2005 & univocalName %in% filter$trn_pass_road,
+     value := value * passRoadIND2010 / sum(value[period == 2010])]
+  dt[region == "IND" & period >= 2005 & univocalName %in% filter$trn_freight_road,
+     value := value * truckTkmIND2010 / sum(value[period == 2010])]
+  dt[region == "IND" & period == 2010 & univocalName == "Domestic Ship",
+     value := value * shipTkmIND2010 / sum(value)]
+  dt[region == "IND" & period %in% c(2005, 2010) & univocalName == "Domestic Aviation",
+     value := value * airPkmIND[as.character(period)] / sum(value), by = "period"]
+
+  # Bus technologies in 2005-2010
+  # A27: share of bus pkm on gas (CNG share of the registered buses), the rest on liquids
+  cngShareBusIND <- toolGetAssumption("A27")[["Bus"]]
+  dt[region == "IND" & period >= 2005 & univocalName == "Bus",
+     value := sum(value) * ifelse(technology == "Gases", cngShareBusIND,
+                                  (1 - cngShareBusIND) * value / sum(value[technology != "Gases"])),
+     by = "period"]
+
+  # 7c: Road demand in 1990 (passenger road and trucks; rail, aviation and shipping keep GCAM's values)
+  # One factor, computed so that the 1990 liquids harmonization factor equals the 2005 one (1.28 on 2026-10-21)
+  # With GCAM's 1990 road demand the 1990 factor was 1.41 against 1.13 in 2005, and EDGE-T's 2005 liquids FE was 9 %
+  # above the IEA's: its 2005 fleet includes vehicles bought before 2005, with intensities interpolated from 1990.
+  # Derived: factor = (IEA 1990 / harm2005 - non-road FE 1990) / road FE 1990, with harm2005 = IEA 2005 / FE 2005
+  # FE: final energy of the raw liquids intensities (intensity / LF x demand), as in toolIEAharmonization()
+  # IEA: the IEA's liquids without bunkers, as in toolIEAharmonization()
+  # TERI (2024), Figures 2.2 and 2.7, prints lower 1990-91 road values (680 billion pkm, 127 billion tkm).
+  roadIND <- c(filter$trn_pass_road, filter$trn_freight_road)
+  ieaIND <- magpie2dt(calcOutput(type = "IEAOutputTransport", aggregate = FALSE)["IND", , ],
+                      datacols = c("se", "fe", "te", "mod", "flow"), regioncol = "region", yearcol = "period")
+  ieaIND <- ieaIND[te %in% c("tdfospet", "tdfosdie", "tdbiopet", "tdbiodie") & !grepl("BUNK", flow)]
+  feIND <- merge(dt[region == "IND" & period %in% c(1990, 2005, 2010) & value > 0 &
+                      !technology %in% c("BEV", "Electric", "Gases") &
+                      !univocalName %in% c("Cycle", "Walk", "International Aviation", "International Ship"),
+                    .(period, univocalName, technology, value)],
+                 merge(histSourceData$enIntensity, histSourceData$loadFactor,
+                       by = c("region", "period", "univocalName", "technology"))[region == "IND"],
+                 by = c("period", "univocalName", "technology"), all.x = TRUE)
+  if (anyNA(feIND)) stop("IND: energy intensity or load factor missing for a liquids mode with demand")
+  feIND[, fe := value * enIntensity / loadFactor * 1e-3] # billion (p|t)km x MJ/vehkm / ((p|t)/veh) -> EJ
+  harm2005IND <- ieaIND[period == 2005, sum(value)] / feIND[period == 2005, sum(fe)]
+  road1990IND <- (ieaIND[period == 1990, sum(value)] / harm2005IND -
+                    feIND[period == 1990 & !univocalName %in% roadIND, sum(fe)]) /
+    feIND[period == 1990 & univocalName %in% roadIND, sum(fe)]
+  dt[region == "IND" & period == 1990 & univocalName %in% roadIND, value := value * road1990IND]
+
+  # 7d: Check of the domestic aviation intensity factor (toolAdjustEnergyIntensity(), step 2c): its harmonized fuel
+  # use in 2010 should equal the IEA's domestic aviation (flow DOMESAIR). The factor depends on all other IND liquids
+  # inputs through the common harmonization factor, so warn with the multiplier it needs when it is off by over 2 %.
+  feAir <- feIND[period == 2010 & univocalName == "Domestic Aviation", sum(fe)]
+  feOther <- feIND[period == 2010 & univocalName != "Domestic Aviation", sum(fe)]
+  ieaAir <- ieaIND[period == 2010 & flow == "DOMESAIR", sum(value)]
+  airMultiplier <- ieaAir * feOther / (feAir * (ieaIND[period == 2010, sum(value)] - ieaAir))
+  if (abs(airMultiplier - 1) > 0.02) {
+    warning(sprintf(paste("IND: harmonized domestic aviation fuel in 2010 does not match the IEA's; multiply the",
+                          "factor in toolAdjustEnergyIntensity() (step 2c) by %.3f"), airMultiplier))
+  }
 
   return(dt)
 }
