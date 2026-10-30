@@ -125,7 +125,8 @@ toolAdjustCAPEXother <- function(dt, ISOcountries, yrs, completeData, GDPpcMER, 
                     by = c("region", "period")]
   ratio3W[, ratio2W2024 := stats::approx(period, ratio2W, xout = 2024)$y, by = "region"]
   ratio3W[, ratio := ifelse(period < 2024, ceew3W[["2024"]] * ratio2W / ratio2W2024,
-                            stats::approx(c(2024, 2030), ceew3W, xout = pmin(pmax(period, 2024), 2030))$y)]
+                            stats::approx(c(2024, 2030), ceew3W[c("2024", "2030")],
+                                          xout = pmin(pmax(period, 2024), 2030))$y)]
   ratio3W <- ratio3W[, .(region, period, technology = "BEV", ratio)]
   liquids3W <- dt[univocalName == "Rickshaw" & technology == "Liquids", .(region, period, technology = "BEV",
                                                                           liquids = value)]

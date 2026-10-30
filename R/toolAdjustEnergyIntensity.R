@@ -93,9 +93,12 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
                                            "Truck (40t)"))
   trucksIND[, target := toolGetAssumption("A13")[univocalName]]
   trucksIND[, vkmShare := toolGetAssumption("A14")[univocalName]]
+  nTrucksIND <- nrow(trucksIND)
   trucksIND <- merge(trucksIND, dt[region == "IND" & period == 2010 & technology == "Liquids",
                                    .(univocalName, psi = value)], by = "univocalName")
-  if (nrow(trucksIND) != 5) stop("IND truck energy intensities (PSI, Liquids, 2010) are incomplete")
+  if (nrow(trucksIND) != nTrucksIND || anyNA(trucksIND)) {
+    stop("IND truck energy intensities (PSI, Liquids, 2010) are incomplete")
+  }
   trucksIND[, scaling := target * sum(vkmShare * psi) / sum(vkmShare * target) / psi]
   scalingIND <- setNames(trucksIND$scaling, trucksIND$univocalName)
   dt[region == "IND" & univocalName %in% names(scalingIND) & technology %in% c("Liquids", "Gases"),
@@ -120,7 +123,9 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
     groupsIND[, vkmShare := toolGetAssumption("A18")[univocalName]]
     groupsIND <- merge(groupsIND, dt[region == "IND" & period == year & technology == tech,
                                      .(univocalName, raw = value)], by = "univocalName")
-    if (nrow(groupsIND) != length(groups)) stop("IND energy intensities (", tech, ", ", year, ") are incomplete")
+    if (nrow(groupsIND) != length(groups) || anyNA(groupsIND)) {
+      stop("IND energy intensities (", tech, ", ", year, ") are incomplete")
+    }
     groupsIND[, scaling := target * sum(vkmShare) / sum(vkmShare * raw), by = "group"]
     factors <- setNames(groupsIND$scaling, groupsIND$univocalName)
     dt[region == "IND" & univocalName %in% names(factors) & technology == tech,
@@ -143,7 +148,7 @@ toolAdjustEnergyIntensity <- function(dt, regionTRACCS, TrendsEnIntPSI, filter, 
     trendIND[[1]]^(pmin(pmax(period, trendYearsIND[1]), trendYearsIND[2]) - trendYearsIND[1])
   }
   if (nrow(dt[region == "IND" & univocalName %in% names(scalingIND) & technology %in% c("Liquids", "Gases") &
-                period == 2020]) != 10) {
+                period == 2020]) != 2 * nTrucksIND) {
     stop("IND truck energy intensities (Liquids, Gases, 2020) are incomplete")
   }
   dt[region == "IND" & univocalName %in% names(scalingIND) & technology %in% c("Liquids", "Gases") & period >= 2020,

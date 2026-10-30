@@ -63,7 +63,8 @@ toolAdjustLoadFactor <- function(dt, completeData, TRACCScountries, filter) {
   # Steps 4-7 (India) come after the regional means in step 3, so that they do not change other regions.
   # 4: Trucks in India #plausibilityFix_IND #plausibilityFix_Truck #plausibilityFix_Freight
   # A01: payloads net of empty running from Indian surveys, 2020 values used for all years and technologies
-  loadFactorIND <- toolGetAssumption("A01")
+  loadFactorIND <- toolGetAssumption("A01")[filter$trn_freight_road]
+  if (anyNA(loadFactorIND)) stop("IND truck load factors (A01) are incomplete")
   dt[region == "IND" & univocalName %in% names(loadFactorIND), value := loadFactorIND[univocalName]]
 
   # 5: Passenger three-wheelers in India #plausibilityFix_IND #plausibilityFix_Pass

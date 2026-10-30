@@ -90,7 +90,8 @@ toolAdjustAnnualMileage <- function(dt, completeData, filter, ariadneAdjustments
 
   # c) Trucks in India #plausibilityFix_IND #plausibilityFix_Truck #plausibilityFix_Freight
   # A07: means of published Indian fleet values per class, 2020 values used for all years and technologies
-  AMChangesIND <- toolGetAssumption("A07")
+  AMChangesIND <- toolGetAssumption("A07")[filter$trn_freight_road]
+  if (anyNA(AMChangesIND)) stop("IND truck annual mileages (A07) are incomplete")
   dt[region == "IND" & univocalName %in% names(AMChangesIND), value := AMChangesIND[univocalName]]
 
   # d) We do not have vintage tracking for the rest of the modes -> insert zeros

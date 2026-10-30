@@ -52,8 +52,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
 
 
   # 2: Add some base demand for Cycle & Walk (2%)
-  # IND: not applied, as GCAM's walking and cycling are not zero (1,203 billion pkm in 2010; published: 1,200,
-  # CEEW (2022), source 10 in .../IND_validation/27-10-2026/data/validationEstimates.xlsx)
+  # IND: not applied, as GCAM's walking and cycling are not zero (EDGETassumptions README, section 7)
   dt[, demldv := sum(value), by = c("period", "region")]
   dt[univocalName == "Cycle" & value == 0, value := demldv * 0.01]
   dt[univocalName == "Walk" & value == 0, value := demldv * 0.002]
@@ -87,6 +86,8 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
 
   REGIONS_TO_FIX <- c("CHN", "HKG", "MAC", "JPN", "IND")
   TRUCK_SIZES    <- c("Truck (0-3_5t)", "Truck (7_5t)", "Truck (18t)", "Truck (26t)", "Truck (40t)")
+  vehicleSharesIND <- toolGetAssumption("A21")[TRUCK_SIZES]
+  if (anyNA(vehicleSharesIND)) stop("IND truck vehicle shares (A21) are incomplete")
 
   # Step 1: Define target vehicle count shares by size
   # These are shares of *vehicle count*, not ES. ES shares are derived below
@@ -97,7 +98,7 @@ toolAdjustEsDemand <- function(dt, mapIso2region, completeData, filter, histSour
     value        = c(
       rep(c(76, 13, 5, 3, 3), 3),  # CHN, HKG, MAC
       c(88,  9, 1, 1, 1),       # JPN
-      unname(toolGetAssumption("A21")[TRUCK_SIZES])  # IND (A21)
+      unname(vehicleSharesIND)  # IND (A21)
     )
   )
 
